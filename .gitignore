@@ -1,6 +1,9 @@
 # Password file
 /flexiznam/mcms/secret_password.py
 
+# Pycharm files
+.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
