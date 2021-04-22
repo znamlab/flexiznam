@@ -3,4 +3,4 @@ setuptools
 pandas
 webbot
 click
-git+ssh://git@github.com/znamlab/flexiznam.git#egg=flexilims
+git+https://github.com/znamlab/flexiznam.git#egg=flexilims
