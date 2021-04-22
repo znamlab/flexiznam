@@ -21,4 +21,4 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 
 
 if __name__ == '__main__':
-    flexiznam.main.add_mouse(mouse_name='PZAJ2.1c', project_id='virus_tests')
+    flexiznam.main.add_mouse(mouse_name='PZAJ2.1c', project_id='test')

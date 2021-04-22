@@ -1,0 +1,6 @@
+pytest
+setuptools
+pandas
+webbot
+click
+git+ssh:https://github.com/znamlab/flexilims#egg=flexilims

@@ -11,7 +11,7 @@ def download_mouse_info(mouse_name, username, password=None, suffix='autodownloa
     """Log in to MCMS using webbot and download csv about all alive mice"""
     if password is None:
         try:
-            from flexiznam.resources.secret_password import mcms_passwords
+            from flexiznam.mcms.secret_password import mcms_passwords
         except ImportError:
             print('Cannot load flexilims.secret_password')
             return
