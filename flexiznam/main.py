@@ -57,7 +57,7 @@ def get_mice(project_id=None, username=None, session=None, password=None):
     if session is None:
         session = get_session(project_id, username, password)
 
-    mice = session.get(datatype='mouse')
+    mice = session.get(dict(type='mouse'))
     # make into a nice df
     reserved_keywords = ['id', 'type', 'name', 'incrementalId']
     for mouse in mice:
