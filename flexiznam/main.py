@@ -3,6 +3,7 @@ import flexilims as flm
 from flexiznam import mcms
 import flexiznam.resources.parameters as prm
 from flexiznam.resources.projects import PROJECT_IDS
+from getpass import getpass
 
 
 def _format_project(project_id):
@@ -41,7 +42,7 @@ def add_mouse(mouse_name, project_id, mcms_animal_name=None, flexilims_username=
     return resp
 
 
-def get_mice(project_id=None, username=None, session=None):
+def get_mice(project_id=None, username=None, session=None, password=None):
     """Get mouse info and format it"""
 
     assert (project_id is not None) or (session is not None)
@@ -49,7 +50,9 @@ def get_mice(project_id=None, username=None, session=None):
     if session is None:
         if username is None:
             username = prm.FLEXILIMS_USERNAME
-        session = flm.Flexilims(username, project_id=project_id)
+        if password is None:
+            password = getpass
+        session = flm.Flexilims(username, password, project_id=project_id)
 
     mice = session.get(datatype='mouse')
     # make into a nice df
