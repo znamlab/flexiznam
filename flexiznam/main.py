@@ -14,13 +14,21 @@ def _format_project(project_id):
     return project_id
 
 
+def get_session(project_id, username, password):
+    project_id = _format_project(project_id)
+    if username is None:
+        username = prm.FLEXILIMS_USERNAME
+    if password is None:
+        password = getpass()
+    session = flm.Flexilims(username, password, project_id=project_id)
+    return session
+
+
 def add_mouse(mouse_name, project_id, mcms_animal_name=None, flexilims_username=None, mcms_username=None):
     """Check if a mouse is already in the database and add it if it isn't"""
 
-    project_id = _format_project(project_id)
-    if flexilims_username is None:
-        flexilims_username = prm.FLEXILIMS_USERNAME
-    session = flm.Flexilims(username=flexilims_username, project_id=project_id)
+    if session is None:
+        session = get_session(project_id, username, password)
     mice_df = get_mice(session=session)
     if mouse_name in mice_df.index:
         return mice_df.loc[mouse_name]
@@ -46,13 +54,8 @@ def get_mice(project_id=None, username=None, session=None, password=None):
     """Get mouse info and format it"""
 
     assert (project_id is not None) or (session is not None)
-
     if session is None:
-        if username is None:
-            username = prm.FLEXILIMS_USERNAME
-        if password is None:
-            password = getpass
-        session = flm.Flexilims(username, password, project_id=project_id)
+        session = get_session(project_id, username, password)
 
     mice = session.get(datatype='mouse')
     # make into a nice df
