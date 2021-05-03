@@ -3,6 +3,7 @@ import flexilims as flm
 from flexiznam import mcms
 import flexiznam.resources.parameters as prm
 from flexiznam.resources.projects import PROJECT_IDS
+from flexiznam.errors import NameNotUniqueException
 from getpass import getpass
 
 
@@ -69,3 +70,20 @@ def get_mice(project_id=None, username=None, session=None, password=None):
     if len(mice):
         mice.set_index('name', drop=False, inplace=True)
     return mice
+
+
+def get_mouse_id(mouse_name, project_id=None, username=None, session=None, password=None):
+    """Get database ID for mouse by name"""
+    assert (project_id is not None) or (session is not None)
+    if session is None:
+        session = get_session(project_id, username, password)
+
+    mice = get_mice(session=session)
+    matching_mice = mice[mice['name'] == mouse_name]
+    if len(matching_mice) != 1:
+        raise NameNotUniqueException(
+            'ERROR: Found {num} mice with name {name}!'
+            .format(num=len(matching_mice), name=mouse_name))
+        return None
+    else:
+        return matching_mice['id'][0]
