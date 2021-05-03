@@ -58,21 +58,26 @@ def get_mice(project_id=None, username=None, session=None, password=None):
     if session is None:
         session = get_session(project_id, username, password)
 
-    mice = session.get(dict(type='mouse'))
-    # make into a nice df
-    reserved_keywords = ['id', 'type', 'name', 'incrementalId']
-    for mouse in mice:
-        for attr_name, attr_value in mouse['attributes'].items():
-            assert attr_name not in reserved_keywords
-            mouse[attr_name] = attr_value
-        mouse.pop('attributes')
-    mice = pd.DataFrame(mice)
+    mice = format_results(session.get(dict(type='mouse')))
     if len(mice):
         mice.set_index('name', drop=False, inplace=True)
     return mice
 
 
-def get_mouse_id(mouse_name, project_id=None, username=None, session=None, password=None):
+def format_results(results):
+    """make request output a nice df"""
+    reserved_keywords = ['id', 'type', 'name', 'incrementalId']
+    for result in results:
+        for attr_name, attr_value in result['attributes'].items():
+            assert attr_name not in reserved_keywords
+            result[attr_name] = attr_value
+        result.pop('attributes')
+    df = pd.DataFrame(results)
+    return df
+
+
+def get_mouse_id(mouse_name, project_id=None, username=None, session=None,
+        password=None):
     """Get database ID for mouse by name"""
     assert (project_id is not None) or (session is not None)
     if session is None:
@@ -87,3 +92,19 @@ def get_mouse_id(mouse_name, project_id=None, username=None, session=None, passw
         return None
     else:
         return matching_mice['id'][0]
+
+
+def get_experimental_sessions(project_id=None, username=None, session=None, password=None,
+        mouse=None):
+    """Get all sessions from a given mouse"""
+    assert (project_id is not None) or (session is not None)
+    if session is None:
+        session = get_session(project_id, username, password)
+
+    expts = format_results(session.get({'type': 'session'}))
+
+    if mouse is None:
+        return expts
+    else:
+        mouse_id = get_mouse_id(mouse, session = session)
+        return expts[expts['origin'] == mouse_id]
