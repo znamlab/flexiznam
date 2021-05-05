@@ -1,41 +1,40 @@
 import pandas as pd
 import flexilims as flm
 from flexiznam import mcms
-import flexiznam.resources.parameters as prm
-from flexiznam.resources.projects import PROJECT_IDS
+from flexiznam.utils import PARAMETERS, get_password
 from flexiznam.errors import NameNotUniqueException
-from getpass import getpass
 
 
-def _format_project(project_id):
-    if project_id in PROJECT_IDS:
-        return PROJECT_IDS[project_id]
+def _format_project(project_id, prm):
+    if project_id in prm['project_ids']:
+        return prm['project_ids'][project_id]
     if project_id is None or len(project_id) != 24:
         raise AttributeError('Invalid project: "%s"' % project_id)
     return project_id
 
 
 def get_session(project_id, username, password):
-    project_id = _format_project(project_id)
+    project_id = _format_project(project_id, PARAMETERS)
     if username is None:
-        username = prm.FLEXILIMS_USERNAME
+        username = PARAMETERS['flexilims_username']
     if password is None:
-        password = getpass()
+        password = get_password(username, 'flexilims')
     session = flm.Flexilims(username, password, project_id=project_id)
     return session
 
 
-def add_mouse(mouse_name, project_id, mcms_animal_name=None, flexilims_username=None, mcms_username=None):
+def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None, flexilims_username=None, mcms_username=None,
+              flexilims_password=None):
     """Check if a mouse is already in the database and add it if it isn't"""
 
     if session is None:
-        session = get_session(project_id, username, password)
+        session = get_session(project_id, flexilims_username, flexilims_password)
     mice_df = get_mice(session=session)
     if mouse_name in mice_df.index:
         return mice_df.loc[mouse_name]
 
     if mcms_username is None:
-        mcms_username = prm.MCMS_USERNAME
+        mcms_username = PARAMETERS['mcms_username']
     if mcms_animal_name is None:
         mcms_animal_name = mouse_name
     mouse_info = mcms.get_mouse_df(mouse_name=mcms_animal_name, username=mcms_username)
@@ -76,8 +75,7 @@ def format_results(results):
     return df
 
 
-def get_mouse_id(mouse_name, project_id=None, username=None, session=None,
-        password=None):
+def get_mouse_id(mouse_name, project_id=None, username=None, session=None, password=None):
     """Get database ID for mouse by name"""
     assert (project_id is not None) or (session is not None)
     if session is None:

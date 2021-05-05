@@ -2,7 +2,8 @@ import os
 import time
 import pandas as pd
 from webbot import Browser
-from flexiznam.resources import parameters as prm
+from flexiznam.utils import PARAMETERS, get_password
+
 
 BASE_URL = 'https://crick.colonymanagement.org/mouse/'
 
@@ -10,12 +11,7 @@ BASE_URL = 'https://crick.colonymanagement.org/mouse/'
 def download_mouse_info(mouse_name, username, password=None, suffix='autodownloaded'):
     """Log in to MCMS using webbot and download csv about all alive mice"""
     if password is None:
-        try:
-            from flexiznam.mcms.secret_password import mcms_passwords
-        except ImportError:
-            print('Cannot load flexilims.secret_password')
-            return
-        password = mcms_passwords[username]
+        password = get_password(PARAMETERS['mcms_username'], 'mcms')
 
     web = Browser()
     web.go_to('%sstandard_user_home.do' % BASE_URL)
@@ -55,18 +51,21 @@ def download_mouse_info(mouse_name, username, password=None, suffix='autodownloa
     # sleep timer to allow for download
     time.sleep(5)  # seconds
     print("Mouse info downloaded")
+    return True
 
 
 def get_mouse_df(mouse_name, username, password=None):
     """Load mouse info from mcms in a dataframe"""
-    download_mouse_info(mouse_name, username, password, suffix='get_mouse_df_file')
-    fnames = [s for s in os.listdir(prm.DOWNLOAD_FOLDER) if s.startswith(mouse_name + '_get_mouse_df_file')]
+    ret = download_mouse_info(mouse_name, username, password, suffix='get_mouse_df_file')
+    if not ret:
+        raise IOError('Failed to download mouse info')
+    fnames = [s for s in os.listdir(PARAMETERS['download_folder']) if s.startswith(mouse_name + '_get_mouse_df_file')]
     if len(fnames) > 1:
         raise IOError('Multiple file found. Please remove old downloads with similar name '
                       '(i.e. starting with %s' % (mouse_name + '_get_mouse_df_file'))
 
     # read this file and delete it
-    mcms_file = os.path.join(prm.DOWNLOAD_FOLDER, fnames[0])
+    mcms_file = os.path.join(PARAMETERS['download_folder'], fnames[0])
     mouse_data = pd.read_csv(mcms_file)
     os.remove(mcms_file)
     # reformat columns name to valid flexilims attribute
