@@ -67,7 +67,7 @@ def create_config(overwrite=False, target=None, template=None, **kwargs):
     **kwargs elements are used to update/supplement infos found in the template
     """
     if template is None:
-        template = pathlib.Path(__file__).parent.absolute() / 'config' / 'config_example.yml'
+        template = _find_file('config_example.yml')
     if not os.path.isfile(template):
         raise ConfigurationError('Cannot find template example configuration file')
     with open(template, 'r') as tpl_file:
