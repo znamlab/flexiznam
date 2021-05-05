@@ -1,8 +1,8 @@
 import pytest
 import flexiznam
-from flexiznam.resources.projects import PROJECT_IDS
+from flexiznam.utils import PARAMETERS
 
 
 def test_get_mice():
-    mice_df = flexiznam.get_mice(project_id=PROJECT_IDS['test'])
+    mice_df = flexiznam.get_mice(project_id=PARAMETERS['project_ids']['test'])
     assert mice_df.shape == (1, 69)

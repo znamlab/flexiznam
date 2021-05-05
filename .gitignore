@@ -1,5 +1,6 @@
-# Password file
-/flexiznam/mcms/secret_password.py
+# Password file and local config
+/flexiznam/config/secret_password.yml
+/flexiznam/config/config.yml
 
 # Pycharm files
 .idea

@@ -4,3 +4,4 @@ pandas
 webbot
 click
 git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims
+pyyaml
