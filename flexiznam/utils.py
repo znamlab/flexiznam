@@ -1,26 +1,40 @@
 import os.path
 import pathlib
+import sys
 import yaml
 from flexiznam.errors import ConfigurationError
+
+
+def _find_file(file_name):
+    """Find a file by looking first in the current directory, then in the config folder, then in sys.path"""
+    local = pathlib.Path.cwd() / file_name
+    print(local)
+    if local.is_file():
+        return local
+    config = pathlib.Path(__file__).parent.absolute() / 'config' / file_name
+    if config.is_file():
+        return config
+    for directory in sys.path:
+        fname = pathlib.Path(directory) / file_name
+        if fname.is_file():
+            return fname
+    raise ConfigurationError('Cannot find %s' % file_name)
 
 
 def load_param(param_file=None):
     """Read parameter file from config folder"""
     if param_file is None:
-        param_file = pathlib.Path(__file__).parent.absolute() / 'config' / 'config.yml'
-    if not os.path.isfile(param_file):
-        raise ConfigurationError('Cannot find the configuration file')
+        param_file = _find_file('config.yml')
     with open(param_file, 'r') as yml_file:
         prm = yaml.safe_load(yml_file)
+    print('Loaded %s' % param_file)
     return prm
 
 
 def get_password(username, app, password_file=None):
     """Read the password yaml"""
     if password_file is None:
-        password_file = pathlib.Path(__file__).parent.absolute() / 'config' / 'secret_password.yml'
-    if not os.path.isfile(password_file):
-        raise ConfigurationError('Cannot find the password file')
+        password_file = _find_file('secret_password.yml')
     with open(password_file, 'r') as yml_file:
         pwd = yaml.safe_load(yml_file) or {}
     if app not in pwd:
@@ -34,7 +48,7 @@ def get_password(username, app, password_file=None):
 def add_password(app, username, password, password_file=None):
     """Add a password to a new or existing password file"""
     if password_file is None:
-        password_file = pathlib.Path(__file__).parent.absolute() / 'config' / 'secret_password.yml'
+        password_file = _find_file('secret_password.yml')
     if os.path.isfile(password_file):
         with open(password_file, 'r') as yml_file:
             pwd = yaml.safe_load(yml_file) or {}  # use empty dict if load returns None or False
