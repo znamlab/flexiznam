@@ -36,7 +36,7 @@ jobs:
         if [ -f setup.py ]; then pip install .; fi
         flexiznam config --template ./flexiznam/config/config_example.yml
         echo created
-        pswd = ${{ secrets.FLEXILIMS_PSWD }}
+        pswd=${{ secrets.FLEXILIMS_PSWD }}
         echo gotit
         flexiznam add-password -a flexilims -u blota -p $pswd
     - name: Lint with flake8
