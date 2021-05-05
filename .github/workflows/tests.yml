@@ -29,6 +29,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
+      env:
+        FLEXILIM_PASS: ${{ secrets.FLEXILIMS_PSWD }}
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
@@ -36,9 +38,7 @@ jobs:
         if [ -f setup.py ]; then pip install .; fi
         flexiznam config --template ./flexiznam/config/config_example.yml
         echo created
-        pswd=${{ secrets.FLEXILIMS_PSWD }}
-        echo gotit
-        flexiznam add-password -a flexilims -u blota -p $pswd
+        flexiznam add-password -a flexilims -u blota -p $FLEXILIM_PASS
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
