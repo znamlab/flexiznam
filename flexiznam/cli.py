@@ -45,7 +45,8 @@ def config(template=None):
               help='File to edit or create to add if not using the config folder')
 def add_password(app, username, password, password_file):
     """Edit or create password file"""
-    utils.add_password(app, username, password, password_file)
+    pass_file = utils.add_password(app, username, password, password_file)
+    click.echo('Password added in %s' % pass_file)
 
 
 if __name__ == '__main__':

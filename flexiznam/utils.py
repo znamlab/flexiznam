@@ -12,7 +12,7 @@ def _find_file(file_name):
     if local.is_file():
         return local
     config = pathlib.Path(__file__).parent.absolute() / 'config' / file_name
-    home = pathlib.Path.home() / './flexiznam'
+    home = pathlib.Path.home() / '.flexiznam'
     if home.is_dir() and (home / file_name).is_file():
         return home / file_name
     if config.is_file():
@@ -53,7 +53,7 @@ def add_password(app, username, password, password_file=None):
         try:
             password_file = _find_file('secret_password.yml')
         except ConfigurationError:
-            home = pathlib.Path.home() / 'flexiznam'
+            home = pathlib.Path.home() / '.flexiznam'
             if not home.is_dir():
                 os.mkdir(home)
             password_file = home / 'secret_password.yml'
@@ -67,6 +67,7 @@ def add_password(app, username, password, password_file=None):
     pwd[app][username] = password
     with open(password_file, 'w') as yml_file:
         yaml.dump(pwd, yml_file)
+    return password_file
 
 
 def create_config(overwrite=False, target=None, template=None, **kwargs):
