@@ -8,7 +8,6 @@ from flexiznam.errors import ConfigurationError
 def _find_file(file_name):
     """Find a file by looking first in the current directory, then in the config folder, then in sys.path"""
     local = pathlib.Path.cwd() / file_name
-    print(local)
     if local.is_file():
         return local
     config = pathlib.Path(__file__).parent.absolute() / 'config' / file_name
@@ -27,7 +26,6 @@ def load_param(param_file=None):
         param_file = _find_file('config.yml')
     with open(param_file, 'r') as yml_file:
         prm = yaml.safe_load(yml_file)
-    print('Loaded %s' % param_file)
     return prm
 
 
@@ -98,5 +96,6 @@ try:
     PARAMETERS = load_param()
     # expanduser for file paths:
     PARAMETERS['download_folder'] = pathlib.Path(PARAMETERS['download_folder']).expanduser()
-except Exception:
-    raise ConfigurationError('Could not load the parameters. Check your configuration file')
+except ConfigurationError:
+    print('Could not load the parameters. Check your configuration file')
+    PARAMETERS = {}
