@@ -2,7 +2,7 @@ import pytest
 from flexiznam import mcms
 
 USERNAME = 'ab8'
-#pytestmark = pytest.mark.skip("Do not test slow MCMS download for now")
+pytestmark = pytest.mark.skip("Do not test slow MCMS download for now")
 
 
 def test_download_mouse():
