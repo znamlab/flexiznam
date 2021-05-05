@@ -6,11 +6,15 @@ from flexiznam.errors import ConfigurationError
 
 
 def _find_file(file_name):
-    """Find a file by looking first in the current directory, then in the config folder, then in sys.path"""
+    """Find a file by looking first in the current directory, then in the ~/.config folder
+    then in the code folder, then in sys.path"""
     local = pathlib.Path.cwd() / file_name
     if local.is_file():
         return local
     config = pathlib.Path(__file__).parent.absolute() / 'config' / file_name
+    home = pathlib.Path.home() / './flexiznam'
+    if home.is_dir() and (home / file_name).is_file():
+        return home / file_name
     if config.is_file():
         return config
     for directory in sys.path:
@@ -46,7 +50,13 @@ def get_password(username, app, password_file=None):
 def add_password(app, username, password, password_file=None):
     """Add a password to a new or existing password file"""
     if password_file is None:
-        password_file = _find_file('secret_password.yml')
+        try:
+            password_file = _find_file('secret_password.yml')
+        except ConfigurationError:
+            home = pathlib.Path.home() / 'flexiznam'
+            if not home.is_dir():
+                os.mkdir(home)
+            password_file = home / 'secret_password.yml'
     if os.path.isfile(password_file):
         with open(password_file, 'r') as yml_file:
             pwd = yaml.safe_load(yml_file) or {}  # use empty dict if load returns None or False
@@ -75,7 +85,10 @@ def create_config(overwrite=False, target=None, template=None, **kwargs):
     cfg = _recursive_update(cfg, kwargs)
 
     if target is None:
-        target = pathlib.Path(__file__).parent.absolute() / 'config' / 'config.yml'
+        home = pathlib.Path.home() / '.flexiznam'
+        if not home.is_dir():
+            os.mkdir(home)
+        target = home / 'config.yml'
     if (not overwrite) and os.path.isfile(target):
         raise IOError('Config file %s already exists.' % target)
     with open(target, 'w') as cfg_yml:
