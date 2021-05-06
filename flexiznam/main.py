@@ -51,6 +51,40 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
     return resp
 
 
+def add_session(mouse_name, date, project_id=None, session=None,
+                password=None, username=None):
+    """
+    Add a new session as a child entity of a mouse
+    """
+    if session is None:
+        session = get_session(project_id, username, password)
+
+    mouse_id = get_id(mouse_name, datatype='mouse', session=session)
+
+    sessions_num = 0
+    while len(get_entities(
+        session=session,
+        datatype='session',
+        query_key='name',
+        query_value=mouse_name + '_' + date + '_' str(session_num))):
+        # session with this name already exists, increment the number
+        sessions_num += 1
+
+    session_name = mouse_name + '_' + date + '_' str(session_num)
+
+    session_info = { 'date': date, }
+    resp = session.post(
+        datatype='session',
+        name=session_name,
+        origin_id=mouse_id,
+        attributes=session_info)
+    return resp
+
+def add_recording(session_id, recording_type, protocol,
+                project_id=None, session=None, password=None, username=None):
+    raise NotImplementedError()
+
+
 def get_entities(datatype='mouse', query_key=None, query_value=None,
         project_id=None, username=None, session=None, password=None):
     """
@@ -139,15 +173,28 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
     return expts
 
 
-def get_children(parent_id, children_type, project_id=None, username=None,
+def get_children(parent_id, children_datatype, project_id=None, username=None,
         session=None, password=None):
-    """Get all entries belonging to a particular parent entity"""
+    """
+    Get all entries belonging to a particular parent entity
+
+    Args:
+        parent_id (str): hexadecimal id of the parent entity
+        children_datatype (str): type of child entities to fetch
+        project_id (str): text name of the project
+        username (str): Flexylims username
+        session (Flexilims): Flexylims session object
+        password (str): Flexylims password
+
+    Returns:
+        DataFrame: containing all the relevant child entitites
+    """
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
 
     results = format_results(session.get(
-                    children_type,
+                    children_datatype,
                     query_key='origin',
                     query_value=parent_id))
     return results
