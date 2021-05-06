@@ -13,7 +13,7 @@ def _format_project(project_id, prm):
     return project_id
 
 
-def get_session(project_id, username, password):
+def get_session(project_id, username=None, password=None):
     project_id = _format_project(project_id, PARAMETERS)
     if username is None:
         username = PARAMETERS['flexilims_username']
@@ -87,13 +87,11 @@ def get_mouse_id(mouse_name, project_id=None, username=None, session=None, passw
         raise NameNotUniqueException(
             'ERROR: Found {num} mice with name {name}!'
             .format(num=len(matching_mice), name=mouse_name))
-        return None
-    else:
-        return matching_mice['id'][0]
+    return matching_mice['id'][0]
 
 
 def get_experimental_sessions(project_id=None, username=None, session=None, password=None,
-        mouse=None):
+                              mouse=None):
     """Get all sessions from a given mouse"""
     assert (project_id is not None) or (session is not None)
     if session is None:
@@ -104,5 +102,5 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
     if mouse is None:
         return expts
     else:
-        mouse_id = get_mouse_id(mouse, session = session)
+        mouse_id = get_mouse_id(mouse, session=session)
         return expts[expts['origin'] == mouse_id]
