@@ -51,7 +51,8 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
     return resp
 
 
-def get_entities(type='mouse', project_id=None, username=None, session=None, password=None):
+def get_entities(datatype='mouse', query_key=None, query_value=None,
+        project_id=None, username=None, session=None, password=None):
     """
     Get entities of a given type and format results.
 
@@ -59,8 +60,10 @@ def get_entities(type='mouse', project_id=None, username=None, session=None, pas
     aree not needed (or used)
 
     Args:
-        type (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
+        datatype (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
             'recording', or 'dataset'
+        query_key (str): attribute to filter by
+        query_value (str): attribute value to select
         project_id (str): text name of the project
         username (str): Flexylims username
         session (Flexilims): Flexylims session object
@@ -72,8 +75,15 @@ def get_entities(type='mouse', project_id=None, username=None, session=None, pas
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
+    if query_key is None:
+        results = format_results(session.get(datatype))
+    else:
+        results = format_results(session.get(
+                        datatype,
+                        query_key=query_key,
+                        query_value=query_value
+                        ))
 
-    results = format_results(session.get(dict(type=type)))
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
@@ -91,21 +101,23 @@ def format_results(results):
     return df
 
 
-def get_id(name, type='mouse', project_id=None, username=None, session=None, password=None):
+def get_id(name, datatype='mouse', project_id=None, username=None, session=None, password=None):
     """Get database ID for entity by name"""
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
 
-    entities = get_entities(type=type, session=session)
-    matching_entities = entities[entities['name'] == name]
-    if len(matching_entities) != 1:
+    entities = get_entities(datatype=datatype,
+                            session=session,
+                            query_key='name',
+                            query_value=name)
+    if len(entities) != 1:
         raise NameNotUniqueException(
-            'ERROR: Found {num} entities of type {type} with name {name}!'
-            .format(num=len(matching_entities), type=type, name=name))
+            'ERROR: Found {num} entities of type {datatype} with name {name}!'
+            .format(num=len(entities), datatype=datatype, name=name))
         return None
     else:
-        return matching_entities['id'][0]
+        return entities['id'][0]
 
 
 def get_experimental_sessions(project_id=None, username=None, session=None, password=None,
@@ -115,13 +127,16 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
     if session is None:
         session = get_session(project_id, username, password)
 
-    expts = format_results(session.get({'type': 'session'}))
-
     if mouse is None:
-        return expts
+        expts = format_results(session.get('session'))
     else:
-        mouse_id = get_id(mouse, type='mouse', session=session)
-        return expts[expts['origin'] == mouse_id]
+        mouse_id = get_id(mouse, datatype='mouse', session=session)
+        expts = format_results(session.get(
+                    'session',
+                    query_key=origin,
+                    query_value=mouse_id
+                    ))
+    return expts
 
 
 def get_children(parent_id, children_type, project_id=None, username=None,
@@ -131,5 +146,8 @@ def get_children(parent_id, children_type, project_id=None, username=None,
     if session is None:
         session = get_session(project_id, username, password)
 
-    results = format_results(session.get({'type': children_type}))
-    return results[result['origin'] == parent_id]
+    results = format_results(session.get(
+                    children_type,
+                    query_key='origin',
+                    query_value=parent_id))
+    return results
