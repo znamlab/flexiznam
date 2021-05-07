@@ -8,8 +8,11 @@ from flexiznam.utils import PARAMETERS, get_password
 BASE_URL = 'https://crick.colonymanagement.org/mouse/'
 
 
-def download_mouse_info(mouse_name, username, password=None, suffix='autodownloaded'):
-    """Log in to MCMS using webbot and download csv about all alive mice"""
+def download_mouse_info(mouse_name, username, password=None, suffix='autodownloaded', query_time=10):
+    """Log in to MCMS using webbot and download csv about all alive mice
+
+    The time required for mcms to execute the query can vary.
+    If mcms is slower than `query_time`, nothing will be downloaded"""
     if password is None:
         password = get_password(PARAMETERS['mcms_username'], 'mcms')
 
@@ -34,7 +37,7 @@ def download_mouse_info(mouse_name, username, password=None, suffix='autodownloa
     web.click('Run Live', tag='span')
     # long sleep timer to allow it to run
     print('Running query')
-    time.sleep(5)  # seconds
+    time.sleep(query_time)  # seconds
 
     # Checks to see if required button exists
     exists = web.exists(xpath="/html/body/div[3]/div[4]/div/div/div/div[2]/div[3]/div[4]/button")
@@ -63,7 +66,9 @@ def get_mouse_df(mouse_name, username, password=None):
     if len(fnames) > 1:
         raise IOError('Multiple file found. Please remove old downloads with similar name '
                       '(i.e. starting with %s' % (mouse_name + '_get_mouse_df_file'))
-
+    if not len(fnames):
+        raise IOError('Cannot find downloaded file starting with %s in this download folder:\n%s' % (
+                mouse_name + '_get_mouse_df_file', PARAMETERS['download_folder']))
     # read this file and delete it
     mcms_file = os.path.join(PARAMETERS['download_folder'], fnames[0])
     mouse_data = pd.read_csv(mcms_file)
