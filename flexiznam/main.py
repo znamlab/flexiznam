@@ -97,7 +97,7 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
     if session is None:
         session = get_session(project_id, username, password)
 
-    expts = format_results(session.get({'type': 'session'}))
+    expts = format_results(session.get(datatype='session'))
 
     if mouse is None:
         return expts
