@@ -28,8 +28,7 @@ This file can be edited manually or using `flexiznam.config.update_config`. The 
 
 ## Password management
 
-To simplify the interaction with MCSM and flexilims, you can store a copy of you passwords in `~/.flexiznam/secret_password.yml`. You can edit the file manualy
-or use the CLI:
+To simplify the interaction with MCSM and flexilims, you can store a copy of you passwords in `~/.flexiznam/secret_password.yml`. This file can be created and edited manualy. It needs to be a yml file formatted like the template in `flexiznam.config`. Alternatively on can use the CLI:
 
 `flexiznam add-password --app mcms --username myname --password uniquepassword`
 
