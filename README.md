@@ -23,12 +23,14 @@ To check that the install is successful you can type `flexiznam --help` in a ter
 ## Configuration
 
 The default configuration settings can be created simply by running: `flexiznam config`. This will create a `~/.flexiznam` directory with a `config.yml` file.
+
 This file can be edited manually or using `flexiznam.config.update_config`. The option should be self explaining but in doubt, see the comments in `flexiznam.config.default_config.py`.
 
 ## Password management
 
 To simplify the interaction with MCSM and flexilims, you can store a copy of you passwords in `~/.flexiznam/secret_password.yml`. You can edit the file manualy
 or use the CLI:
+
 `flexiznam add-password --app mcms --username myname --password uniquepassword`
 
 # Usage
