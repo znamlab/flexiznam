@@ -57,7 +57,7 @@ def get_mice(project_id=None, username=None, session=None, password=None):
     if session is None:
         session = get_session(project_id, username, password)
 
-    mice = format_results(session.get(dict(type='mouse')))
+    mice = format_results(session.get(datatype='mouse'))
     if len(mice):
         mice.set_index('name', drop=False, inplace=True)
     return mice
