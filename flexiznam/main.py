@@ -13,7 +13,7 @@ def _format_project(project_id, prm):
     return project_id
 
 
-def get_session(project_id, username, password):
+def get_session(project_id, username=None, password=None):
     project_id = _format_project(project_id, PARAMETERS)
     if username is None:
         username = PARAMETERS['flexilims_username']
@@ -23,8 +23,7 @@ def get_session(project_id, username, password):
     return session
 
 
-def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
-              flexilims_username=None, mcms_username=None,
+def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None, flexilims_username=None, mcms_username=None,
               flexilims_password=None):
     """Check if a mouse is already in the database and add it if it isn't"""
 
@@ -51,76 +50,17 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
     return resp
 
 
-def add_session(mouse_name, date, project_id=None, session=None,
-                password=None, username=None):
-    """
-    Add a new session as a child entity of a mouse
-    """
-    if session is None:
-        session = get_session(project_id, username, password)
+def get_mice(project_id=None, username=None, session=None, password=None):
+    """Get mouse info and format it"""
 
-    mouse_id = get_id(mouse_name, datatype='mouse', session=session)
-
-    sessions_num = 0
-    while len(get_entities(
-        session=session,
-        datatype='session',
-        query_key='name',
-        query_value=mouse_name + '_' + date + '_' str(session_num))):
-        # session with this name already exists, increment the number
-        sessions_num += 1
-
-    session_name = mouse_name + '_' + date + '_' str(session_num)
-
-    session_info = { 'date': date, }
-    resp = session.post(
-        datatype='session',
-        name=session_name,
-        origin_id=mouse_id,
-        attributes=session_info)
-    return resp
-
-def add_recording(session_id, recording_type, protocol,
-                project_id=None, session=None, password=None, username=None):
-    raise NotImplementedError()
-
-
-def get_entities(datatype='mouse', query_key=None, query_value=None,
-        project_id=None, username=None, session=None, password=None):
-    """
-    Get entities of a given type and format results.
-
-    If an open Flexylims session is provided, the other authentication arguments
-    aree not needed (or used)
-
-    Args:
-        datatype (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
-            'recording', or 'dataset'
-        query_key (str): attribute to filter by
-        query_value (str): attribute value to select
-        project_id (str): text name of the project
-        username (str): Flexylims username
-        session (Flexilims): Flexylims session object
-        password (str): Flexylims password
-
-    Returns:
-        DataFrame: containing all matching entities
-    """
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
-    if query_key is None:
-        results = format_results(session.get(datatype))
-    else:
-        results = format_results(session.get(
-                        datatype,
-                        query_key=query_key,
-                        query_value=query_value
-                        ))
 
-    if len(results):
-        results.set_index('name', drop=False, inplace=True)
-    return results
+    mice = format_results(session.get(datatype='mouse'))
+    if len(mice):
+        mice.set_index('name', drop=False, inplace=True)
+    return mice
 
 
 def format_results(results):
@@ -135,66 +75,32 @@ def format_results(results):
     return df
 
 
-def get_id(name, datatype='mouse', project_id=None, username=None, session=None, password=None):
-    """Get database ID for entity by name"""
+def get_mouse_id(mouse_name, project_id=None, username=None, session=None, password=None):
+    """Get database ID for mouse by name"""
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
 
-    entities = get_entities(datatype=datatype,
-                            session=session,
-                            query_key='name',
-                            query_value=name)
-    if len(entities) != 1:
+    mice = get_mice(session=session)
+    matching_mice = mice[mice['name'] == mouse_name]
+    if len(matching_mice) != 1:
         raise NameNotUniqueException(
-            'ERROR: Found {num} entities of type {datatype} with name {name}!'
-            .format(num=len(entities), datatype=datatype, name=name))
-        return None
-    else:
-        return entities['id'][0]
+            'ERROR: Found {num} mice with name {name}!'
+            .format(num=len(matching_mice), name=mouse_name))
+    return matching_mice['id'][0]
 
 
 def get_experimental_sessions(project_id=None, username=None, session=None, password=None,
-        mouse=None):
+                              mouse=None):
     """Get all sessions from a given mouse"""
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
 
+    expts = format_results(session.get({'type': 'session'}))
+
     if mouse is None:
-        expts = format_results(session.get('session'))
+        return expts
     else:
-        mouse_id = get_id(mouse, datatype='mouse', session=session)
-        expts = format_results(session.get(
-                    'session',
-                    query_key=origin,
-                    query_value=mouse_id
-                    ))
-    return expts
-
-
-def get_children(parent_id, children_datatype, project_id=None, username=None,
-        session=None, password=None):
-    """
-    Get all entries belonging to a particular parent entity
-
-    Args:
-        parent_id (str): hexadecimal id of the parent entity
-        children_datatype (str): type of child entities to fetch
-        project_id (str): text name of the project
-        username (str): Flexylims username
-        session (Flexilims): Flexylims session object
-        password (str): Flexylims password
-
-    Returns:
-        DataFrame: containing all the relevant child entitites
-    """
-    assert (project_id is not None) or (session is not None)
-    if session is None:
-        session = get_session(project_id, username, password)
-
-    results = format_results(session.get(
-                    children_datatype,
-                    query_key='origin',
-                    query_value=parent_id))
-    return results
+        mouse_id = get_mouse_id(mouse, session=session)
+        return expts[expts['origin'] == mouse_id]
