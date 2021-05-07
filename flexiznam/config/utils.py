@@ -70,7 +70,21 @@ def add_password(app, username, password, password_file=None):
     return password_file
 
 
-def create_config(overwrite=False, target=None, template=None, **kwargs):
+def update_config(param_file=None, skip_checks=False, **kwargs):
+    """Update the current configuration
+
+    You can give any keyword arguments. For nested levels, provide a dictionary (of dictionaries)
+    For instance:
+    update_config(project_ids=dict(my_project='its_id'))
+
+    will add the new project into the project_ids dictionary without removing existing projects.
+
+    If you want to replace a nested field by a flat structure, use the skip_checks=True flag
+    """
+    create_config(target=param_file, overwrite=True, template=param_file, skip_checks=skip_checks, **kwargs)
+
+
+def create_config(overwrite=False, target=None, template=None, skip_checks=False, **kwargs):
     """Create a config file based on a template
 
     If no template is provided, use ./config/default_config.py to generate a new config file
@@ -82,7 +96,7 @@ def create_config(overwrite=False, target=None, template=None, **kwargs):
             cfg = yaml.safe_load(tpl_file)
     else:
         cfg = DEFAULT_CONFIG
-    cfg = _recursive_update(cfg, kwargs)
+    cfg = _recursive_update(cfg, kwargs, skip_checks=skip_checks)
 
     if target is None:
         home = pathlib.Path.home() / '.flexiznam'
@@ -95,12 +109,14 @@ def create_config(overwrite=False, target=None, template=None, **kwargs):
         yaml.dump(cfg, cfg_yml)
 
 
-def _recursive_update(source, new_values):
+def _recursive_update(source, new_values, skip_checks=False):
     """Update dict of dict recursively"""
     for k, v in new_values.items():
         if isinstance(v, dict):
             source[k] = _recursive_update(source.get(k, {}), v)
         else:
+            if not skip_checks:
+                assert not isinstance(source.get(k, None), dict)
             source[k] = v
     return source
 

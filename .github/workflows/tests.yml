@@ -36,7 +36,7 @@ jobs:
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f setup.py ]; then pip install .; fi
-        flexiznam config --template ./flexiznam/config/config_example.yml
+        flexiznam config
         echo created
         flexiznam add-password -a flexilims -u blota -p "$FLEXILIM_PASS"
     - name: Lint with flake8
