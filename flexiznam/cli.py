@@ -1,6 +1,8 @@
 import click
 import yaml
-from flexiznam import utils, errors, main
+from flexiznam import errors, main
+from flexiznam.config import utils
+
 
 @click.group()
 def cli():

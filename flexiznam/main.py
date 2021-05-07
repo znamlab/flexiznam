@@ -1,7 +1,7 @@
 import pandas as pd
 import flexilims as flm
 from flexiznam import mcms
-from flexiznam.utils import PARAMETERS, get_password
+from flexiznam.config.utils import PARAMETERS, get_password
 from flexiznam.errors import NameNotUniqueException
 
 
