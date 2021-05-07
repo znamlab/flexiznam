@@ -1,6 +1,6 @@
 import pytest
 import flexiznam.main as fzn
-from flexiznam.config.utils import PARAMETERS
+from flexiznam.config import PARAMETERS
 
 
 @pytest.mark.integtest

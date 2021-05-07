@@ -2,8 +2,7 @@ import os
 import pathlib
 import shutil
 import tempfile
-from flexiznam.config import utils
-from flexiznam.config.default_config import config as DEFAULT_CONFIG
+from flexiznam.config import utils, DEFAULT_CONFIG
 
 
 def test_create_config():

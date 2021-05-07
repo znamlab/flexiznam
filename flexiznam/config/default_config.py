@@ -2,9 +2,9 @@
 This file is used to generate the initial config file
 """
 
-config = dict(
+DEFAULT_CONFIG = dict(
     # MCMS configuration:
-    download_folder='~/Downloads',
+    download_folder='~/Downloads',  # folder use to download files by your default web browser
     mcms_username='ab8',
     # Flexilims configuration
     # If you want to access projects by name, add their hexadecimal ID here:
@@ -14,4 +14,6 @@ config = dict(
                  },
     # a default username can be specified
     flexilims_username='blota',
+    # the root path to the `project` folder on CAMP
+    projects_root='/camp/lab/znamenskiyp/home/shared/projects',
 )

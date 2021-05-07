@@ -3,7 +3,8 @@ import pathlib
 import sys
 import yaml
 from flexiznam.errors import ConfigurationError
-from flexiznam.config.default_config import config as DEFAULT_CONFIG
+from flexiznam.config.default_config import DEFAULT_CONFIG
+
 
 def _find_file(file_name):
     """Find a file by looking first in the current directory, then in the ~/.config folder
@@ -128,3 +129,5 @@ try:
 except ConfigurationError:
     print('Could not load the parameters. Check your configuration file')
     PARAMETERS = {}
+
+__all__ = ['load_param', 'get_password', 'add_password', 'update_config', 'create_config', 'PARAMETERS']
