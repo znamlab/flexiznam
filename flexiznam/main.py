@@ -60,13 +60,13 @@ def add_experimental_session(mouse_name, date, project_id=None, session=None,
 
     mouse_id = get_id(mouse_name, datatype='mouse', session=session)
 
-    sessions_num = 0
+    session_num = 0
     while len(get_entities(
         session=session,
         datatype='session',
         name=mouse_name + '_' + date + '_' + str(session_num))):
         # session with this name already exists, increment the number
-        sessions_num += 1
+        session_num += 1
 
     session_name = mouse_name + '_' + date + '_' + str(session_num)
 
@@ -170,14 +170,25 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
-    results = format_results(session.get(
-                    datatype,
-                    query_key=query_key,
-                    query_value=query_value,
-                    name=name,
-                    origin_id=origin_id,
-                    id=id
-                    ))
+    # Awaiting implementation on the flexilims side:
+    # results = format_results(session.get(
+    #                 datatype,
+    #                 query_key=query_key,
+    #                 query_value=query_value,
+    #                 name=name,
+    #                 origin_id=origin_id,
+    #                 id=id
+    #                 ))
+    # Temporary implementaiton:
+    results = format_results(session.get(datatype))
+    if (query_key is not None) and (query_value is not None):
+        results = results[results[query_key]==query_value]
+    if name is not None:
+        results = results[results['name']==name]
+    if id is not None:
+        results = results[results['id']==id]
+    if origin_id is not None:
+        results = results[results['origin']==origin_id]
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
