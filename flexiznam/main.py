@@ -23,8 +23,8 @@ def get_session(project_id, username=None, password=None):
     return session
 
 
-def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None, flexilims_username=None, mcms_username=None,
-              flexilims_password=None):
+def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
+              flexilims_username=None, mcms_username=None, flexilims_password=None):
     """Check if a mouse is already in the database and add it if it isn't"""
 
     if session is None:
@@ -50,7 +50,7 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None, flexi
     return resp
 
 
-def add_session(mouse_name, date, project_id=None, session=None,
+def add_experimental_session(mouse_name, date, project_id=None, session=None,
                 password=None, username=None):
     """
     Add a new session as a child entity of a mouse
@@ -65,11 +65,11 @@ def add_session(mouse_name, date, project_id=None, session=None,
         session=session,
         datatype='session',
         query_key='name',
-        query_value=mouse_name + '_' + date + '_' str(session_num))):
+        query_value=mouse_name + '_' + date + '_' + str(session_num))):
         # session with this name already exists, increment the number
         sessions_num += 1
 
-    session_name = mouse_name + '_' + date + '_' str(session_num)
+    session_name = mouse_name + '_' + date + '_' + str(session_num)
 
     session_info = { 'date': date, }
     resp = session.post(
@@ -81,12 +81,35 @@ def add_session(mouse_name, date, project_id=None, session=None,
 
 
 def add_recording(session_id, recording_type, protocol,
-                project_id=None, session=None, password=None, username=None):
-    raise NotImplementedError()
+                  project_id=None, session=None, password=None, username=None):
+    """
+    Add a recording as a child of an experimental session
+    """
+    if session is None:
+        session = get_session(project_id, username, password)
+
+    recording_num = 0
+    while len(get_entities(
+        session=session,
+        datatype='recording',
+        query_key='name',
+        query_value=mouse_name + '_' + date + '_' + protocol + '_' + str(recording_num))):
+        # session with this name already exists, increment the number
+        recording_num += 1
+
+    recording_name = mouse_name + '_' + date + '_' + protocol + '_' + str(recording_num)))
+
+    recording_info = { 'recording_type': recording_type, 'protocol': protocol }
+    resp = session.post(
+        datatype='recording',
+        name=recording_name,
+        origin_id=session_id,
+        attributes=recording_info)
+    return resp
 
 
 def get_entities(datatype='mouse', query_key=None, query_value=None,
-        project_id=None, username=None, session=None, password=None):
+                 project_id=None, username=None, session=None, password=None):
     """
     Get entities of a given type and format results.
 
@@ -117,7 +140,6 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
                         query_key=query_key,
                         query_value=query_value
                         ))
-
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
@@ -171,7 +193,7 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
 
 
 def get_children(parent_id, children_datatype, project_id=None, username=None,
-        session=None, password=None):
+                 session=None, password=None):
     """
     Get all entries belonging to a particular parent entity
 
