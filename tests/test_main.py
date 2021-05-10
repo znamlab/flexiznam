@@ -32,12 +32,12 @@ def test_get_experimental_sessions():
 
 
 @pytest.mark.integtest
-def test_get_mice():
-    mice_df = fzn.get_mice(project_id=PARAMETERS['project_ids']['test'])
+def test_get_entities():
+    mice_df = fzn.get_entities(project_id=PARAMETERS['project_ids']['test'], datatype='mouse')
     assert mice_df.shape == (2, 70)
 
 
 @pytest.mark.integtest
 def test_get_mouse_id():
-    mid = fzn.get_mouse_id(mouse_name='test_mouse', project_id=PARAMETERS['project_ids']['test'])
+    mid = fzn.get_id(name='test_mouse', project_id=PARAMETERS['project_ids']['test'])
     assert mid == '6094f7212597df357fa24a8c'

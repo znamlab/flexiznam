@@ -29,7 +29,7 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
 
     if session is None:
         session = get_session(project_id, flexilims_username, flexilims_password)
-    mice_df = get_mice(session=session)
+    mice_df = get_entities(session=session, datatype='mouse')
     if mouse_name in mice_df.index:
         return mice_df.loc[mouse_name]
 
