@@ -1,9 +1,8 @@
-import pytest
 import os
 import pathlib
 import shutil
 import tempfile
-from flexiznam import utils
+from flexiznam.config import utils
 
 
 def test_create_config():

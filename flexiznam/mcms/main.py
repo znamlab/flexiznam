@@ -2,7 +2,7 @@ import os
 import time
 import pandas as pd
 from webbot import Browser
-from flexiznam.utils import PARAMETERS, get_password
+from flexiznam.config.utils import PARAMETERS, get_password
 
 
 BASE_URL = 'https://crick.colonymanagement.org/mouse/'

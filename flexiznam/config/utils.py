@@ -3,7 +3,7 @@ import pathlib
 import sys
 import yaml
 from flexiznam.errors import ConfigurationError
-
+from flexiznam.config.default_config import config as DEFAULT_CONFIG
 
 def _find_file(file_name):
     """Find a file by looking first in the current directory, then in the ~/.config folder
@@ -73,16 +73,15 @@ def add_password(app, username, password, password_file=None):
 def create_config(overwrite=False, target=None, template=None, **kwargs):
     """Create a config file based on a template
 
-    If no template is provided, use ./config/config_example.yml
+    If no template is provided, use ./config/default_config.py to generate a new config file
 
     **kwargs elements are used to update/supplement infos found in the template
     """
-    if template is None:
-        template = _find_file('config_example.yml')
-    if not os.path.isfile(template):
-        raise ConfigurationError('Cannot find template example configuration file')
-    with open(template, 'r') as tpl_file:
-        cfg = yaml.safe_load(tpl_file)
+    if template is not None:
+        with open(template, 'r') as tpl_file:
+            cfg = yaml.safe_load(tpl_file)
+    else:
+        cfg = DEFAULT_CONFIG
     cfg = _recursive_update(cfg, kwargs)
 
     if target is None:
