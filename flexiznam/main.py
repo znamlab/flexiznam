@@ -64,8 +64,7 @@ def add_experimental_session(mouse_name, date, project_id=None, session=None,
     while len(get_entities(
         session=session,
         datatype='session',
-        query_key='name',
-        query_value=mouse_name + '_' + date + '_' + str(session_num))):
+        name=mouse_name + '_' + date + '_' + str(session_num))):
         # session with this name already exists, increment the number
         sessions_num += 1
 
@@ -92,8 +91,7 @@ def add_recording(session_id, recording_type, protocol,
     while len(get_entities(
         session=session,
         datatype='recording',
-        query_key='name',
-        query_value=mouse_name + '_' + date + '_' + protocol + '_' + str(recording_num))):
+        name=mouse_name + '_' + date + '_' + protocol + '_' + str(recording_num))):
         # session with this name already exists, increment the number
         recording_num += 1
 
@@ -109,7 +107,8 @@ def add_recording(session_id, recording_type, protocol,
 
 
 def get_entities(datatype='mouse', query_key=None, query_value=None,
-                 project_id=None, username=None, session=None, password=None):
+                 project_id=None, username=None, session=None, password=None,
+                 name=None, origin_id=None, id=None):
     """
     Get entities of a given type and format results.
 
@@ -132,14 +131,14 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     assert (project_id is not None) or (session is not None)
     if session is None:
         session = get_session(project_id, username, password)
-    if query_key is None:
-        results = format_results(session.get(datatype))
-    else:
-        results = format_results(session.get(
-                        datatype,
-                        query_key=query_key,
-                        query_value=query_value
-                        ))
+    results = format_results(session.get(
+                    datatype,
+                    query_key=query_key,
+                    query_value=query_value,
+                    name=name,
+                    origin_id=origin_id,
+                    id=id
+                    ))
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
@@ -165,8 +164,7 @@ def get_id(name, datatype='mouse', project_id=None, username=None, session=None,
 
     entities = get_entities(datatype=datatype,
                             session=session,
-                            query_key='name',
-                            query_value=name)
+                            name=name)
     if len(entities) != 1:
         raise NameNotUniqueException(
             'ERROR: Found {num} entities of type {datatype} with name {name}!'
@@ -188,7 +186,7 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
     if mouse is None:
         return expts
     else:
-        mouse_id = get_mouse_id(mouse, session=session)
+        mouse_id = get_id(mouse, session=session)
         return expts[expts['origin'] == mouse_id]
 
 
@@ -214,6 +212,5 @@ def get_children(parent_id, children_datatype, project_id=None, username=None,
 
     results = format_results(session.get(
                     children_datatype,
-                    query_key='origin',
-                    query_value=parent_id))
+                    origin_id=parent_id))
     return results
