@@ -108,7 +108,7 @@ def add_recording(session_id, recording_type, protocol,
     return resp
 
 
-def add_dataset(recording_id, dataset_type, created, path, is_raw='yes'
+def add_dataset(recording_id, dataset_type, created, path, is_raw='yes',
                   project_id=None, session=None, password=None, username=None):
     """
     Add a dataset as a child of a recording
