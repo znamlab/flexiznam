@@ -87,15 +87,17 @@ def add_recording(session_id, recording_type, protocol,
     if session is None:
         session = get_session(project_id, username, password)
 
+    session_name = get_entities(session=session, datatype='session', id=session_id)['name'][0]
+
     recording_num = 0
     while len(get_entities(
         session=session,
         datatype='recording',
-        name=mouse_name + '_' + date + '_' + protocol + '_' + str(recording_num))):
+        name=session_name + '_' + protocol + '_' + str(recording_num))):
         # session with this name already exists, increment the number
         recording_num += 1
 
-    recording_name = mouse_name + '_' + date + '_' + protocol + '_' + str(recording_num)))
+    recording_name = session_name + '_' + protocol + '_' + str(recording_num)
 
     recording_info = { 'recording_type': recording_type, 'protocol': protocol }
     resp = session.post(
@@ -103,6 +105,40 @@ def add_recording(session_id, recording_type, protocol,
         name=recording_name,
         origin_id=session_id,
         attributes=recording_info)
+    return resp
+
+
+def add_dataset(recording_id, dataset_type, created, path, is_raw='yes'
+                  project_id=None, session=None, password=None, username=None):
+    """
+    Add a dataset as a child of a recording
+    """
+    if session is None:
+        session = get_session(project_id, username, password)
+
+    recording_name = get_entities(session=session, datatype='recording', id=recording_id)['name'][0]
+
+    dataset_num = 0
+    while len(get_entities(
+        session=session,
+        datatype='dataset',
+        name=recording_name + '_' + dataset_type + '_' + str(dataset_num))):
+        # session with this name already exists, increment the number
+        dataset_num += 1
+
+    dataset_name = recording_name + '_' + dataset_type + '_' + str(dataset_num)
+
+    dataset_info = {
+        'dataset_type': dataset_type,
+        'created': created,
+        'path': path,
+        'is_raw': is_raw
+    }
+    resp = session.post(
+        datatype='dataset',
+        name=dataset_name,
+        origin_id=recording_id,
+        attributes=dataset_info)
     return resp
 
 
@@ -124,6 +160,9 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
         username (str): Flexylims username
         session (Flexilims): Flexylims session object
         password (str): Flexylims password
+        name (str): filter by name
+        origin_id (str): filter by origin / parent
+        id (str): filter by hexadecimal id
 
     Returns:
         DataFrame: containing all matching entities
