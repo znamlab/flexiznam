@@ -5,7 +5,7 @@ Znam lab tool to interact with flexilims
 
 In brief, you can follow the `setup.sh`. For clarifications see below
 
-## Installation 
+## Installation
 
 In you favorite `conda` or `venv`, clone the repository and `pip` install:
 
@@ -18,7 +18,7 @@ pip install -e .
 
 Don't forget to use the `-e` flag when installing flexiznam if you want to be able to edit the code.
 
-To check that the install is successful you can type `flexiznam --help` in a terminal. You can also start python and `import flexiznam`. 
+To check that the install is successful you can type `flexiznam --help` in a terminal. You can also start python and `import flexiznam`.
 
 ## Configuration
 
@@ -33,6 +33,9 @@ To simplify the interaction with MCSM and flexilims, you can store a copy of you
 `flexiznam add-password --app mcms --username myname --password uniquepassword`
 
 # Usage
+
+## Creating and logging data
+See the [data management](docs/data_management.md) guide.
 
 ## mcms
 
