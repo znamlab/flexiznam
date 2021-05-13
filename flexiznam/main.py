@@ -173,24 +173,24 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     if session is None:
         session = get_session(project_id, username, password)
     # Awaiting implementation on the flexilims side:
-    # results = format_results(session.get(
-    #                 datatype,
-    #                 query_key=query_key,
-    #                 query_value=query_value,
-    #                 name=name,
-    #                 origin_id=origin_id,
-    #                 id=id
-    #                 ))
+    results = format_results(session.get(
+                    datatype,
+                    query_key=query_key,
+                    query_value=query_value,
+                    name=name,
+                    origin_id=origin_id,
+                    id=id
+                    ))
     # Temporary implementaiton:
-    results = format_results(session.get(datatype))
-    if (query_key is not None) and (query_value is not None):
-        results = results[results[query_key]==query_value]
-    if name is not None:
-        results = results[results['name']==name]
-    if id is not None:
-        results = results[results['id']==id]
-    if origin_id is not None:
-        results = results[results['origin']==origin_id]
+    # results = format_results(session.get(datatype))
+    # if (query_key is not None) and (query_value is not None):
+    #     results = results[results[query_key]==query_value]
+    # if name is not None:
+    #     results = results[results['name']==name]
+    # if id is not None:
+    #     results = results[results['id']==id]
+    # if origin_id is not None:
+    #     results = results[results['origin']==origin_id]
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
