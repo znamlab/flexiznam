@@ -108,27 +108,28 @@ def add_recording(session_id, recording_type, protocol, recording_name=None,
     return resp
 
 
-def add_dataset(recording_id, dataset_type, created, path, is_raw='yes',
-                  project_id=None, session=None, password=None, username=None,
-                  dataset_name=None):
+def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
+                project_id=None, session=None, password=None, username=None,
+                dataset_name=None, attributes=None):
     """
-    Add a dataset as a child of a recording
+    Add a dataset as a child of a recording or session
     """
     if session is None:
         session = get_session(project_id, username, password)
 
     if dataset_name is None:
-        recording_name = get_entities(
-            session=session, datatype='recording', id=recording_id
-            )['name'][0]
+        parent_name = pd.concat([
+            get_entities(session=session, datatype='recording', id=parent_id),
+            get_entities(session=session, datatype='session', id=parent_id)
+            ])['name'][0]
         dataset_num = 0
         while len(get_entities(
             session=session,
             datatype='dataset',
-            name=recording_name + '_' + dataset_type + '_' + str(dataset_num))):
+            name=parent_name + '_' + dataset_type + '_' + str(dataset_num))):
             # session with this name already exists, increment the number
             dataset_num += 1
-        dataset_name = recording_name + '_' + dataset_type + '_' + str(dataset_num)
+        dataset_name = parent_name + '_' + dataset_type + '_' + str(dataset_num)
 
     dataset_info = {
         'dataset_type': dataset_type,
@@ -136,10 +137,16 @@ def add_dataset(recording_id, dataset_type, created, path, is_raw='yes',
         'path': path,
         'is_raw': is_raw
     }
+    reserved_attributes = ['dataset_type', 'created', 'path', 'is_raw']
+    if attributes is not None:
+        for attribute in attributes:
+            assert attribute not in reserved_attributes
+            dataset_info[attribute] = attributes[attribute]
+
     resp = session.post(
         datatype='dataset',
         name=dataset_name,
-        origin_id=recording_id,
+        origin_id=parent_id,
         attributes=dataset_info)
     return resp
 
@@ -181,16 +188,6 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
                     origin_id=origin_id,
                     id=id
                     ))
-    # Temporary implementaiton:
-    # results = format_results(session.get(datatype))
-    # if (query_key is not None) and (query_value is not None):
-    #     results = results[results[query_key]==query_value]
-    # if name is not None:
-    #     results = results[results['name']==name]
-    # if id is not None:
-    #     results = results[results['id']==id]
-    # if origin_id is not None:
-    #     results = results[results['origin']==origin_id]
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
