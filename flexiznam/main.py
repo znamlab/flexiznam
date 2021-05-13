@@ -147,7 +147,8 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
         datatype='dataset',
         name=dataset_name,
         origin_id=parent_id,
-        attributes=dataset_info)
+        attributes=dataset_info,
+        strict_validation=False)
     return resp
 
 
