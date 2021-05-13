@@ -7,7 +7,7 @@ In brief, you can follow the `setup.sh`. For clarifications see below
 
 ## Installation
 
-In you favorite `conda` or `venv`, clone the repository and `pip` install:
+To create a standalone installation, in you favorite `conda` or `venv`, clone the repository and `pip` install:
 
 ```
 git clone git@github.com:znamlab/flexiznam.git
@@ -19,6 +19,16 @@ pip install -e .
 Don't forget to use the `-e` flag when installing flexiznam if you want to be able to edit the code.
 
 To check that the install is successful you can type `flexiznam --help` in a terminal. You can also start python and `import flexiznam`.
+
+If you want to install flexiznam to use it in another repository, then run the following with the corresponding virtual environment active:
+```
+pip install git+ssh://git@github.com/znamlab/flexiznam.git
+```
+
+Once flexiznam is install, you can also use pip to keep the package updated:
+```
+pip install --upgrade git+ssh://git@github.com/znamlab/flexiznam.git
+```
 
 ## Configuration
 
