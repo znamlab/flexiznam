@@ -249,7 +249,7 @@ def get_experimental_sessions(project_id=None, username=None, session=None, pass
         return expts
     else:
         mouse_id = get_id(mouse, session=session)
-        return expts[expts['origin'] == mouse_id]
+        return expts[expts['origin_id'] == mouse_id]
 
 
 def get_children(parent_id, children_datatype, project_id=None, username=None,
