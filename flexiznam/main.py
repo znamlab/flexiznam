@@ -288,14 +288,14 @@ def get_datasets(origin_id, recording_type=None, dataset_type=None,
         session = get_session(project_id, username, password)
     else:
         project_id = _lookup_project(session.project_id, PARAMETERS)
-    recordings = flz.get_entities(datatype='recording',
+    recordings = get_entities(datatype='recording',
                                   origin_id=origin_id,
                                   query_key='recording_type',
                                   query_value=recording_type,
                                   session=session)
     datapath_dict = {}
     for recording_id in recordings['id']:
-        datasets = flz.get_entities(datatype='dataset',
+        datasets = get_entities(datatype='dataset',
                          origin_id=recording_id,
                          query_key='dataset_type',
                          query_value=dataset_type,
