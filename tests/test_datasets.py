@@ -29,3 +29,8 @@ def test_dataset():
     ds = datasets.Dataset(name='test_ran_on_20210513_113928_dataset', path='fake/path', is_raw='no',
                           dataset_type='camera', extra_attributes={}, created='')
     assert ds.project_id is None
+
+
+@pytest.mark.integtest
+def test_camera():
+    ds = datasets.Camera.from_folder(TEST_FOLDER)
