@@ -1,3 +1,4 @@
+import pytest
 import pathlib
 from flexiznam import datasets
 from flexiznam.config import PARAMETERS
@@ -6,6 +7,7 @@ from flexiznam.config import PARAMETERS
 TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210510/R184337'
 
 
+@pytest.mark.integtest
 def test_dataset():
     ds = datasets.Dataset(project='test', name='test_ran_on_20210513_113928_dataset', path='fake/path', is_raw='no',
                           dataset_type='camera', extra_attributes={}, created='')
