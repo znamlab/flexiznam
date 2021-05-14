@@ -1,5 +1,6 @@
 import pandas as pd
 import flexilims as flm
+from pathlib import Path
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import NameNotUniqueException
@@ -11,6 +12,17 @@ def _format_project(project_id, prm):
     if project_id is None or len(project_id) != 24:
         raise AttributeError('Invalid project: "%s"' % project_id)
     return project_id
+
+
+def _lookup_project(project_id, prm):
+    """
+    Look up project name by hexadecimal id
+    """
+    try:
+        proj = next(proj for proj, id in prm['project_ids'].items() if id == project_id)
+        return proj
+    except StopIteration:
+        return None
 
 
 def get_session(project_id, username=None, password=None):
@@ -51,7 +63,7 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
 
 
 def add_experimental_session(mouse_name, date, project_id=None, session=None,
-                password=None, username=None):
+                password=None, username=None, session_name=None):
     """
     Add a new session as a child entity of a mouse
     """
@@ -59,16 +71,15 @@ def add_experimental_session(mouse_name, date, project_id=None, session=None,
         session = get_session(project_id, username, password)
 
     mouse_id = get_id(mouse_name, datatype='mouse', session=session)
-
-    session_num = 0
-    while len(get_entities(
-        session=session,
-        datatype='session',
-        name=mouse_name + '_' + date + '_' + str(session_num))):
-        # session with this name already exists, increment the number
-        session_num += 1
-
-    session_name = mouse_name + '_' + date + '_' + str(session_num)
+    if session_name is None:
+        session_num = 0
+        while len(get_entities(
+            session=session,
+            datatype='session',
+            name=mouse_name + '_' + date + '_' + str(session_num))):
+            # session with this name already exists, increment the number
+            session_num += 1
+        session_name = mouse_name + '_' + date + '_' + str(session_num)
 
     session_info = { 'date': date, }
     resp = session.post(
@@ -79,7 +90,7 @@ def add_experimental_session(mouse_name, date, project_id=None, session=None,
     return resp
 
 
-def add_recording(session_id, recording_type, protocol,
+def add_recording(session_id, recording_type, protocol, recording_name=None,
                   project_id=None, session=None, password=None, username=None):
     """
     Add a recording as a child of an experimental session
@@ -87,17 +98,18 @@ def add_recording(session_id, recording_type, protocol,
     if session is None:
         session = get_session(project_id, username, password)
 
-    session_name = get_entities(session=session, datatype='session', id=session_id)['name'][0]
-
-    recording_num = 0
-    while len(get_entities(
-        session=session,
-        datatype='recording',
-        name=session_name + '_' + protocol + '_' + str(recording_num))):
-        # session with this name already exists, increment the number
-        recording_num += 1
-
-    recording_name = session_name + '_' + protocol + '_' + str(recording_num)
+    if recording_name is None:
+        session_name = get_entities(
+            session=session, datatype='session', id=session_id
+            )['name'][0]
+        recording_num = 0
+        while len(get_entities(
+            session=session,
+            datatype='recording',
+            name=session_name + '_' + protocol + '_' + str(recording_num))):
+            # session with this name already exists, increment the number
+            recording_num += 1
+        recording_name = session_name + '_' + protocol + '_' + str(recording_num)
 
     recording_info = { 'recording_type': recording_type, 'protocol': protocol }
     resp = session.post(
@@ -108,25 +120,28 @@ def add_recording(session_id, recording_type, protocol,
     return resp
 
 
-def add_dataset(recording_id, dataset_type, created, path, is_raw='yes',
-                  project_id=None, session=None, password=None, username=None):
+def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
+                project_id=None, session=None, password=None, username=None,
+                dataset_name=None, attributes=None):
     """
-    Add a dataset as a child of a recording
+    Add a dataset as a child of a recording or session
     """
     if session is None:
         session = get_session(project_id, username, password)
 
-    recording_name = get_entities(session=session, datatype='recording', id=recording_id)['name'][0]
-
-    dataset_num = 0
-    while len(get_entities(
-        session=session,
-        datatype='dataset',
-        name=recording_name + '_' + dataset_type + '_' + str(dataset_num))):
-        # session with this name already exists, increment the number
-        dataset_num += 1
-
-    dataset_name = recording_name + '_' + dataset_type + '_' + str(dataset_num)
+    if dataset_name is None:
+        parent_name = pd.concat([
+            get_entities(session=session, datatype='recording', id=parent_id),
+            get_entities(session=session, datatype='session', id=parent_id)
+            ])['name'][0]
+        dataset_num = 0
+        while len(get_entities(
+            session=session,
+            datatype='dataset',
+            name=parent_name + '_' + dataset_type + '_' + str(dataset_num))):
+            # session with this name already exists, increment the number
+            dataset_num += 1
+        dataset_name = parent_name + '_' + dataset_type + '_' + str(dataset_num)
 
     dataset_info = {
         'dataset_type': dataset_type,
@@ -134,11 +149,18 @@ def add_dataset(recording_id, dataset_type, created, path, is_raw='yes',
         'path': path,
         'is_raw': is_raw
     }
+    reserved_attributes = ['dataset_type', 'created', 'path', 'is_raw']
+    if attributes is not None:
+        for attribute in attributes:
+            assert attribute not in reserved_attributes
+            dataset_info[attribute] = attributes[attribute]
+
     resp = session.post(
         datatype='dataset',
         name=dataset_name,
-        origin_id=recording_id,
-        attributes=dataset_info)
+        origin_id=parent_id,
+        attributes=dataset_info,
+        strict_validation=False)
     return resp
 
 
@@ -171,24 +193,14 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     if session is None:
         session = get_session(project_id, username, password)
     # Awaiting implementation on the flexilims side:
-    # results = format_results(session.get(
-    #                 datatype,
-    #                 query_key=query_key,
-    #                 query_value=query_value,
-    #                 name=name,
-    #                 origin_id=origin_id,
-    #                 id=id
-    #                 ))
-    # Temporary implementaiton:
-    results = format_results(session.get(datatype))
-    if (query_key is not None) and (query_value is not None):
-        results = results[results[query_key]==query_value]
-    if name is not None:
-        results = results[results['name']==name]
-    if id is not None:
-        results = results[results['id']==id]
-    if origin_id is not None:
-        results = results[results['origin']==origin_id]
+    results = format_results(session.get(
+                    datatype,
+                    query_key=query_key,
+                    query_value=query_value,
+                    name=name,
+                    origin_id=origin_id,
+                    id=id
+                    ))
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
@@ -264,3 +276,36 @@ def get_children(parent_id, children_datatype, project_id=None, username=None,
                     children_datatype,
                     origin_id=parent_id))
     return results
+
+
+def get_datasets(origin_id, recording_type=None, dataset_type=None,
+                 project_id=None, username=None, session=None, password=None):
+    """
+    Recurse into recordings and get paths to child datasets of a given type
+    """
+    assert (project_id is not None) or (session is not None)
+    if session is None:
+        session = get_session(project_id, username, password)
+    else:
+        project_id = _lookup_project(session.project_id, PARAMETERS)
+    recordings = get_entities(datatype='recording',
+                                  origin_id=origin_id,
+                                  query_key='recording_type',
+                                  query_value=recording_type,
+                                  session=session)
+    datapath_dict = {}
+    for recording_id in recordings['id']:
+        datasets = get_entities(datatype='dataset',
+                         origin_id=recording_id,
+                         query_key='dataset_type',
+                         query_value=dataset_type,
+                         session=session)
+        datapaths = []
+        for dataset_path in datasets['path']:
+            this_path = Path(PARAMETERS['projects_root']) / project_id / dataset_path
+            if this_path.exists():
+                datapaths.append(str(this_path))
+            else:
+                raise IOError('Dataset {} not found'.format(this_path))
+            datapath_dict[recording_id] = datapaths
+    return datapath_dict

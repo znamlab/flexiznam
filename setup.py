@@ -14,6 +14,7 @@ setup(
         'Click',
         'pandas',
         'webbot',
+        'pyyaml',
         'flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims'
     ],
     entry_points='''
