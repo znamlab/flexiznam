@@ -25,7 +25,7 @@ class Dataset(object):
 
         Status can be 'up-to-date', 'different' or 'not online'
         """
-        sess = fzn.get_session(self._projet_id)
+        sess = fzn.get_session(self.project_id)
         rep = sess.get(datatype='dataset', name=self.name)
         if not len(rep):
             return 'not online'
@@ -36,14 +36,32 @@ class Dataset(object):
         return 'up-to-date'
 
     def flexilims_report(self, flm_data=None):
-        """Describe the difference between the dataset and what is on flexilims"""
+        """Describe the difference between the dataset and what is on flexilims
+
+        Differences are returned in a dictionary:
+        property: (value in dataset, value in flexilims)
+
+        Attributes not present in either dataset or on flexilims are labelled as 'N/A'
+        """
+
         if flm_data is None:
-            sess = fzn.get_session(self._projet_id)
+            sess = fzn.get_session(self.project_id)
             rep = sess.get(datatype='dataset', name=self.name)
             assert len(rep) == 1
             flm_data = rep[0]
+
         differences = dict()
-        for k, v in self.format().items():
+        fmt = self.format()
+        # need to deal with the attributes differently as they are not guaranteed to be all present
+        dst_attr = fmt.pop('attributes')
+        flm_attr = flm_data.pop('attributes')
+        # flatten with the non valid keys to "N/A"
+        all_keys = set(dst_attr.keys()).union(set(flm_attr.keys()))
+        for k in all_keys:
+            fmt[k] = dst_attr.get(k, "N/A")
+            flm_data[k] = flm_attr.get(k, "N/A")
+
+        for k, v in fmt.items():
             if flm_data[k] != v:
                 differences[k] = (v, flm_data[k])
         return differences
@@ -55,7 +73,21 @@ class Dataset(object):
         attributes = dict(path=str(self.path), created=self.created, dataset_type=self.dataset_type,
                           is_raw='yes' if self.is_raw else 'no')
         attributes.update(self.extra_attributes)
-        return dict(attributes=attributes, name=self.name, project=self._project_id, type='dataset')
+        return dict(attributes=attributes, name=self.name, project=self.project_id, type='dataset')
+
+    @property
+    def project_id(self):
+        """Hexadecimal ID of the parent project. Must be defined in config project list"""
+        return self._project_id
+
+    @project_id.setter
+    def project_id(self, value):
+        id_projects = {v: k for k, v in fzn.PARAMETERS['project_ids'].items()}
+        if value not in id_projects:
+            raise IOError('Unknown project ID. Please update config file')
+        project = id_projects[value]
+        self._project = project
+        self._project_id = value
 
     @property
     def project(self):
@@ -64,8 +96,11 @@ class Dataset(object):
 
     @project.setter
     def project(self, value):
+        if value not in fzn.PARAMETERS['project_ids']:
+            raise IOError('Unknown project name. Please update config file')
+
         proj_id = fzn.PARAMETERS['project_ids'][value]
-        self._projet_id = proj_id
+        self._project_id = proj_id
         self._project = value
 
     @property
@@ -75,7 +110,8 @@ class Dataset(object):
 
     @dataset_type.setter
     def dataset_type(self, value):
-        assert value.lower() in Dataset.VALID_TYPES
+        if value.lower() not in Dataset.VALID_TYPES:
+            raise IOError('dataset_type "%s" not valid. Valid types are: %s' % (value, Dataset.VALID_TYPES))
         self._dataset_type = value.lower()
 
     @property
