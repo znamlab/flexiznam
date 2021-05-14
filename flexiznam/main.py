@@ -1,5 +1,6 @@
 import pandas as pd
 import flexilims as flm
+from pathlib import Path
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import NameNotUniqueException
@@ -11,6 +12,17 @@ def _format_project(project_id, prm):
     if project_id is None or len(project_id) != 24:
         raise AttributeError('Invalid project: "%s"' % project_id)
     return project_id
+
+
+def _lookup_project(project_id, prm):
+    """
+    Look up project name by hexadecimal id
+    """
+    try:
+        proj = next(proj for proj, id in prm['project_ids'].items() if id == project_id)
+        return proj
+    except StopIteration:
+        return None
 
 
 def get_session(project_id, username=None, password=None):
@@ -264,3 +276,36 @@ def get_children(parent_id, children_datatype, project_id=None, username=None,
                     children_datatype,
                     origin_id=parent_id))
     return results
+
+
+def get_datasets(origin_id, recording_type=None, dataset_type=None,
+                 project_id=None, username=None, session=None, password=None):
+    """
+    Recurse into recordings and get paths to child datasets of a given type
+    """
+    assert (project_id is not None) or (session is not None)
+    if session is None:
+        session = get_session(project_id, username, password)
+    else:
+        project_id = _lookup_project(session.project_id, PARAMETERS)
+    recordings = flz.get_entities(datatype='recording',
+                                  origin_id=origin_id,
+                                  query_key='recording_type',
+                                  query_value=recording_type,
+                                  session=session)
+    datapath_dict = {}
+    for recording_id in recordings['id']:
+        datasets = flz.get_entities(datatype='dataset',
+                         origin_id=recording_id,
+                         query_key='dataset_type',
+                         query_value=dataset_type,
+                         session=session)
+        datapaths = []
+        for dataset_path in datasets['path']:
+            this_path = Path(PARAMETERS['projects_root']) / project_id / dataset_path
+            if this_path.exists():
+                datapaths.append(str(this_path))
+            else:
+                raise IOError('Dataset {} not found'.format(this_path))
+            datapath_dict[recording_id] = datapaths
+    return datapath_dict
