@@ -63,7 +63,7 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
 
 
 def add_experimental_session(mouse_name, date, project_id=None, session=None,
-                password=None, username=None, session_name=None):
+                             password=None, username=None, session_name=None):
     """
     Add a new session as a child entity of a mouse
     """
@@ -74,14 +74,14 @@ def add_experimental_session(mouse_name, date, project_id=None, session=None,
     if session_name is None:
         session_num = 0
         while len(get_entities(
-            session=session,
-            datatype='session',
-            name=mouse_name + '_' + date + '_' + str(session_num))):
+                session=session,
+                datatype='session',
+                name=mouse_name + '_' + date + '_' + str(session_num))):
             # session with this name already exists, increment the number
             session_num += 1
         session_name = mouse_name + '_' + date + '_' + str(session_num)
 
-    session_info = { 'date': date, }
+    session_info = {'date': date, }
     resp = session.post(
         datatype='session',
         name=session_name,
@@ -101,17 +101,17 @@ def add_recording(session_id, recording_type, protocol, recording_name=None,
     if recording_name is None:
         session_name = get_entities(
             session=session, datatype='session', id=session_id
-            )['name'][0]
+        )['name'][0]
         recording_num = 0
         while len(get_entities(
-            session=session,
-            datatype='recording',
-            name=session_name + '_' + protocol + '_' + str(recording_num))):
+                session=session,
+                datatype='recording',
+                name=session_name + '_' + protocol + '_' + str(recording_num))):
             # session with this name already exists, increment the number
             recording_num += 1
         recording_name = session_name + '_' + protocol + '_' + str(recording_num)
 
-    recording_info = { 'recording_type': recording_type, 'protocol': protocol }
+    recording_info = {'recording_type': recording_type, 'protocol': protocol}
     resp = session.post(
         datatype='recording',
         name=recording_name,
@@ -133,12 +133,12 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
         parent_name = pd.concat([
             get_entities(session=session, datatype='recording', id=parent_id),
             get_entities(session=session, datatype='session', id=parent_id)
-            ])['name'][0]
+        ])['name'][0]
         dataset_num = 0
         while len(get_entities(
-            session=session,
-            datatype='dataset',
-            name=parent_name + '_' + dataset_type + '_' + str(dataset_num))):
+                session=session,
+                datatype='dataset',
+                name=parent_name + '_' + dataset_type + '_' + str(dataset_num))):
             # session with this name already exists, increment the number
             dataset_num += 1
         dataset_name = parent_name + '_' + dataset_type + '_' + str(dataset_num)
@@ -194,13 +194,13 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
         session = get_session(project_id, username, password)
     # Awaiting implementation on the flexilims side:
     results = format_results(session.get(
-                    datatype,
-                    query_key=query_key,
-                    query_value=query_value,
-                    name=name,
-                    origin_id=origin_id,
-                    id=id
-                    ))
+        datatype,
+        query_key=query_key,
+        query_value=query_value,
+        name=name,
+        origin_id=origin_id,
+        id=id
+    ))
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
@@ -230,7 +230,7 @@ def get_id(name, datatype='mouse', project_id=None, username=None, session=None,
     if len(entities) != 1:
         raise NameNotUniqueException(
             'ERROR: Found {num} entities of type {datatype} with name {name}!'
-            .format(num=len(entities), datatype=datatype, name=name))
+                .format(num=len(entities), datatype=datatype, name=name))
         return None
     else:
         return entities['id'][0]
@@ -273,8 +273,8 @@ def get_children(parent_id, children_datatype, project_id=None, username=None,
         session = get_session(project_id, username, password)
 
     results = format_results(session.get(
-                    children_datatype,
-                    origin_id=parent_id))
+        children_datatype,
+        origin_id=parent_id))
     return results
 
 
@@ -289,17 +289,17 @@ def get_datasets(origin_id, recording_type=None, dataset_type=None,
     else:
         project_id = _lookup_project(session.project_id, PARAMETERS)
     recordings = get_entities(datatype='recording',
-                                  origin_id=origin_id,
-                                  query_key='recording_type',
-                                  query_value=recording_type,
-                                  session=session)
+                              origin_id=origin_id,
+                              query_key='recording_type',
+                              query_value=recording_type,
+                              session=session)
     datapath_dict = {}
     for recording_id in recordings['id']:
         datasets = get_entities(datatype='dataset',
-                         origin_id=recording_id,
-                         query_key='dataset_type',
-                         query_value=dataset_type,
-                         session=session)
+                                origin_id=recording_id,
+                                query_key='dataset_type',
+                                query_value=dataset_type,
+                                session=session)
         datapaths = []
         for dataset_path in datasets['path']:
             this_path = Path(PARAMETERS['projects_root']) / project_id / dataset_path
