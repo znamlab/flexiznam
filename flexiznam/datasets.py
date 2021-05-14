@@ -10,9 +10,12 @@ class Dataset(object):
     """Master class. Should be inherited by all datasets"""
     VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces', 'harp')
 
-    def __init__(self, name, path, is_raw, dataset_type, extra_attributes={}, created=None, project=None):
+    def __init__(self, path, is_raw, dataset_type, extra_attributes={}, created=None, project=None, name=None):
         """Construct a dataset manually"""
-        self.name = str(name)
+        if name is not None:
+            self.name = str(name)
+        else:
+            self._name = None
         self.path = pathlib.Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
@@ -24,17 +27,31 @@ class Dataset(object):
         else:
             self.project = project
 
+    def get_flexilims_entry(self):
+        """Get the flexilims entry for this dataset
+
+        return a dictionary or [] if the entry is not found
+        """
+        if self.project_id is None:
+            raise IOError('You must specify the project to get flexilims status')
+        if self.name is None:
+            raise IOError('You must specify the dataset name to get flexilims status')
+        sess = fzn.get_session(self.project_id)
+        rep = sess.get(datatype='dataset', name=self.name)
+        if rep:
+            assert len(rep) == 1
+            rep = rep[0]
+        return rep
+
     def flexilims_status(self):
         """Status of the dataset on flexilims
 
         Status can be 'up-to-date', 'different' or 'not online'
         """
-        sess = fzn.get_session(self.project_id)
-        rep = sess.get(datatype='dataset', name=self.name)
+        rep = self.get_flexilims_entry()
         if not len(rep):
             return 'not online'
-        assert len(rep) == 1  # name should be unique
-        differences = self.flexilims_report(flm_data=rep[0])
+        differences = self.flexilims_report(flm_data=rep)
         if len(differences):
             return 'different'
         return 'up-to-date'
@@ -49,10 +66,9 @@ class Dataset(object):
         """
 
         if flm_data is None:
-            sess = fzn.get_session(self.project_id)
-            rep = sess.get(datatype='dataset', name=self.name)
-            assert len(rep) == 1
-            flm_data = rep[0]
+            flm_data = self.get_flexilims_entry()
+            if not flm_data:
+                raise IOError('No flexilims entry for dataset %s' % self.name)
 
         differences = dict()
         fmt = self.format()

@@ -26,3 +26,6 @@ def test_dataset():
     # and conversely
     ds.project_id = PARAMETERS['project_ids']['test']
     assert ds.project == 'test'
+    ds = datasets.Dataset(name='test_ran_on_20210513_113928_dataset', path='fake/path', is_raw='no',
+                          dataset_type='camera', extra_attributes={}, created='')
+    assert ds.project_id is None
