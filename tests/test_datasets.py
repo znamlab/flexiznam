@@ -14,9 +14,9 @@ def test_dataset():
     st = ds.flexilims_status()
     assert st == 'different'
     rep = ds.flexilims_report()
-    expected = {'created': ('None', 'N/A'), 'is_raw': ('no', 'N/A'), 'path': ('fake/path', 'random')}
+    expected = {'created': ('', 'N/A'), 'is_raw': ('no', 'N/A'), 'path': ('fake/path', 'random')}
     assert rep == expected
-    fmt = {'attributes': {'path': 'fake/path', 'created': 'None', 'dataset_type': 'camera', 'is_raw': 'no'},
+    fmt = {'attributes': {'path': 'fake/path', 'created': '', 'dataset_type': 'camera', 'is_raw': 'no'},
            'name': 'test_ran_on_20210513_113928_dataset', 'project': '606df1ac08df4d77c72c9aa4', 'type': 'dataset'}
     assert ds.format() == fmt
 

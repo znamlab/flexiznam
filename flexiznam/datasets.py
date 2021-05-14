@@ -10,7 +10,7 @@ class Dataset(object):
     """Master class. Should be inherited by all datasets"""
     VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces', 'harp')
 
-    def __init__(self, project, name, path, is_raw, dataset_type, extra_attributes={}, created=None):
+    def __init__(self, name, path, is_raw, dataset_type, extra_attributes={}, created=None, project=None):
         """Construct a dataset manually"""
         self.name = str(name)
         self.path = pathlib.Path(path)
@@ -18,7 +18,11 @@ class Dataset(object):
         self.dataset_type = str(dataset_type)
         self.extra_attributes = extra_attributes
         self.created = str(created)
-        self.project = project
+        if project is None:
+            self._project = None
+            self._project_id = None
+        else:
+            self.project = project
 
     def flexilims_status(self):
         """Status of the dataset on flexilims
