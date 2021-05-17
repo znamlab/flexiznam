@@ -207,11 +207,17 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
 
 
 def format_results(results):
-    """make request output a nice df"""
-    reserved_keywords = ['id', 'type', 'name', 'incrementalId']
+    """make request output a nice df
+
+    This will crash if any attribute is also present in the flexilims reply,
+    i.e. if an attribute is named:
+    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated',
+    'origin_id', 'objects', 'customEntities', or 'project'
+    """
+
     for result in results:
         for attr_name, attr_value in result['attributes'].items():
-            assert attr_name not in reserved_keywords
+            assert attr_name not in result
             result[attr_name] = attr_value
         result.pop('attributes')
     df = pd.DataFrame(results)
