@@ -1,17 +1,85 @@
 """
 Class to handle dataset identification and validation
 """
-import os
 import pathlib
+
+import flexiznam
 import flexiznam as fzn
-import datetime
 
 
 class Dataset(object):
-    """Master class. Should be inherited by all datasets"""
-    VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces', 'harp')
+    """Master class. Should be inherited by all datasets
 
-    def __init__(self, path, is_raw, dataset_type, extra_attributes={}, created=None, project=None, name=None):
+    SUBCLASSES are held in different files and added to the Dataset class by
+    schema.__init__.py
+    """
+    VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces', 'harp')
+    SUBCLASSES = dict()
+
+    @classmethod
+    def from_folder(cls, folder):
+        """Try to load all datasets found in the folder.
+
+        Will try all defined subclasses of datasets and keep everything that does not crash
+        If you know which dataset to expect, use the subclass directly
+        """
+        data = dict()
+        for ds_type, ds_class in cls.VALID_TYPES.items():
+            try:
+                res = ds_class.from_folder(folder)
+            except OSError:
+                continue
+            data[ds_type] = res
+        return res
+
+    @staticmethod
+    def from_flexilims(project=None, name=None, data_series=None):
+        """Loads a dataset from flexilims.
+
+
+        If the dataset_type attribute of the flexilims entry defined in Dataset.SUBCLASSES, this
+        subclass will be used. Otherwise a generic Dataset is returned
+
+        Args:
+            project: Name of the project or hexadecimal project_id
+            name: Unique name of the dataset on flexilims
+            data_series: default to None. pd.Series as returned by fzn.get_entities. If provided, superseeds project and name
+        """
+        if data_series is not None:
+            if (project is not None) or (name is not None):
+                raise AttributeError('Specify either flm_rep OR project and name')
+        else:
+            data_series = fzn.get_entities(project_id=project, datatype='dataset', name=name)
+            assert len(data_series) == 1
+            data_series = data_series.loc[name]
+        dataset_type = data_series.dataset_type
+        if dataset_type in Dataset.SUBCLASSES:
+            return Dataset.SUBCLASSES[datatype].from_flexilims(rep=rep)
+        # No subclass, let's do it myself
+        kwargs = Dataset._format_series_to_kwargs(data_series)
+        ds = Dataset(**kwargs)
+        return ds
+
+    @staticmethod
+    def _format_series_to_kwargs(flm_series):
+        """Format a flm get reply into kwargs valid for Dataset constructor"""
+        flm_attributes = {'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'origin_id', 'objects',
+                          'customEntities',  'project'}
+        d = dict()
+        for k,v in flm_series.items():
+            d[k] = v
+        attr = {k:v for k, v in flm_series.items() if k not in flm_attributes}
+        kwargs = dict(path=attr.pop('path'),
+                      is_raw=attr.pop('is_raw'),
+                      dataset_type=attr.pop('dataset_type'),
+                      created=attr.pop('created', None),
+                      extra_attributes=attr,
+                      project_id=flm_series.project,
+                      name=flm_series.name)
+        return kwargs
+
+    def __init__(self, path, is_raw, dataset_type, extra_attributes={}, created=None, project=None, name=None,
+                 project_id=None):
         """Construct a dataset manually"""
         if name is not None:
             self.name = str(name)
@@ -22,11 +90,15 @@ class Dataset(object):
         self.dataset_type = str(dataset_type)
         self.extra_attributes = extra_attributes
         self.created = str(created)
-        if project is None:
+        if project is not None:
+            self.project = project
+            if project_id is not None:
+                assert self.project_id == project_id
+        elif project_id is not None:
+            self.project_id = project_id
+        else:
             self._project = None
             self._project_id = None
-        else:
-            self.project = project
 
     def get_flexilims_entry(self):
         """Get the flexilims entry for this dataset
@@ -103,10 +175,9 @@ class Dataset(object):
 
     @project_id.setter
     def project_id(self, value):
-        id_projects = {v: k for k, v in fzn.PARAMETERS['project_ids'].items()}
-        if value not in id_projects:
+        project = fzn.main._lookup_project(value, fzn.PARAMETERS)
+        if project is None:
             raise IOError('Unknown project ID. Please update config file')
-        project = id_projects[value]
         self._project = project
         self._project_id = value
 
@@ -161,61 +232,3 @@ class Dataset(object):
         """
         raise NotImplementedError
 
-
-class Camera(Dataset):
-    DATASET_TYPE = 'camera'
-    VIDEO_EXTENSIONS = {'.mp4', '.bin', '.avi'}
-    VALID_EXTENSIONS = {'.txt', '.csv'}.union(VIDEO_EXTENSIONS)
-
-    @staticmethod
-    def from_folder(folder, camera_name=None, verbose=True):
-        """Create a Camera dataset by loading info from folder"""
-        fnames = [f for f in os.listdir(folder) if f.endswith(tuple(Camera.VALID_EXTENSIONS))]
-        metadata_files = [f for f in fnames if f.endswith('_metadata.txt')]
-        if not metadata_files:
-            raise IOError('Cannot find metadata')
-        timestamp_files = [f for f in fnames if f.endswith('_timestamps.csv')]
-        if not timestamp_files:
-            raise IOError('Cannot find timestamp')
-        metadata_names = {'_'.join(fname.split('_')[:-1]) for fname in metadata_files}
-        timestamp_names = {'_'.join(fname.split('_')[:-1]) for fname in timestamp_files}
-        valid_names = metadata_names.intersection(timestamp_names)
-        if not valid_names:
-            raise IOError('Metadata do not correspond to timestamps')
-        if verbose:
-            print()
-        video_files = [f for f in fnames if f.endswith(tuple(Camera.VIDEO_EXTENSIONS))]
-
-        if camera_name is not None:
-            if camera_name not in valid_names:
-                raise IOError('Camera %s not found. I have %s' % (camera_name, valid_names))
-            valid_names = {camera_name}
-        elif verbose:
-            print('Found metadata and timestamps for %d cameras: %s' % (len(valid_names), valid_names))
-        output = dict()
-        for camera_name in valid_names:
-            vid = [f for f in video_files if f.startswith(camera_name)]
-            if not vid:
-                raise IOError('No video data for %s' % camera_name)
-            if len(vid) > 1:
-                raise IOError('Found more than one potential video file for camera %s' % camera_name)
-            video_path = pathlib.Path(folder) / vid[0]
-            created = datetime.datetime.fromtimestamp(video_path.stat().st_mtime)
-            output[camera_name] = Camera(name=camera_name, path=folder, camera_name=camera_name,
-                                         timestamp_file='%s_timestamps.csv' % camera_name,
-                                         metadata_file='%s_metadata.txt' % camera_name, video_file=vid[0],
-                                         created=created.strftime('%Y-%m-%d %H:%M:%S'))
-        return output
-
-    def __init__(self, name, path, camera_name, timestamp_file, metadata_file, video_file,
-                 extra_attributes={}, created=None, project=None, is_raw=True):
-        super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=Camera.DATASET_TYPE,
-                         extra_attributes=extra_attributes, created=created, project=project)
-        self.camera_name = camera_name
-        self.timestamp_file = timestamp_file
-        self.metadata_file = metadata_file
-        self.video_file = video_file
-
-    def is_valid(self):
-        """Check that video, metadata and timestamps files exist"""
-        fnames = os.listdir(self.path)
