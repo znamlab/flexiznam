@@ -14,6 +14,8 @@ do that in steps:
 
 from .datasets import Dataset
 from .camera import Camera
+from .harp_data import HarpData
 
 Dataset.SUBCLASSES['camera'] = Camera
+Dataset.SUBCLASSES['harp'] = HarpData
 
