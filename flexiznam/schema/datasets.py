@@ -48,14 +48,14 @@ class Dataset(object):
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
-                raise AttributeError('Specify either flm_rep OR project and name')
+                raise AttributeError('Specify either data_series OR project + name')
         else:
             data_series = fzn.get_entities(project_id=project, datatype='dataset', name=name)
             assert len(data_series) == 1
             data_series = data_series.loc[name]
         dataset_type = data_series.dataset_type
         if dataset_type in Dataset.SUBCLASSES:
-            return Dataset.SUBCLASSES[datatype].from_flexilims(rep=rep)
+            return Dataset.SUBCLASSES[dataset_type].from_flexilims(data_series=data_series)
         # No subclass, let's do it myself
         kwargs = Dataset._format_series_to_kwargs(data_series)
         ds = Dataset(**kwargs)

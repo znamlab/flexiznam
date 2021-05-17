@@ -48,7 +48,7 @@ class HarpData(Dataset):
                     print('    %s' % m)
         return output
 
-    def from_flexilims(project=None, name=None, flm_rep=None):
+    def from_flexilims(project=None, name=None, data_series=None):
         """Create a harp dataset from flexilims entry"""
         raise NotImplementedError
 

@@ -50,7 +50,7 @@ class CameraData(Dataset):
                                              created=created.strftime('%Y-%m-%d %H:%M:%S'))
         return output
 
-    def from_flexilims(project=None, name=None, flm_rep=None):
+    def from_flexilims(project=None, name=None, data_series=None):
         """Create a camera dataset from flexilims entry"""
         raise NotImplementedError
 
