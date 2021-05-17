@@ -10,7 +10,7 @@ class HarpData(Dataset):
     DATASET_TYPE = 'harp'
 
     @staticmethod
-    def from_folder(folder, camera_name=None, verbose=True):
+    def from_folder(folder, verbose=True):
         """Create a harp dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
         bin_files = [f for f in fnames if f.endswith('.bin')]
@@ -43,7 +43,7 @@ class HarpData(Dataset):
         return output
 
     def from_flexilims(project=None, name=None, flm_rep=None):
-        """Create a camera dataset from flexilims entry"""
+        """Create a harp dataset from flexilims entry"""
         raise NotImplementedError
 
 
