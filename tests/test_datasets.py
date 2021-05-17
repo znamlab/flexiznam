@@ -49,8 +49,11 @@ def test_camera():
 
 @pytest.mark.integtest
 def test_harp():
-
     TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210510/ParamLog/R184500'
     ds = HarpData.from_folder(TEST_FOLDER)
+    assert len(ds) == 1
+    d = next(iter(ds.values()))
+    assert d.name == next(iter(ds.keys()))
+    assert d.is_valid()
 
 
