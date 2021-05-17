@@ -5,7 +5,7 @@ import pathlib
 from flexiznam.schema.datasets import Dataset
 
 
-class Camera(Dataset):
+class CameraData(Dataset):
     DATASET_TYPE = 'camera'
     VIDEO_EXTENSIONS = {'.mp4', '.bin', '.avi'}
     VALID_EXTENSIONS = {'.txt', '.csv'}.union(VIDEO_EXTENSIONS)
@@ -13,7 +13,7 @@ class Camera(Dataset):
     @staticmethod
     def from_folder(folder, camera_name=None, verbose=True):
         """Create a Camera dataset by loading info from folder"""
-        fnames = [f for f in os.listdir(folder) if f.endswith(tuple(Camera.VALID_EXTENSIONS))]
+        fnames = [f for f in os.listdir(folder) if f.endswith(tuple(CameraData.VALID_EXTENSIONS))]
         metadata_files = [f for f in fnames if f.endswith('_metadata.txt')]
         if not metadata_files:
             raise IOError('Cannot find metadata')
@@ -27,7 +27,7 @@ class Camera(Dataset):
             raise IOError('Metadata do not correspond to timestamps')
         if verbose:
             print()
-        video_files = [f for f in fnames if f.endswith(tuple(Camera.VIDEO_EXTENSIONS))]
+        video_files = [f for f in fnames if f.endswith(tuple(CameraData.VIDEO_EXTENSIONS))]
 
         if camera_name is not None:
             if camera_name not in valid_names:
@@ -44,10 +44,10 @@ class Camera(Dataset):
                 raise IOError('Found more than one potential video file for camera %s' % camera_name)
             video_path = pathlib.Path(folder) / vid[0]
             created = datetime.datetime.fromtimestamp(video_path.stat().st_mtime)
-            output[camera_name] = Camera(name=camera_name, path=folder, camera_name=camera_name,
-                                         timestamp_file='%s_timestamps.csv' % camera_name,
-                                         metadata_file='%s_metadata.txt' % camera_name, video_file=vid[0],
-                                         created=created.strftime('%Y-%m-%d %H:%M:%S'))
+            output[camera_name] = CameraData(name=camera_name, path=folder, camera_name=camera_name,
+                                             timestamp_file='%s_timestamps.csv' % camera_name,
+                                             metadata_file='%s_metadata.txt' % camera_name, video_file=vid[0],
+                                             created=created.strftime('%Y-%m-%d %H:%M:%S'))
         return output
 
     def from_flexilims(project=None, name=None, flm_rep=None):
@@ -57,7 +57,21 @@ class Camera(Dataset):
 
     def __init__(self, name, path, camera_name, timestamp_file, metadata_file, video_file,
                  extra_attributes={}, created=None, project=None, is_raw=True):
-        super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=Camera.DATASET_TYPE,
+        """Create a Camera dataset
+
+        Args:
+            name: Identifier. Unique name on flexilims. Import default to the camera name
+            path: Path to the folder containing all the files
+            camera_name: Name of the camera, all related files are expected to contain the camera name in their filename
+            timestamp_file: file name of the timestamp file, usually camera_name_timestamps.csv
+            metadata_file: file name of the metadata file, usually camera_name_metadata.txt
+            video_file: file name of the video file, usually camera_name_data.bin/.avi/.mp4
+            extra_attributes: Other optional attributes (from or for flexilims)
+            created: Date of creation. Default to the creation date of the binary file
+            project: name of hexadecimal id of the project to which the dataset belongs
+            is_raw: default to True. Is it processed data or raw data?
+        """
+        super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=CameraData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created, project=project)
         self.camera_name = camera_name
         self.timestamp_file = timestamp_file
