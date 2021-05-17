@@ -52,6 +52,7 @@ class Camera(Dataset):
 
     def from_flexilims(project=None, name=None, flm_rep=None):
         """Create a camera dataset from flexilims entry"""
+        raise NotImplementedError
 
 
     def __init__(self, name, path, camera_name, timestamp_file, metadata_file, video_file,
@@ -65,4 +66,10 @@ class Camera(Dataset):
 
     def is_valid(self):
         """Check that video, metadata and timestamps files exist"""
-        fnames = os.listdir(self.path)
+        if not (pathlib.Path(self.path) / self.timestamp_file).exists():
+            return False
+        if not (pathlib.Path(self.path) / self.metadata_file).exists():
+            return False
+        if not (pathlib.Path(self.path) / self.video_file).exists():
+            return False
+        return True
