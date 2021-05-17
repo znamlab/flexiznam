@@ -124,6 +124,30 @@ class Dataset(object):
             series = series.iloc[0]
         return series
 
+    def update_flexilims(self, parent_id, mode='safe'):
+        """Create or update (not implemented) flexilims entry for this dataset
+
+        Args:
+            parent_id: ID of the parent on flexilims
+            mode: One of: 'update', 'overwrite', 'safe' (default).
+                  If 'safe', will only create entry if it does not exist online.
+                  If 'update' [NotImplemented] will update existing entry.
+                  If 'overwrite' [NotImplemented] will delete existing entry and upload a new.
+
+        Returns: Flexilims reply
+        """
+        status = self.flexilims_status()
+        if (status == 'different'):
+            raise NotImplementedError('Updating entries is not')
+        if (status == 'up-to-date'):
+            print('Already up to date, nothing to do')
+            return
+        # we are in 'not online' case
+        resp = fzn.add_dataset(parent_id=parent_id, dataset_type=self.dataset_type, created=self.created, path=self.path,
+                        is_raw='yes' if self.is_raw else 'no', project_id=self.project_id, dataset_name=self.name,
+                        attributes=self.extra_attributes)
+        return resp
+
     def flexilims_status(self):
         """Status of the dataset on flexilims
 
