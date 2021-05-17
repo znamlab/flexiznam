@@ -36,6 +36,21 @@ def config(template=None):
     prm = utils.load_param()
     click.echo(yaml.dump(prm))
 
+@cli.command()
+@click.option('-t', '--template', default=None, help='Template config file.')
+def camp_config(template=None):
+    """Create a configuration file for CAMP transfer."""
+    try:
+        fname = utils._find_file('camp_config.yml')
+        click.echo('CAMP configuration file currently used is:\n%s' % fname)
+    except errors.ConfigurationError:
+        click.echo('No camp configuration file. Creating one.')
+        if template is None:
+            from flexiznam.camp.camp_config import DEFAULT_CAMP_CONFIG as template
+        utils.create_config(template=template)
+    click.echo('\nCurrent configuration is:')
+    prm = utils.load_param()
+    click.echo(yaml.dump(prm))
 
 @cli.command()
 @click.option('-a', '--app', prompt='Enter the name of the app',

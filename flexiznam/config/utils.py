@@ -6,9 +6,18 @@ from flexiznam.errors import ConfigurationError
 from flexiznam.config.default_config import DEFAULT_CONFIG
 
 
-def _find_file(file_name):
-    """Find a file by looking first in the current directory, then in the ~/.config folder
-    then in the code folder, then in sys.path"""
+def _find_file(file_name, config_folder=None):
+    """Find a file by looking:
+       - first in config_folder (if provided)
+       - then in the current directory
+       - then in the ~/.config folder
+       - then in the folder contain the file defining this function
+       - then in sys.path
+       """
+    if config_folder is not None:
+        in_config_folder = pathlib.Path(config_folder) / file_name
+        if in_config_folder.is_file():
+            return in_config_folder
     local = pathlib.Path.cwd() / file_name
     if local.is_file():
         return local
@@ -25,10 +34,12 @@ def _find_file(file_name):
     raise ConfigurationError('Cannot find %s' % file_name)
 
 
-def load_param(param_file=None):
+def load_param(param_folder=None, config_file='config.yml'):
     """Read parameter file from config folder"""
-    if param_file is None:
-        param_file = _find_file('config.yml')
+    if param_folder is None:
+        param_file = _find_file(config_file)
+    else:
+        param_file = pathlib.Path(param_folder) / config_file
     with open(param_file, 'r') as yml_file:
         prm = yaml.safe_load(yml_file)
     return prm
@@ -71,7 +82,7 @@ def add_password(app, username, password, password_file=None):
     return password_file
 
 
-def update_config(param_file=None, skip_checks=False, **kwargs):
+def update_config(param_file=None, config_folder=None, skip_checks=False, **kwargs):
     """Update the current configuration
 
     You can give any keyword arguments. For nested levels, provide a dictionary (of dictionaries)
@@ -82,10 +93,16 @@ def update_config(param_file=None, skip_checks=False, **kwargs):
 
     If you want to replace a nested field by a flat structure, use the skip_checks=True flag
     """
-    create_config(target=param_file, overwrite=True, template=param_file, skip_checks=skip_checks, **kwargs)
+    if config_folder is not None:
+        full_param_path = pathlib.Path(config_folder) / param_file
+    else:
+        full_param_path = param_file
+    create_config(target_folder=config_folder, config_file=param_file, overwrite=True,
+                  template=full_param_path, skip_checks=skip_checks, **kwargs)
 
 
-def create_config(overwrite=False, target=None, template=None, skip_checks=False, **kwargs):
+def create_config(overwrite=False, target_folder=None, template=None, skip_checks=False, config_file='config.yml',
+                  **kwargs):
     """Create a config file based on a template
 
     If no template is provided, use ./config/default_config.py to generate a new config file
@@ -93,20 +110,26 @@ def create_config(overwrite=False, target=None, template=None, skip_checks=False
     **kwargs elements are used to update/supplement infos found in the template
     """
     if template is not None:
-        with open(template, 'r') as tpl_file:
-            cfg = yaml.safe_load(tpl_file)
+        if isinstance(template, dict):
+            cfg = template
+        else:  # we don't have a preloaded config, must be path to a file
+            with open(template, 'r') as tpl_file:
+                cfg = yaml.safe_load(tpl_file)
     else:
         cfg = DEFAULT_CONFIG
     cfg = _recursive_update(cfg, kwargs, skip_checks=skip_checks)
 
-    if target is None:
-        home = pathlib.Path.home() / '.flexiznam'
-        if not home.is_dir():
-            os.mkdir(home)
-        target = home / 'config.yml'
-    if (not overwrite) and os.path.isfile(target):
-        raise IOError('Config file %s already exists.' % target)
-    with open(target, 'w') as cfg_yml:
+    if target_folder is None:
+        target_folder = pathlib.Path.home() / '.flexiznam'
+        if not target_folder.is_dir():
+            os.mkdir(target_folder)
+    else:
+        target_folder = pathlib.Path(target_folder)
+        assert target_folder.is_dir()
+    target_file = target_folder / config_file
+    if (not overwrite) and os.path.isfile(target_file):
+        raise IOError('Config file %s already exists.' % target_file)
+    with open(target_file, 'w') as cfg_yml:
         yaml.dump(cfg, cfg_yml)
 
 
