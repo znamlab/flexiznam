@@ -13,9 +13,10 @@ do that in steps:
 """
 
 from .datasets import Dataset
-from .camera_data import Camera
+from .camera_data import CameraData
 from .harp_data import HarpData
+from .scanimage_data import ScanimageData
 
-Dataset.SUBCLASSES['camera'] = Camera
+Dataset.SUBCLASSES['camera'] = CameraData
 Dataset.SUBCLASSES['harp'] = HarpData
-
+Dataset.SUBCLASSES['scanimage'] = ScanimageData
