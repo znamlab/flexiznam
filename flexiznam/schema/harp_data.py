@@ -40,6 +40,12 @@ class HarpData(Dataset):
                                          binary_file=bin_file,
                                          csv_files=associated_csv,
                                          created=created.strftime('%Y-%m-%d %H:%M:%S'))
+        if verbose:
+            unmatched = set(csv_files) - matched_files
+            if unmatched and verbose:
+                print('%d csv files did not match any binary file:')
+                for m in unmatched:
+                    print('    %s' % m)
         return output
 
     def from_flexilims(project=None, name=None, flm_rep=None):
@@ -55,7 +61,7 @@ class HarpData(Dataset):
             name: Identifier. Unique name on flexilims. Import default to the file name of the binary file without
                   the extension
             path: Path to the folder containing all the files
-            binary_file: Path to the binary file.
+            binary_file: File name of the binary file.
             csv_files: Dictionary of csv files associated to the binary file. Keys are identifier provided for
                        convenience, values are the full file name
             extra_attributes: Other optional attributes (from or for flexilims)

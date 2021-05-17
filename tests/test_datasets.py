@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 import pandas as pd
-from flexiznam.schema import Dataset, Camera, HarpData
+from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
 from flexiznam.config import PARAMETERS
 
 TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210513/R193432_Retinotopy'
@@ -39,8 +39,8 @@ def test_from_flexilims():
 
 @pytest.mark.integtest
 def test_camera():
-    ds = Camera.from_folder(TEST_FOLDER)
-    assert len(ds) == 3
+    ds = CameraData.from_folder(TEST_FOLDER)
+    assert len(ds) == 4
     d = ds['butt_camera']
     assert d.name == 'butt_camera'
     d.project = 'test'
@@ -57,4 +57,11 @@ def test_harp():
     assert d.is_valid()
 
 
-
+@pytest.mark.integtest
+def test_scanimage():
+    TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210513/R182758_SphereCylinder'
+    ds = ScanimageData.from_folder(TEST_FOLDER)
+    assert len(ds) == 1
+    d = next(iter(ds.values()))
+    assert d.name == next(iter(ds.keys()))
+    assert d.is_valid()
