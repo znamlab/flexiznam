@@ -5,6 +5,7 @@ import pathlib
 
 import flexiznam
 import flexiznam as fzn
+import pandas as pd
 
 
 class Dataset(object):
@@ -100,6 +101,14 @@ class Dataset(object):
             self._project = None
             self._project_id = None
 
+    def is_valid(self):
+        """
+        Dummy method definition. Should be reimplemented in children classes
+
+        Should return True if the dataset is found a valid, false otherwise
+        """
+        raise NotImplementedError('`is_valid` is not defined for generic datasets')
+
     def get_flexilims_entry(self):
         """Get the flexilims entry for this dataset
 
@@ -109,22 +118,25 @@ class Dataset(object):
             raise IOError('You must specify the project to get flexilims status')
         if self.name is None:
             raise IOError('You must specify the dataset name to get flexilims status')
-        sess = fzn.get_session(self.project_id)
-        rep = sess.get(datatype='dataset', name=self.name)
-        if rep:
-            assert len(rep) == 1
-            rep = rep[0]
-        return rep
+        series = fzn.get_entities(datatype='dataset', project_id=self.project_id, name=self.name)
+        if len(series):
+            assert len(series) == 1
+            series = series.iloc[0]
+        return series
 
     def flexilims_status(self):
         """Status of the dataset on flexilims
 
         Status can be 'up-to-date', 'different' or 'not online'
+
+        This function does not check flexilims these only value:
+        'createdBy', 'objects', 'dateCreated', 'customEntities',
+        'incrementalId', 'id', 'origin_id'
         """
-        rep = self.get_flexilims_entry()
-        if not len(rep):
+        series = self.get_flexilims_entry()
+        if not len(series):
             return 'not online'
-        differences = self.flexilims_report(flm_data=rep)
+        differences = self.flexilims_report(flm_data=series)
         if len(differences):
             return 'different'
         return 'up-to-date'
@@ -140,33 +152,42 @@ class Dataset(object):
 
         if flm_data is None:
             flm_data = self.get_flexilims_entry()
-            if not flm_data:
+            if not len(flm_data):
                 raise IOError('No flexilims entry for dataset %s' % self.name)
 
-        differences = dict()
+        # remove the flexilims keywords that are not used by Dataset
+        flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities', 'incrementalId',
+                                  'id', 'origin_id'])
         fmt = self.format()
-        # need to deal with the attributes differently as they are not guaranteed to be all present
-        dst_attr = fmt.pop('attributes')
-        flm_attr = flm_data.pop('attributes')
-        # flatten with the non valid keys to "N/A"
-        all_keys = set(dst_attr.keys()).union(set(flm_attr.keys()))
-        for k in all_keys:
-            fmt[k] = dst_attr.get(k, "N/A")
-            flm_data[k] = flm_attr.get(k, "N/A")
+        offline_index = set(fmt.index)
+        online_index = set(flm_data.index)
 
-        for k, v in fmt.items():
-            if flm_data[k] != v:
-                differences[k] = (v, flm_data[k])
+        intersection = offline_index.intersection(online_index)
+        differences = fmt[intersection].compare(flm_data[intersection])
+        differences.columns = ['offline', 'flexilims']
+
+        only_offline = offline_index - online_index
+        off = pd.DataFrame([fmt[only_offline].rename('offline', axis=0),
+                            pd.Series({k: 'N/A' for k in only_offline}, name='flexilims')])
+        differences = pd.concat((differences, off.T))
+
+        only_online = online_index - offline_index
+        online = pd.DataFrame([pd.Series({k: 'N/A' for k in only_online}, name='offline'),
+                            flm_data[only_online].rename('flexilims', axis=0)])
+        differences = pd.concat((differences, online.T))
         return differences
 
     def format(self):
-        """Format a dataset as a flexilims output
+        """Format a dataset as a series similar to get_entities output
 
-        This will not include elements that are not used by the Dataset class such as created_by for instance"""
-        attributes = dict(path=str(self.path), created=self.created, dataset_type=self.dataset_type,
+        This will not include elements that are not used by the Dataset class such as created_by for instance
+        """
+        data = dict(path=str(self.path), created=self.created, dataset_type=self.dataset_type,
                           is_raw='yes' if self.is_raw else 'no')
-        attributes.update(self.extra_attributes)
-        return dict(attributes=attributes, name=self.name, project=self.project_id, type='dataset')
+        data.update(self.extra_attributes)
+        data.update(dict(name=self.name, project=self.project_id, type='dataset'))
+        series = pd.Series(data, name=self.name)
+        return series
 
     @property
     def project_id(self):
@@ -224,11 +245,4 @@ class Dataset(object):
             value = bool(value)
         self._is_raw = value
 
-    def is_valid(self):
-        """
-        Dummy method definition. Should be reimplemented in children classes
-
-        Should return True if the dataset is found a valid, false otherwise
-        """
-        raise NotImplementedError
 
