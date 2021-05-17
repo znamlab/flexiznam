@@ -32,7 +32,7 @@ class HarpData(Dataset):
             associated_csv = {m.groups()[0]:f for f, m in zip(csv_files, matches) if m}
             if matched_files.intersection(associated_csv.values()):
                 raise IOError('A csv file matched with multiple binary files.')
-            matched_files.update(associated_csv)
+            matched_files.update(associated_csv.values())
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
@@ -43,7 +43,7 @@ class HarpData(Dataset):
         if verbose:
             unmatched = set(csv_files) - matched_files
             if unmatched and verbose:
-                print('%d csv files did not match any binary file:')
+                print('%d csv files did not match any binary file:' % len(unmatched))
                 for m in unmatched:
                     print('    %s' % m)
         return output

@@ -55,6 +55,7 @@ def test_harp():
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
     assert d.is_valid()
+    assert len(d.csv_files) == 4
 
 
 @pytest.mark.integtest
@@ -65,3 +66,6 @@ def test_scanimage():
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
     assert d.is_valid()
+    assert len(d) == 105
+
+
