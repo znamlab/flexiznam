@@ -1,0 +1,49 @@
+---  # start of a new document. Use to include multiple session in the same file
+project: "test"        # the name of the project. Must exist in flexiznam configuration
+mouse: "PZAH4.1c"      # name of the mouse as on flexilims (if different than mcms)
+session: "S20210513"   # session name for flexilims. Is usually SYYYYMMDD but no actual requirement
+path: "./PZAH4.1c/S20210513"     # optional. Default to ./mouse/session Used to look for datasets that have no specified
+                                 # path
+
+notes: "Notes can be added at any level of the hierachy in this yaml file.
+They can span multiple lines and will be added as an attributes to the flexilims entity corresponding
+to this yaml level (here the session level)"
+
+attributes:            # arbitrary attributes can be added. They will be added to the flexilims instance corresponding
+                       # to this yaml level (like the notes). They must NOT conflict with automatically generated
+                       # attributes. For instance protocol for a recording.
+  - quality: 'test data'
+
+
+recordings:                     # list of recording
+ - R182758_SphereCylinder:        # name of the recording. Must be unique for this session but can be anything.
+   - protocol: "SphereCylinder"     # protocol type - mandatory
+   - timestamp: "182758"            # timestamp used to identified all data link to this recording - mandatory
+   - recording_type: "two_photon"   # optional type of recording. Will be guessed from datatypes if not specified
+   - notes: "note or the recording level"   # the notes field does no need to be specified (see second example below)
+ - R193432_Retinotopy:            # another recording in the same session
+   - protocol: "Retinotopy"         # protocol type
+   - timestamp: "182758"            # timestamp used to identified all data link to this recording.
+   - datasets:                      # optional. You can specify datasets manually.
+       - harp_data_csv:                # dataset name, must be unique for this recording.
+         - type: 'harp'                # dataset type. Must be defined in the lab settings
+         - path: './PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'   # path relative to the root data directory, must
+                                                                      # be specified if the data is not in the main
+                                                                      # recording folder
+         - notes: "Here too you can add notes"
+
+
+datasets:                       # datasets attached to the session, not to a recording
+  - ref_for_motion:               # dataset name, must be unique for this session
+    - type: 'scanimage'             # dataset type. Must be defined in the lab settings
+    - path: './PZAH4.1c/S20210513/Ref' # path relative to the root data directory
+  - overview_picture_01:       # another dataset
+      - type: 'scanimage'
+      - path: './PZAH4.1c/S20210513/overview_00001_00001.tif' # path should be unqnbiguous. Point to a file if multiple
+                                                              # of the same type are present in the same folder
+  - overview_picture_02:
+      - type: 'scanimage'
+      - path: './PZAH4.1c/S20210513/overview_00002_00001.tif' # path should be unanbiguous.
+      - notes: "at any point you can add notes or attributes as below"
+      - attributes:
+          - channels: ['red', 'blue']  # you can give a list of elements, but they will be uploaded as a str.

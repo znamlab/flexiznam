@@ -5,7 +5,6 @@ import tempfile
 from flexiznam.config import utils, DEFAULT_CONFIG
 
 
-
 def test_create_config():
     with tempfile.TemporaryDirectory() as tmp:
         utils.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark')
@@ -36,6 +35,7 @@ def test_update_config():
         prm = utils.load_param()
         assert 'favorite_colour' not in prm
 
+
 def test_passwd_creation():
     with tempfile.NamedTemporaryFile() as tmp:
         utils.add_password('my_app', 'username1', 'password1', password_file=tmp.name)
@@ -44,12 +44,3 @@ def test_passwd_creation():
 
         pwd = utils.get_password('username1', 'my_app', tmp.name)
         assert pwd == 'password1'
-
-
-def test_create_camp_config():
-    with tempfile.TemporaryDirectory() as tmp:
-        utils.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark',
-                            config_file='camp_config.yml', template=DEFAULT_CAMP_CONFIG)
-        prm = utils.load_param(tmp, config_file='camp_config.yml')
-        assert prm['favorite_colour'] == 'dark'
-        assert prm['target_subfolder'] == 'raw'
