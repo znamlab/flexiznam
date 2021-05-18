@@ -3,12 +3,12 @@ import pathlib
 import shutil
 import tempfile
 from flexiznam.config import utils, DEFAULT_CONFIG
-from flexiznam.camp.camp_config import DEFAULT_CAMP_CONFIG
+
 
 
 def test_create_config():
     with tempfile.TemporaryDirectory() as tmp:
-        utils.create_config(overwrite=True, target_folder=tmp, favorite_colour='dark')
+        utils.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark')
         # reload and check one random field
         prm = utils.load_param(tmp)
         assert prm['mcms_username'] == 'ab8'
@@ -25,7 +25,7 @@ def test_create_config():
 
 def test_update_config():
     with tempfile.TemporaryDirectory() as tmp:
-        utils.create_config(overwrite=True, target_folder=tmp, favorite_colour='dark')
+        utils.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark')
         utils.update_config(param_file='config.yml', config_folder=tmp, skip_checks=False, mcms_username='alfred',
                             project_ids=dict(new_project='test_id'))
         prm = utils.load_param(tmp)
@@ -48,7 +48,7 @@ def test_passwd_creation():
 
 def test_create_camp_config():
     with tempfile.TemporaryDirectory() as tmp:
-        utils.create_config(overwrite=True, target_folder=tmp, favorite_colour='dark',
+        utils.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark',
                             config_file='camp_config.yml', template=DEFAULT_CAMP_CONFIG)
         prm = utils.load_param(tmp, config_file='camp_config.yml')
         assert prm['favorite_colour'] == 'dark'
