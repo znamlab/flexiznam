@@ -58,7 +58,7 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
             mouse_info[k] = float(v)
         else:
             mouse_info[k] = v.strip()
-    resp = session.post(datatype='mouse', name=mouse_name, attributes=dict(mouse_info))
+    resp = session.post(datatype='mouse', name=mouse_name, attributes=dict(mouse_info), strict_validation=False)
     return resp
 
 
