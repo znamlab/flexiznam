@@ -26,11 +26,11 @@ class ScanimageData(Dataset):
         if verbose:
             non_si_tiff = {f for f, m in zip(tif_files, matches) if not m}
             if non_si_tiff:
-                print('Found %d tif files that are NOT scanimage data.'% len(non_si_tiff))
+                print('Found %d tif files that are NOT scanimage data.' % len(non_si_tiff))
                 for s in non_si_tiff:
                     print('    %s' % s)
         tif_df = [dict(filename=f, fname=m.groups()[0], acq_num=m.groups()[1], file_num=m.groups()[2])
-                     for f,m in zip(tif_files, matches) if m]
+                  for f, m in zip(tif_files, matches) if m]
         tif_df = pd.DataFrame(tif_df)
         tif_df['acq_identifier'] = tif_df.fname + tif_df.acq_num
 
@@ -44,15 +44,14 @@ class ScanimageData(Dataset):
             if associated_csv in matched_csv:
                 raise IOError('A csv file matched with 2 scanimage tif datasets')
             matched_csv.update(associated_csv)
-            associated_csv = {f[len(fname):-(len(acq_num) + 4)].strip('_') :f for f in associated_csv}
+            associated_csv = {f[len(fname):-(len(acq_num) + 4)].strip('_'): f for f in associated_csv}
 
             example_tif = pathlib.Path(folder) / acq_df.filename.iloc[0]
             created = datetime.datetime.fromtimestamp(example_tif.stat().st_mtime)
             output[acq_id] = ScanimageData(name=acq_id, path=folder,
-                                         tif_files=list(acq_df.filename.values),
-                                         csv_files=associated_csv,
-                                         created=created.strftime('%Y-%m-%d %H:%M:%S'))
-
+                                           tif_files=list(acq_df.filename.values),
+                                           csv_files=associated_csv,
+                                           created=created.strftime('%Y-%m-%d %H:%M:%S'))
 
         if verbose:
             unmatched = set(csv_files) - matched_csv
@@ -65,7 +64,6 @@ class ScanimageData(Dataset):
     def from_flexilims(project=None, name=None, data_series=None):
         """Create a camera dataset from flexilims entry"""
         raise NotImplementedError
-
 
     def __init__(self, name, path, tif_files, csv_files={}, extra_attributes={}, created=None, project=None,
                  is_raw=True):
@@ -84,17 +82,17 @@ class ScanimageData(Dataset):
         """
         super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created, project=project)
-        self.tif_files = tif_files
         self.csv_files = csv_files
+        self.tif_files = tif_files
 
 
     @property
-    def tif_file(self):
+    def tif_files(self):
         """List of tif files, sorted alphabetically (automatically)"""
         return self._tif_files
 
-    @tif_file.setter
-    def tif_file(self, value):
+    @tif_files.setter
+    def tif_files(self, value):
         if isinstance(value, str):
             value = [value]
         value = list(sorted(value))
