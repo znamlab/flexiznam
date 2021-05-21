@@ -24,16 +24,17 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 
 @cli.command()
 @click.option('-t', '--template', default=None, help='Template config file.')
-def config(template=None):
+@click.option('--config-folder', default=None, help='Folder containing the config file.')
+def config(template=None, config_folder=None):
     """Create a configuration file if none exists."""
     try:
-        fname = utils._find_file('config.yml')
+        fname = utils._find_file('config.yml', config_folder=config_folder)
         click.echo('Configuration file currently used is:\n%s' % fname)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
-        utils.create_config(template=template)
+        utils.create_config(template=template, config_folder=config_folder)
     click.echo('\nCurrent configuration is:')
-    prm = utils.load_param()
+    prm = utils.load_param(param_folder=config_folder)
     click.echo(yaml.dump(prm))
 
 
