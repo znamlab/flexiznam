@@ -83,21 +83,21 @@ class ScanimageData(Dataset):
         """
         super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created, project=project)
-        self.tif_files = tif_files
         self.csv_files = csv_files
         if si_acquisition_name is None:
             self.si_acquisition_name = self.name
         else:
             self.si_acquisition_name = str(si_acquisition_name)
-        self._tif_files = None
+        self.tif_files = tif_files
+
 
     @property
-    def tif_file(self):
+    def tif_files(self):
         """List of tif files, sorted alphabetically (automatically)"""
         return self._tif_files
 
-    @tif_file.setter
-    def tif_file(self, value):
+    @tif_files.setter
+    def tif_files(self, value):
         if isinstance(value, str):
             value = [value]
         value = list(sorted(value))

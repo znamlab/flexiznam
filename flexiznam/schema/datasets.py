@@ -18,14 +18,16 @@ class Dataset(object):
     SUBCLASSES = dict()
 
     @classmethod
-    def from_folder(cls, folder):
+    def from_folder(cls, folder, verbose=True):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not crash
         If you know which dataset to expect, use the subclass directly
         """
         data = dict()
-        for ds_type, ds_class in cls.VALID_TYPES.items():
+        for ds_type, ds_class in cls.SUBCLASSES.items():
+            if verbose:
+                print('Looking for %s' % ds_type)
             try:
                 res = ds_class.from_folder(folder)
             except OSError:
@@ -67,9 +69,9 @@ class Dataset(object):
         flm_attributes = {'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'origin_id', 'objects',
                           'customEntities',  'project'}
         d = dict()
-        for k,v in flm_series.items():
+        for k, v in flm_series.items():
             d[k] = v
-        attr = {k:v for k, v in flm_series.items() if k not in flm_attributes}
+        attr = {k: v for k, v in flm_series.items() if k not in flm_attributes}
         kwargs = dict(path=attr.pop('path'),
                       is_raw=attr.pop('is_raw'),
                       dataset_type=attr.pop('dataset_type'),
@@ -85,7 +87,7 @@ class Dataset(object):
         if name is not None:
             self.name = str(name)
         else:
-            self._name = None
+            self.name = None
         self.path = pathlib.Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
@@ -108,6 +110,16 @@ class Dataset(object):
         Should return True if the dataset is found a valid, false otherwise
         """
         raise NotImplementedError('`is_valid` is not defined for generic datasets')
+
+    def associated_files(self, folder=None):
+        """Give a list of all files associated with this dataset
+
+        Args:
+            folder: Where to look for files? default to self.path
+
+        Returns:
+        """
+        raise NotImplementedError
 
     def get_flexilims_entry(self):
         """Get the flexilims entry for this dataset
@@ -201,17 +213,28 @@ class Dataset(object):
         differences = pd.concat((differences, online.T))
         return differences
 
-    def format(self):
-        """Format a dataset as a series similar to get_entities output
+    def format(self, mode='flexilims'):
+        """Format a dataset
 
-        This will not include elements that are not used by the Dataset class such as created_by for instance
+        This can generate either a 'flexilims' type of output (a series similar to get_entities output) or a 'yaml'
+        type as that used by flexiznam.camp
+
+        The flexilims series will not include elements that are not used by the Dataset class such as created_by
+
+        Args:
+            mode: 'fexilims' or 'yaml'
         """
         data = dict(path=str(self.path), created=self.created, dataset_type=self.dataset_type,
-                          is_raw='yes' if self.is_raw else 'no')
+                    is_raw='yes' if self.is_raw else 'no')
         data.update(self.extra_attributes)
-        data.update(dict(name=self.name, project=self.project_id, type='dataset'))
-        series = pd.Series(data, name=self.name)
-        return series
+        if mode.lower() == 'flexilims':
+            data.update(dict(name=self.name, project=self.project_id, type='dataset'))
+            series = pd.Series(data, name=self.name)
+            return series
+        elif mode.lower() == 'yaml':
+            return data
+        else:
+            raise IOError('Unknown mode "%s". Must be `flexilims` or `yaml`' % mode)
 
     @property
     def project_id(self):

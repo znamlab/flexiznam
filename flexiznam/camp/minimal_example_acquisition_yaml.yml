@@ -1,0 +1,11 @@
+---
+
+project: "test"               # the name of the project. Must exist in flexiznam configuration
+mouse: "PZAH4.1c"             # name of the mouse as on flexilims (if different than mcms)
+session: "S20210513"          # session name for flexilims. Is usually SYYYYMMDD but no actual requirement
+
+recordings:                    # list of recording
+  R182758_SphereCylinder: # name of the recording. Must be unique for this session but can be anything.
+    protocol: "SphereCylinder"     # protocol type - mandatory
+  R193432_Retinotopy: # another recording in the same session
+    protocol: "Retinotopy"         # protocol type
