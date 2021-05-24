@@ -6,6 +6,7 @@ from flexiznam.config import PARAMETERS
 
 TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210513/R193432_Retinotopy'
 
+
 @pytest.mark.integtest
 def test_dataset():
     ds = Dataset(project='test', name='test_ran_on_20210513_113928_dataset', path='fake/path', is_raw='no',
@@ -37,6 +38,7 @@ def test_from_flexilims():
     project = 'test'
     ds = Dataset.from_flexilims(project, name='R101501_retinotopy_suite2p_traces')
 
+
 @pytest.mark.integtest
 def test_camera():
     ds = CameraData.from_folder(TEST_FOLDER)
@@ -47,10 +49,11 @@ def test_camera():
     assert d.flexilims_status() == 'not online'
     assert d.is_valid()
 
+
 @pytest.mark.integtest
 def test_harp():
-    TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210510/ParamLog/R184500'
-    ds = HarpData.from_folder(TEST_FOLDER)
+    test_folder = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210510/ParamLog/R184500'
+    ds = HarpData.from_folder(test_folder)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))

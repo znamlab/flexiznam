@@ -119,6 +119,21 @@ class ScanimageData(Dataset):
                 return False
         return True
 
+    def format(self, mode='flexilims'):
+        """Format a dataset
+
+        This can generate either a 'flexilims' type of output (a series similar to get_entities output) or a 'yaml'
+        type as that used by flexiznam.camp
+
+        The flexilims series will not include elements that are not used by the Dataset class such as created_by
+
+        Args:
+            mode: 'flexilims' or 'yaml'
+        """
+        formatted = Dataset.format(self, mode=mode)
+        formatted['si_acquisition_name'] = self.si_acquisition_name
+        return formatted
+
     def __len__(self):
         """Number of tif files in the dataset"""
         return len(self.tif_files)

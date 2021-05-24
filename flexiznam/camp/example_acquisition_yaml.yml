@@ -42,6 +42,7 @@ datasets: # datasets attached to the session, not to a recording
   overview_picture_01: # another dataset
     type: 'scanimage'
     path: './PZAH4.1c/S20210513/overview_00001_00001.tif' # path should be unqnbiguous. Point to a file if multiple
+    autogen_name: 'overview00001'  # scanimage acquisition name to recognise the dataset
     # of the same type are present in the same folder
   overview_picture_02:
     type: 'scanimage'

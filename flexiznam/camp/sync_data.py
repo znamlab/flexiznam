@@ -11,9 +11,10 @@ from flexiznam.config import PARAMETERS
 
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     if raw_data_folder is None:
-        if ('camp' not in PARAMETERS) or ('raw_data_source' not in PARAMETERS['camp']):
-            raise ConfigurationError('camp/raw_data_source not found in configuration file')
-        raw_data_folder = PARAMETERS['camp']['raw_data_source']
+        raw_data_folder = PARAMETERS['projects_root']
+        # if ('camp' not in PARAMETERS) or ('raw_data_source' not in PARAMETERS['camp']):
+        #     raise ConfigurationError('camp/raw_data_source not found in configuration file')
+        # raw_data_folder = PARAMETERS['camp']['raw_data_source']
 
     session_data = clean_yaml(path_to_yaml)
 
@@ -25,22 +26,15 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     if not home_folder.is_dir():
         raise FileNotFoundError('Session directory %s does not exist' % home_folder)
     session_data['full_path'] = home_folder
-    sess_ds = create_dataset(dataset_infos=session_data['datasets'],verbose=verbose,
-                             parent=session_data, raw_data_folder=raw_data_folder)
-
-    for ds_name, ds in sess_ds.items():
-        ds = dict(ds.format().loc[['path', 'created', 'dataset_type', 'is_raw', 'name']])
-        assert ds_name not in session_data['datasets']
-        session_data['datasets'][ds_name] = ds
+    session_data['datasets'] = create_dataset(dataset_infos=session_data['datasets'], verbose=verbose,
+                                              parent=session_data, raw_data_folder=raw_data_folder,
+                                              error_handling='report')
 
     for rec_name, recording in session_data['recordings'].items():
         recording['full_path'] = home_folder / rec_name
-        rec_ds = create_dataset(dataset_infos=recording['datasets'], parent=recording, raw_data_folder=raw_data_folder,
-                                verbose=verbose)
-        for ds_name, ds in rec_ds.items():
-            ds = dict(ds.format().loc[['path', 'created', 'dataset_type', 'is_raw', 'name']])
-            assert ds_name not in recording['datasets']
-            recording['datasets'][ds_name] = ds
+        recording['datasets'] = create_dataset(dataset_infos=recording['datasets'], parent=recording,
+                                               raw_data_folder=raw_data_folder, verbose=verbose,
+                                               error_handling='report')
 
     # remove the full path that are not needed
     _clean_dictionary_recursively(session_data, ['full_path'])
@@ -63,10 +57,26 @@ def _clean_dictionary_recursively(dictionary, keys):
             _clean_dictionary_recursively(v, keys)
 
 
-def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True):
+def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_handling='crash'):
+    """ Create dictionary of datasets
+
+    Args:
+        dataset_infos: extra information for reading dataset outside of raw_data_folder or adding optional arguments
+        parent: yaml dictionary of the parent level
+        raw_data_folder: folder where to look for data
+        verbose: (True) Print info about dataset found
+        error_handling: `crash` or `report`. When something goes wrong, raise an error if `crash` otherwise replace the
+                        dataset instance by the error message in the output dictionary
+
+    Returns: dictionary of dataset instances
+
+    """
 
     # autoload datasets
     datasets = Dataset.from_folder(parent['full_path'])
+    error_handling = error_handling.lower()
+    if error_handling not in ('crash', 'report'):
+        raise IOError('error_handling must be `crash` or `report`')
 
     # check dataset_infos for extra datasets
     for ds_name, ds_data in dataset_infos.items():
@@ -78,23 +88,37 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True):
         elif ds_path.is_file() and (ds_path.parent != parent['full_path']):
             ds = ds_class.from_folder(ds_path.parent, verbose=verbose)
         elif not ds_path.exists():
-            raise FileNotFoundError('Dataset not found. Path %s does not exist' % ds_path)
+            err_msg = 'Dataset not found. Path %s does not exist' % ds_path
+            if error_handling == 'crash':
+                raise FileNotFoundError(err_msg)
+            datasets[ds_name] = 'XXERRORXX!! ' + err_msg
+            continue
         else:
             # if it is in the parent['full_path'] folder, I already loaded it.
-            ds = {k: v for k, v in datasets.items() if v.dataset_type == ds_data['type']}
+            ds = {k: v for k, v in datasets.items() if isinstance(v, ds_class)}
         if not ds:
-            raise SyncYmlError('Dataset "%s" not found' % ds_name)
+            err_msg = 'Dataset "%s" not found in %s' % (ds_name, ds_path)
+            if error_handling == 'crash':
+                raise SyncYmlError(err_msg)
+            datasets[ds_name] = 'XXERRORXX!! ' + err_msg
+
         # match by name
         if ds_name in ds:
             ds = ds[ds_name]
-        else:             # now we're in trouble.
-            raise SyncYmlError('Could not find dataset "%s". Found %s instead' % (ds_name, ', '.join(ds.keys())))
+        elif ('autogen_name' in ds_data) and (ds_data['autogen_name'] in ds):
+            ds = ds[ds_data['autogen_name']]
+        else:      # now we're in trouble.
+            err_msg = 'Could not find dataset "%s". Found "%s" instead' % (ds_name, ', '.join(ds.keys()))
+            if error_handling == 'crash':
+                raise SyncYmlError(err_msg)
+            datasets[ds_name] = 'XXERRORXX!! ' + err_msg
+            continue
         if ds_data['attributes'] is not None:
             ds.extra_attributes.update(ds_data['attributes'])
-        if ds_data['notes'] is not None:
-            ds.extra_attributes['notes'] = ds_data['notes']
+        for field in ('notes', 'autogen_name'):
+            if ds_data[field] is not None:
+                ds.extra_attributes[field] = ds_data[field]
         datasets[ds_name] = ds
-
     return datasets
 
 
@@ -164,7 +188,7 @@ def read_dataset(name, data, parent):
     Returns:
         a formatted dictionary including 'full_name', 'type', 'path', 'notes', 'attributes' and 'name'
     """
-    level, _ = read_level(data, mandatory_args=('type', 'path'), optional_args=('notes', 'attributes'),
+    level, _ = read_level(data, mandatory_args=('type', 'path'), optional_args=('notes', 'attributes', 'autogen_name'),
                           nested_levels=())
     level['name'] = name
     level['full_name'] = '_'.join([name, parent['full_name']])

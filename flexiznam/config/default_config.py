@@ -18,7 +18,7 @@ DEFAULT_CONFIG = dict(
     # the root path to the `project` folder on CAMP
     projects_root='/camp/lab/znamenskiyp/home/shared/projects',
 
-    # Use for data transfer and dataset detection
-    camp=dict(raw_data_source=r'D:\Data',  # local path to the folder containing the raw data, use only to transfer away
-              target_subfolder='raw')
+    # Use for data dataset detection
+    data_subfolder=dict(raw='raw',
+                        processed='processed')
 )

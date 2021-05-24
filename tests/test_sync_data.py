@@ -14,4 +14,4 @@ def test_clean_yaml():
 
 def test_parse_yaml(tmpdir):
     sync_data.parse_yaml(PATH_TO_MINI_YAML)
-    sync_data.parse_yaml(PATH_TO_FULL_YAML)
+    sess_data = sync_data.parse_yaml(PATH_TO_FULL_YAML, verbose=False)

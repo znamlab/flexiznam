@@ -3,9 +3,9 @@ Class to handle dataset identification and validation
 """
 import pathlib
 
-import flexiznam
-import flexiznam as fzn
 import pandas as pd
+import flexiznam as fzn
+from flexiznam.errors import FlexilimsError, DatasetError
 
 
 class Dataset(object):
@@ -25,6 +25,8 @@ class Dataset(object):
         If you know which dataset to expect, use the subclass directly
         """
         data = dict()
+        if not cls.SUBCLASSES:
+            raise IOError('Dataset subclasses not assigned')
         for ds_type, ds_class in cls.SUBCLASSES.items():
             if verbose:
                 print('Looking for %s' % ds_type)
@@ -32,8 +34,10 @@ class Dataset(object):
                 res = ds_class.from_folder(folder)
             except OSError:
                 continue
-            data[ds_type] = res
-        return res
+            if any(k in data for k in res):
+                raise DatasetError('Found two datasets with the same name')
+            data.update(res)
+        return data
 
     @staticmethod
     def from_flexilims(project=None, name=None, data_series=None):
@@ -46,7 +50,8 @@ class Dataset(object):
         Args:
             project: Name of the project or hexadecimal project_id
             name: Unique name of the dataset on flexilims
-            data_series: default to None. pd.Series as returned by fzn.get_entities. If provided, superseeds project and name
+            data_series: default to None. pd.Series as returned by fzn.get_entities. If provided, superseeds project and
+                         name
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
@@ -67,7 +72,7 @@ class Dataset(object):
     def _format_series_to_kwargs(flm_series):
         """Format a flm get reply into kwargs valid for Dataset constructor"""
         flm_attributes = {'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'origin_id', 'objects',
-                          'customEntities',  'project'}
+                          'customEntities', 'project'}
         d = dict()
         for k, v in flm_series.items():
             d[k] = v
@@ -81,9 +86,20 @@ class Dataset(object):
                       name=flm_series.name)
         return kwargs
 
-    def __init__(self, path, is_raw, dataset_type, extra_attributes={}, created=None, project=None, name=None,
+    def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes={}, created=None, project=None,
                  project_id=None):
-        """Construct a dataset manually"""
+        """Construct a dataset manually. Is usually called through static methods 'from_folder' or 'from_flexilims'
+
+        Args:
+            path: folder containing the dataset or path to file (valid only for single file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            dataset_type: type of the dataset, must be in Dataset.VALID_TYPES
+            name: name of the dataset. If it differs from automatically generated name, autogen_name must be specified
+            extra_attributes: optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from project_id
+            project_id: hexadecimal code for the project. Must be in config, can be guessed from project
+        """
         if name is not None:
             self.name = str(name)
         else:
@@ -149,15 +165,17 @@ class Dataset(object):
         Returns: Flexilims reply
         """
         status = self.flexilims_status()
-        if (status == 'different'):
+        if status == 'different':
+            if mode == 'safe':
+                raise FlexilimsError('Cannot change existing flexilims entry with mode=`safe`')
             raise NotImplementedError('Updating entries is not')
-        if (status == 'up-to-date'):
+        if status == 'up-to-date':
             print('Already up to date, nothing to do')
             return
         # we are in 'not online' case
-        resp = fzn.add_dataset(parent_id=parent_id, dataset_type=self.dataset_type, created=self.created, path=self.path,
-                        is_raw='yes' if self.is_raw else 'no', project_id=self.project_id, dataset_name=self.name,
-                        attributes=self.extra_attributes)
+        resp = fzn.add_dataset(parent_id=parent_id, dataset_type=self.dataset_type, created=self.created,
+                               path=self.path, is_raw='yes' if self.is_raw else 'no', project_id=self.project_id,
+                               dataset_name=self.name, attributes=self.extra_attributes)
         return resp
 
     def flexilims_status(self):
@@ -209,7 +227,7 @@ class Dataset(object):
 
         only_online = online_index - offline_index
         online = pd.DataFrame([pd.Series({k: 'N/A' for k in only_online}, name='offline'),
-                            flm_data[only_online].rename('flexilims', axis=0)])
+                               flm_data[only_online].rename('flexilims', axis=0)])
         differences = pd.concat((differences, online.T))
         return differences
 
@@ -222,7 +240,7 @@ class Dataset(object):
         The flexilims series will not include elements that are not used by the Dataset class such as created_by
 
         Args:
-            mode: 'fexilims' or 'yaml'
+            mode: 'flexilims' or 'yaml'
         """
         data = dict(path=str(self.path), created=self.created, dataset_type=self.dataset_type,
                     is_raw='yes' if self.is_raw else 'no')
@@ -291,5 +309,3 @@ class Dataset(object):
         else:
             value = bool(value)
         self._is_raw = value
-
-
