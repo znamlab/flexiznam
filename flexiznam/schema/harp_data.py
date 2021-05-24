@@ -21,15 +21,15 @@ class HarpData(Dataset):
         output = {}
         matched_files = set()
         for bin_file in bin_files:
-            m = re.match('(.*)_harpmessage_(.*).bin', bin_file)
+            m = re.match('(.*?)_?harpmessage_?(.*?).bin', bin_file)
             if not m:
                 if verbose:
                     print('`_harpmessage_` is not in binary file name: %s.' % bin_file)
                 continue
 
-            pattern = '_(.*)_'.join(m.groups()) + '.csv'
+            pattern = '(.*)'.join(m.groups()) + '.csv'
             matches = [re.match(pattern, f) for f in csv_files]
-            associated_csv = {m.groups()[0]:f for f, m in zip(csv_files, matches) if m}
+            associated_csv = {m.groups()[0].strip('_'): f for f, m in zip(csv_files, matches) if m}
             if matched_files.intersection(associated_csv.values()):
                 raise IOError('A csv file matched with multiple binary files.')
             matched_files.update(associated_csv.values())
