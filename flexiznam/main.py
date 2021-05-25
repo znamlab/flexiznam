@@ -256,7 +256,8 @@ def get_entity(datatype, query_key=None, query_value=None,
     """
     Get one entity and format result.
 
-    If multiple entities on the database match the query, raise a NameNotUniqueException
+    If multiple entities on the database match the query, raise a NameNotUniqueException,
+    if nothing match, return None
 
     If an open Flexylims session is provided, the other authentication arguments
     aree not needed (or used)
@@ -280,6 +281,8 @@ def get_entity(datatype, query_key=None, query_value=None,
     entity = get_entities(datatype=datatype, query_key=query_key, query_value=query_value,
                           project_id=project_id, username=username, session=session,
                           password=password, name=name, origin_id=origin_id, id=id)
+    if not len(entity):
+        return None
     if len(entity) != 1:
         raise NameNotUniqueException('Found %d entities, not 1' %  len(entity))
     return entity.iloc[0]
