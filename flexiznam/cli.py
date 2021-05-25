@@ -57,9 +57,9 @@ def add_password(app, username, password, password_file):
 @cli.command()
 @click.option('-s', '--source_yaml', required=True, help='Manually generated yaml to seed automatic method.')
 @click.option('-t', '--target_yaml', default=None, help='Path to outpout YAML file.')
-@click.option('-r', '--raw_data_dir', default=None, help='Path to the root folder containing raw data')
+@click.option('-r', '--raw_data_folder', default=None, help='Path to the root folder containing raw data')
 @click.option('--overwrite/--no-overwrite', default=False, help='Overwrite the output if it exists.')
-def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_dir=None):
+def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder=None):
     """Parse source_yaml and autogenerate a full yaml containing all datasets"""
     source_yaml = pathlib.Path(source_yaml)
     if target_yaml is None:
@@ -69,7 +69,7 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_dir=No
         raise FileExistsError('File %s already exists. Use --overwrite to replace' % target_yaml)
     click.echo('Reading %s' % source_yaml)
     try:
-        parsed = camp.sync_data.parse_yaml(source_yaml, raw_data_folder=raw_data_dir, verbose=False)
+        parsed = camp.sync_data.parse_yaml(source_yaml, raw_data_folder=raw_data_folder, verbose=False)
     except FileNotFoundError as err:
         msg = 'Cannot process yaml file. Could not access the data.\n%s' % err.args[0]
         raise click.ClickException(msg)
@@ -81,4 +81,18 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_dir=No
             click.echo('              %s' % v.strip('XXERRRORR!! '))
         click.echo('Fix manually these errors before uploading to flexilims')
     camp.sync_data.write_session_data_as_yaml(parsed, target_file=target_yaml, overwrite=overwrite)
-    click.echo('Processed yaml saved to %s' % target_yaml)
+    click.echo('Processed yaml saved to `%s`' % target_yaml)
+    
+
+@cli.command()
+@click.option('-s', '--source_yaml', required=True, help='Clean yaml without any error.')
+@click.option('-r', '--raw_data_folder', default=None, help='Path to the root folder containing raw data')
+@click.option('-m', '--mode', default=False, 
+              help='How to handle conflict? Abort by default. Valid alternatives are `append` and `overwrite`.')
+def yaml_to_flexilims(source_yaml, raw_data_folder=None, mode=None):
+    """Create entries on flexilims corresponding to yaml"""
+    source_yaml = pathlib.Path(source_yaml)
+    try:
+        camp.sync_data.upload_yaml(source_yaml, raw_data_folder)
+    except errors.SyncYmlError as err:
+        raise click.ClickException(err.args[0])

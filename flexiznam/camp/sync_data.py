@@ -2,11 +2,39 @@
 import pathlib
 import re
 import warnings
-
 import yaml
+
+import flexiznam as fzn
 from flexiznam.errors import SyncYmlError, ConfigurationError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
+
+
+
+
+def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True):
+    """Upload data from one yaml to flexilims
+
+    Args:
+        source_yaml: path to clean yaml
+        mode: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
+        raw_data_folder: path to the folder containing the data. Default to project_root/projet/raw
+        verbose: print progress
+
+    Returns: dictionary or flexilims ID
+    """
+
+    errors = find_xxerrorxx(yml_file=source_yaml)
+    if errors:
+        raise SyncYmlError('The yaml file still contains error. Fix it')
+    session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
+
+    # first find the mouse
+    sess = fzn.get_session(project_id=session_data['project'])
+    mouse = fzn.get_entities(datatype='mouse', name=session_data['mouse'], session=sess)
+    if not len(mouse):
+        raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
+
 
 
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):

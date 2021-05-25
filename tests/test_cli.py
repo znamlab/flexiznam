@@ -1,3 +1,4 @@
+import pytest
 import pathlib
 import yaml
 from click.testing import CliRunner
@@ -60,4 +61,32 @@ def test_make_full_yaml(tmp_path):
     with open(out_yml, 'r') as reader:
         auto_out = yaml.safe_load(reader)
     assert len(auto_out) == 10
+
+
+@pytest.mark.integtest
+def test_upload(tmp_path):
+    # first generate a yaml with and without error:
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    path_to_full_yaml = tmp_path / 'full_yaml.yml'
+    path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
+    with open(path_to_mini_yaml, 'w') as minifile:
+        yaml.dump(acq_yaml_and_files.MINIAML, minifile)
+    with open(path_to_full_yaml, 'w') as fullfile:
+        yaml.dump(acq_yaml_and_files.FAML, fullfile)
+
+    runner = CliRunner()
+    err_yml = tmp_path / 'with_error.yml'
+    result = runner.invoke(cli.process_yaml, ['-s', path_to_full_yaml, '-t', err_yml, '-r', tmp_path])
+    assert result.exit_code == 0
+    out_yml = tmp_path / 'without_error.yml'
+    result = runner.invoke(cli.process_yaml, ['-s', path_to_mini_yaml, '-t', out_yml, '-r', tmp_path])
+    assert result.exit_code == 0
+
+    # now do the actual test
+    result = runner.invoke(cli.yaml_to_flexilims, ['-s', err_yml, '-r', tmp_path])
+    assert result.exit_code == 1
+    assert result.output == 'Error: The yaml file still contains error. Fix it\n'
+
+    result = runner.invoke(cli.yaml_to_flexilims, ['-s', out_yml, '-r', tmp_path])
+    assert result.exit_code == 0
 

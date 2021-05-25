@@ -55,3 +55,13 @@ def test_write_yaml(tmp_path):
     with open(target, 'r') as reader:
         reload = yaml.safe_load(reader)
     assert reload == pure_yaml
+
+
+@pytest.mark.integtest
+def test_upload(tmp_path):
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
+    with open(path_to_mini_yaml, 'w') as fullfile:
+        yaml.dump(acq_yaml_and_files.MINIAML, fullfile)
+
+    sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path)
