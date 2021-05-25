@@ -6,6 +6,7 @@ import re
 
 import pandas as pd
 import flexiznam as fzn
+from flexiznam.utils import compare_series
 from flexiznam.errors import FlexilimsError, DatasetError
 
 
@@ -182,10 +183,7 @@ class Dataset(object):
             raise IOError('You must specify the project to get flexilims status')
         if self.name is None:
             raise IOError('You must specify the dataset name to get flexilims status')
-        series = fzn.get_entities(datatype='dataset', project_id=self.project_id, name=self.name)
-        if len(series):
-            assert len(series) == 1
-            series = series.iloc[0]
+        series = fzn.get_entity(datatype='dataset', project_id=self.project_id, name=self.name)
         return series
 
     def update_flexilims(self, parent_id, mode='safe'):
@@ -249,22 +247,8 @@ class Dataset(object):
         flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities', 'incrementalId',
                                   'id', 'origin_id'])
         fmt = self.format()
-        offline_index = set(fmt.index)
-        online_index = set(flm_data.index)
 
-        intersection = offline_index.intersection(online_index)
-        differences = fmt[intersection].compare(flm_data[intersection])
-        differences.columns = ['offline', 'flexilims']
-
-        only_offline = offline_index - online_index
-        off = pd.DataFrame([fmt[only_offline].rename('offline', axis=0),
-                            pd.Series({k: 'N/A' for k in only_offline}, name='flexilims')])
-        differences = pd.concat((differences, off.T))
-
-        only_online = online_index - offline_index
-        online = pd.DataFrame([pd.Series({k: 'N/A' for k in only_online}, name='offline'),
-                               flm_data[only_online].rename('flexilims', axis=0)])
-        differences = pd.concat((differences, online.T))
+        differences = compare_series(fmt, flm_data)
         return differences
 
     def format(self, mode='flexilims'):

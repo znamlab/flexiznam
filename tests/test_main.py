@@ -34,7 +34,7 @@ def test_get_experimental_sessions():
 @pytest.mark.integtest
 def test_get_entities():
     mice_df = fzn.get_entities(project_id=PARAMETERS['project_ids']['test'], datatype='mouse')
-    assert mice_df.shape == (2, 70)
+    assert mice_df.shape == (3, 70)
 
 
 @pytest.mark.integtest

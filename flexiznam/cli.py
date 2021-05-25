@@ -3,7 +3,7 @@ import pathlib
 import click
 import yaml
 from flexiznam import errors, main, camp
-from flexiznam.config import utils
+from flexiznam.config import config_tools
 
 
 @click.group()
@@ -30,13 +30,13 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 def config(template=None, config_folder=None):
     """Create a configuration file if none exists."""
     try:
-        fname = utils._find_file('config.yml', config_folder=config_folder)
+        fname = config_tools._find_file('config.yml', config_folder=config_folder)
         click.echo('Configuration file currently used is:\n%s' % fname)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
-        utils.create_config(template=template, config_folder=config_folder)
+        config_tools.create_config(template=template, config_folder=config_folder)
     click.echo('\nCurrent configuration is:')
-    prm = utils.load_param(param_folder=config_folder)
+    prm = config_tools.load_param(param_folder=config_folder)
     click.echo(yaml.dump(prm))
 
 
@@ -50,7 +50,7 @@ def config(template=None, config_folder=None):
               help='File to edit or create to add if not using the config folder')
 def add_password(app, username, password, password_file):
     """Edit or create password file"""
-    pass_file = utils.add_password(app.lower(), username, password, password_file)
+    pass_file = config_tools.add_password(app.lower(), username, password, password_file)
     click.echo('Password added in %s' % pass_file)
 
 
