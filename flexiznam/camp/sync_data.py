@@ -10,6 +10,15 @@ from flexiznam.config import PARAMETERS
 
 
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
+    """Read an acquisition yaml and create corresponding datasets
+
+    Args:
+        path_to_yaml: path to the file to parse
+        raw_data_folder: root folder containing the mice folders
+        verbose: print info while looking for datasets
+
+    Returns: A yaml dictionary with datset classes
+    """
     if raw_data_folder is None:
         raw_data_folder = PARAMETERS['projects_root']
         # if ('camp' not in PARAMETERS) or ('raw_data_source' not in PARAMETERS['camp']):
@@ -41,20 +50,54 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     return session_data
 
 
-def _clean_dictionary_recursively(dictionary, keys):
-    """Recursively pop keys from a dictionary inplace
+def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
+    """Write a session_data dictionary into a yaml
+
+    Args:
+        session_data: dictionary with Dataset instances, as returned by parse_yaml
+        target_file: path to the output file (if None, does not write to disk)
+        overwrite: replace target file if it already exists (default False)
+
+    Returns: the pure yaml dictionary
+    """
+    out_dict = session_data.copy()
+    _clean_dictionary_recursively(out_dict, format_dataset=True)
+    if target_file is not None:
+        target_file = pathlib.Path(target_file)
+        if target_file.exists() and not overwrite:
+            raise IOError('Target file %s already exists' % target_file)
+        with open(target_file, 'w') as writer:
+            yaml.dump(out_dict, writer)
+    return out_dict
+
+
+
+def _clean_dictionary_recursively(dictionary, keys={}, path2string=True, format_dataset=False):
+    """Recursively clean a dictionary inplace
 
     Args:
         dictionary: dict (of dict)
-        keys: list of keys to pop
+        keys: list of keys to pop from the dictionary
+        path2string: replace Path object by their string representation (default True)
+        format_dataset: replace Dataset instances by their yaml representation (default False)
     """
+
     if isinstance(keys, str):
         keys = [keys]
     for k in keys:
         dictionary.pop(k, None)
-    for v in dictionary.values():
+    if format_dataset:
+        ds_classes = set(Dataset.SUBCLASSES.values())
+        ds_classes.add(Dataset)
+    for k, v in dictionary.items():
         if isinstance(v, dict):
-            _clean_dictionary_recursively(v, keys)
+            _clean_dictionary_recursively(v, keys, path2string, format_dataset)
+        if path2string and isinstance(v, pathlib.Path):
+            dictionary[k] = str(v)
+        if format_dataset:
+            if any([isinstance(v, cls) for cls in ds_classes]):
+                dictionary[k] = v.format(mode='yaml')
+
 
 
 def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_handling='crash'):
@@ -221,3 +264,27 @@ def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'), option
     if len(yml_level):
         raise SyncYmlError('Got unexpected attribute(s): %s' % (', '.join(yml_level.keys())))
     return level, nested_levels
+
+
+def find_xxerrorxx(yml_file=None, yml_data=None, pattern='XXERRORXX', _output=None):
+    """Utility to find where things went wrong
+
+    Look through a `yml_file` or the corresponding `yml_Data` dictionary recursively.
+    Returns a dictionary with all entries containing the error `pattern`
+
+    _output is used for recursive calling.
+    """
+    if yml_file is not None:
+        if yml_data is not None:
+            raise IOError('Set either yml_file OR yml_data')
+        with open(yml_file, 'r') as reader:
+            yml_data = yaml.safe_load(reader)
+
+    if _output is None:
+        _output = dict()
+    for k, v in yml_data.items():
+        if isinstance(v, dict):
+            _output = find_xxerrorxx(yml_data=v, pattern=pattern, _output=_output)
+        elif isinstance(v, str) and (pattern in v):
+            _output[k] = v
+    return _output
