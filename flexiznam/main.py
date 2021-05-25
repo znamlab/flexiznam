@@ -250,6 +250,40 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
         results.set_index('name', drop=False, inplace=True)
     return results
 
+def get_entity(datatype, query_key=None, query_value=None,
+                 project_id=None, username=None, session=None, password=None,
+                 name=None, origin_id=None, id=None):
+    """
+    Get one entity and format result.
+
+    If multiple entities on the database match the query, raise a NameNotUniqueException
+
+    If an open Flexylims session is provided, the other authentication arguments
+    aree not needed (or used)
+
+    Args:
+        datatype (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
+            'recording', or 'dataset'
+        query_key (str): attribute to filter by
+        query_value (str): attribute value to select
+        project_id (str): text name of the project
+        username (str): Flexylims username
+        session (Flexilims): Flexylims session object
+        password (str): Flexylims password
+        name (str): filter by name
+        origin_id (str): filter by origin / parent
+        id (str): filter by hexadecimal id
+
+    Returns:
+        Series: containing the entity
+    """
+    entity = get_entities(datatype=datatype, query_key=query_key, query_value=query_value,
+                          project_id=project_id, username=username, session=session,
+                          password=password, name=name, origin_id=origin_id, id=id)
+    if len(entity) != 1:
+        raise NameNotUniqueException('Found %d entities, not 1' %  len(entity))
+    return entity.iloc[0]
+
 
 def format_results(results):
     """make request output a nice df
