@@ -69,7 +69,7 @@ class ScanimageData(Dataset):
         raise NotImplementedError
 
     def __init__(self, path, name=None, tif_files=None, csv_files={}, extra_attributes={}, created=None, project=None,
-                 is_raw=True, si_acquisition_name=None):
+                 is_raw=True):
         """Create a Scanimage dataset
 
         Args:
@@ -82,15 +82,10 @@ class ScanimageData(Dataset):
             created: Date of creation. Default to the creation date of a tif file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
-            si_acquisition_name: name of the acquisition in si if different from name
         """
         super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created, project=project)
         self.csv_files = csv_files
-        if si_acquisition_name is None:
-            self.si_acquisition_name = self.name
-        else:
-            self.si_acquisition_name = str(si_acquisition_name)
         self.tif_files = tif_files
 
 
@@ -124,21 +119,6 @@ class ScanimageData(Dataset):
             if not (pathlib.Path(self.path) / file_path).exists():
                 return False
         return True
-
-    def format(self, mode='flexilims'):
-        """Format a dataset
-
-        This can generate either a 'flexilims' type of output (a series similar to get_entities output) or a 'yaml'
-        type as that used by flexiznam.camp
-
-        The flexilims series will not include elements that are not used by the Dataset class such as created_by
-
-        Args:
-            mode: 'flexilims' or 'yaml'
-        """
-        formatted = Dataset.format(self, mode=mode)
-        formatted['si_acquisition_name'] = self.si_acquisition_name
-        return formatted
 
     def __len__(self):
         """Number of tif files in the dataset"""
