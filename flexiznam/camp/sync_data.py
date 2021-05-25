@@ -105,8 +105,6 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_h
         # match by name
         if ds_name in ds:
             ds = ds[ds_name]
-        elif ('autogen_name' in ds_data) and (ds_data['autogen_name'] in ds):
-            ds = ds[ds_data['autogen_name']]
         else:      # now we're in trouble.
             err_msg = 'Could not find dataset "%s". Found "%s" instead' % (ds_name, ', '.join(ds.keys()))
             if error_handling == 'crash':
@@ -115,9 +113,8 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_h
             continue
         if ds_data['attributes'] is not None:
             ds.extra_attributes.update(ds_data['attributes'])
-        for field in ('notes', 'autogen_name'):
-            if ds_data[field] is not None:
-                ds.extra_attributes[field] = ds_data[field]
+        if ds_data['notes'] is not None:
+            ds.extra_attributes['notes'] = ds_data['notes']
         datasets[ds_name] = ds
     return datasets
 
