@@ -1,7 +1,10 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
 import pathlib
 import re
+import datetime
 import warnings
+
+import pandas as pd
 import yaml
 
 import flexiznam as fzn
@@ -12,14 +15,15 @@ from flexiznam.config import PARAMETERS
 
 
 
-def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True):
+def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, log_func=print):
     """Upload data from one yaml to flexilims
 
     Args:
         source_yaml: path to clean yaml
         mode: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
         raw_data_folder: path to the folder containing the data. Default to project_root/projet/raw
-        verbose: print progress
+        verbose: print progress information
+        log_func: function to deal with warnings and messages
 
     Returns: dictionary or flexilims ID
     """
@@ -34,7 +38,26 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True):
     mouse = fzn.get_entity(datatype='mouse', name=session_data['mouse'], session=sess)
     if mouse is None:
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
-    session = fzn.get_entity(datatype='session', name=session_data['session'], session=sess)
+
+    # deal with the session
+    m = re.match('S(\d{4})(\d\d)(\d\d)', session_data['session'])
+    if m:
+        date = '-'.join(m.groups())
+    else:
+        log_func('Cannot parse date for session %s.' % session_data['session'])
+        date = 'N/A'
+
+    attributes = session_data.get('attributes', None)
+    if attributes is None:
+        attributes = {}
+    for field in ('path', 'notes'):
+        value = session_data.get(field, None)
+        if value is not None:
+            attributes[field] = value
+
+    flexi_sess = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
+                                 session=sess, mode=mode, date=date, attributes=attributes)
+
 
 
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
