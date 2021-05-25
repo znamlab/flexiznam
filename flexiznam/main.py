@@ -122,7 +122,7 @@ def add_recording(session_id, recording_type, protocol, recording_name=None,
 
 def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
                 project_id=None, session=None, password=None, username=None,
-                dataset_name=None, attributes=None):
+                dataset_name=None, attributes=None, strict_validation=False):
     """
     Add a dataset as a child of a recording or session
     """
@@ -160,7 +160,52 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
         name=dataset_name,
         origin_id=parent_id,
         attributes=dataset_info,
-        strict_validation=False)
+        strict_validation=strict_validation
+    )
+    return resp
+
+
+def update_dataset(dataset_name=None, dataset_id=None, project_id=None,
+                   session=None, password=None, username=None, attributes=None,
+                   parent_id=None, strict_validation=False):
+    """
+    Update dataset entry on flexilims selected by name or id
+
+    TODO:
+    Check what happens if a previously added attribute value is not provided.
+    We probably want to clear those if not explicitly passed in the attributes
+    dictionary
+    """
+    assert (dataset_name is not None) or (dataset_id is not None)
+    if session is None:
+        session = get_session(project_id, username, password)
+    dataset_series = get_entity(
+        session=session,
+        datatype='dataset',
+        name=dataset_name,
+        id=dataset_id
+    )
+    assert len(dataset_series)==1
+    dataset_series = dataset_series.loc[dataset_name]
+    if parent_id is None:
+        parent_id = dataset_series['origin_id']
+    if dataset_id is None:
+        dataset_id = dataset_series['id']
+    if dataset_name is None:
+        dataset_name = dataset_series['name']
+    dataset_info = {}
+    if attributes is not None:
+        for attribute in attributes:
+            dataset_info[attribute] = attributes[attribute]
+    resp = session.update_one(
+        session=session,
+        datatype='dataset',
+        name='dataset_name',
+        id=dataset_id,
+        origin_id=parent_id,
+        attributes=dataset_info,
+        strict_validation=strict_validation
+    )
     return resp
 
 
