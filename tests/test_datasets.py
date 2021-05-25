@@ -3,14 +3,29 @@ import pathlib
 import pandas as pd
 from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
 from flexiznam.config import PARAMETERS
+from tests.tests_resources import acq_yaml_and_files
 
-TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210513/R193432_Retinotopy'
 
+def test_dataset():
+    ds = Dataset(project='test', dataset_type='camera', is_raw=False, path='')
+    # test a bunch of names and check we have what expected
+    parts_label = ['mouse', 'session', 'recording', 'dataset_name']
+    names = [dict(mouse='mouse', session='S12345678', recording='R123456', dataset_name='name_with_underscore'),
+             dict(mouse='mouse', session='S12345678_00', recording='R123456_00', dataset_name='name_with_underscore'),
+             dict(mouse='mo_use', session='S12345678', recording='R123456', dataset_name='name_with_underscore'),
+             dict(mouse='mo_use', session='S12345678_123456', recording=None, dataset_name='name_with_underscore')]
+
+    for n in names:
+        parts = [n[k] for k in parts_label]
+        ds.name = '_'.join([p for p in parts if p is not None])
+        for p in parts_label:
+            assert getattr(ds, p) == n[p]
 
 @pytest.mark.integtest
-def test_dataset():
-    ds = Dataset(project='test', name='test_ran_on_20210513_113928_dataset', path='fake/path', is_raw='no',
+def test_dataset_flexilims_integration():
+    ds = Dataset(project='test', path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='')
+    ds.dataset_name = 'test_ran_on_20210513_113928_dataset'
     st = ds.flexilims_status()
     assert st == 'different'
     rep = ds.flexilims_report()
@@ -28,7 +43,7 @@ def test_dataset():
     # and conversely
     ds.project_id = PARAMETERS['project_ids']['test']
     assert ds.project == 'test'
-    ds = Dataset(name='test_ran_on_20210513_113928_dataset', path='fake/path', is_raw='no',
+    ds = Dataset(path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='')
     assert ds.project_id is None
 
@@ -39,36 +54,38 @@ def test_from_flexilims():
     ds = Dataset.from_flexilims(project, name='R101501_retinotopy_suite2p_traces')
 
 
-@pytest.mark.integtest
-def test_camera():
-    ds = CameraData.from_folder(TEST_FOLDER)
+def test_camera(tmpdir):
+    acq_yaml_and_files.create_acq_files(tmpdir)
+    data_dir = tmpdir / acq_yaml_and_files.MOUSE / acq_yaml_and_files.SESSION / next(
+        iter(acq_yaml_and_files.MINIAML['recordings'].keys()))
+    ds = CameraData.from_folder(data_dir)
     assert len(ds) == 4
     d = ds['butt_camera']
     assert d.name == 'butt_camera'
     d.project = 'test'
-    assert d.flexilims_status() == 'not online'
     assert d.is_valid()
+    ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession', recording='testrecording')
+    assert ds['face_camera'].name == 'testmouse_testsession_testrecording_face_camera'
 
 
-@pytest.mark.integtest
-def test_harp():
-    test_folder = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210510/ParamLog/R184500'
-    ds = HarpData.from_folder(test_folder)
+def test_harp(tmpdir):
+    acq_yaml_and_files.create_acq_files(tmpdir)
+    data_dir = tmpdir / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
+    ds = HarpData.from_folder(data_dir)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
     assert d.is_valid()
-    assert len(d.csv_files) == 4
+    assert len(d.csv_files) == 5
 
 
 @pytest.mark.integtest
-def test_scanimage():
-    TEST_FOLDER = pathlib.Path(PARAMETERS['projects_root']) / '3d_vision/Data/PZAH4.1c/S20210513/R182758_SphereCylinder'
-    ds = ScanimageData.from_folder(TEST_FOLDER)
+def test_scanimage(tmpdir):
+    acq_yaml_and_files.create_acq_files(tmpdir)
+    data_dir = tmpdir / 'PZAH4.1c/S20210513/R193432_Retinotopy'
+    ds = ScanimageData.from_folder(data_dir)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
     assert d.is_valid()
-    assert len(d) == 105
-
-
+    assert len(d) == 39
