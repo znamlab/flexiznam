@@ -59,7 +59,7 @@ class Dataset(object):
             if verbose:
                 print('Looking for %s' % ds_type)
             try:
-                res = ds_class.from_folder(folder)
+                res = ds_class.from_folder(folder, verbose=verbose)
             except OSError:
                 continue
             if any(k in data for k in res):
@@ -99,7 +99,7 @@ class Dataset(object):
         try:
             ds.name = name
         except DatasetError:
-            print('!!! Cannot parse the name !!!\nWill not set mouse, session or recording')
+            print('\n!!! Cannot parse the name !!!\nWill not set mouse, session or recording')
             ds.dataset_name = name
         return ds
 

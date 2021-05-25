@@ -78,20 +78,21 @@ def test_camera(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / acq_yaml_and_files.MOUSE / acq_yaml_and_files.SESSION / next(
         iter(acq_yaml_and_files.MINIAML['recordings'].keys()))
-    ds = CameraData.from_folder(data_dir)
+    ds = CameraData.from_folder(data_dir, verbose=False)
     assert len(ds) == 4
     d = ds['butt_camera']
     assert d.name == 'butt_camera'
     d.project = 'test'
     assert d.is_valid()
-    ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession', recording='testrecording')
+    ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession', recording='testrecording',
+                                verbose=False)
     assert ds['face_camera'].name == 'testmouse_testsession_testrecording_face_camera'
 
 
 def test_harp(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
-    ds = HarpData.from_folder(data_dir)
+    ds = HarpData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
@@ -103,7 +104,7 @@ def test_harp(tmp_path):
 def test_scanimage(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/R193432_Retinotopy'
-    ds = ScanimageData.from_folder(data_dir)
+    ds = ScanimageData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == 'PZAH4.1c_S20210513_R193432_Retinotopy00001'
