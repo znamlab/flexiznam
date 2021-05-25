@@ -2,6 +2,7 @@
 Class to handle dataset identification and validation
 """
 import pathlib
+import re
 
 import pandas as pd
 import flexiznam as fzn
@@ -65,7 +66,14 @@ class Dataset(object):
             return Dataset.SUBCLASSES[dataset_type].from_flexilims(data_series=data_series)
         # No subclass, let's do it myself
         kwargs = Dataset._format_series_to_kwargs(data_series)
+        name = kwargs.pop('name')
         ds = Dataset(**kwargs)
+        ds = Dataset(**kwargs)
+        try:
+            ds.name = name
+        except DatasetError:
+            print('!!! Cannot parse the name !!!\nWill not set mouse, session or recording')
+            ds.dataset_name = name
         return ds
 
     @staticmethod
@@ -94,16 +102,17 @@ class Dataset(object):
             path: folder containing the dataset or path to file (valid only for single file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
             dataset_type: type of the dataset, must be in Dataset.VALID_TYPES
-            name: name of the dataset. If it differs from automatically generated name, autogen_name must be specified
+            name: name of the dataset as on flexilims. Is expected to include mouse, session etc...
             extra_attributes: optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from project_id
             project_id: hexadecimal code for the project. Must be in config, can be guessed from project
         """
-        if name is not None:
-            self.name = str(name)
-        else:
-            self.name = None
+        self.mouse = None
+        self.session = None
+        self.recording = None
+        self.dataset_name = None
+        self.name = name
         self.path = pathlib.Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
@@ -280,6 +289,42 @@ class Dataset(object):
         proj_id = fzn.PARAMETERS['project_ids'][value]
         self._project_id = proj_id
         self._project = value
+
+    @property
+    def name(self):
+        """Full name of the dataset, including mouse, session etc ..."""
+        if self.dataset_name is None:
+            raise DatasetError('No name set for dataset')
+        elements = [getattr(self, w) for w in ('mouse', 'session', 'recording', 'dataset_name')]
+        name = '_'.join([e for e in elements if e is not None])
+        return name
+
+    @name.setter
+    def name(self, value):
+        """Set the name if it is correctly formatted"""
+        if value is None:
+            for w in ('mouse', 'session', 'recording', 'dataset_name'):
+                setattr(self, w, None)
+            return
+        pattern = '(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
+        pattern += '_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
+        pattern += '_(?P<dataset>.*)'
+        match = re.match(pattern, value)
+        if not match:
+            raise DatasetError('Could not parse dataset name. Set self.mouse, self.session, self.recording, '
+                               'and self.dataset_name individually')
+        match = match.groupdict()
+        self.mouse = match['mouse']
+        self.dataset_name = match['dataset']
+        self.session = match['session']
+        if match['session_num'] is not None:
+            self.session += '_%s' % match['session_num']
+        if match['recording'] is None:
+            self.recording = None
+        else:
+            self.recording = match['recording']
+            if match['recording_num'] is not None:
+                self.recording += '_%s' % match['recording_num']
 
     @property
     def dataset_type(self):
