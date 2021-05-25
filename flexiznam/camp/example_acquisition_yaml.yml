@@ -1,6 +1,6 @@
 ---  # start of a new document. Should be only one per file (and --- can be omitted)
 
-project: "test"               # the name of the project. Must exist in flexiznam configuration
+project: "3d_vision"               # the name of the project. Must exist in flexiznam configuration
 mouse: "PZAH4.1c"             # name of the mouse as on flexilims (if different than mcms)
 session: "S20210513"          # session name for flexilims. Is usually SYYYYMMDD but no actual requirement
 path: "./PZAH4.1c/S20210513"  # optional. Default to ./mouse/session Used to look for datasets that have no specified

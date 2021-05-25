@@ -19,13 +19,13 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
 
     Returns: A yaml dictionary with datset classes
     """
-    if raw_data_folder is None:
-        raw_data_folder = PARAMETERS['projects_root']
-        # if ('camp' not in PARAMETERS) or ('raw_data_source' not in PARAMETERS['camp']):
-        #     raise ConfigurationError('camp/raw_data_source not found in configuration file')
-        # raw_data_folder = PARAMETERS['camp']['raw_data_source']
 
     session_data = clean_yaml(path_to_yaml)
+
+    if raw_data_folder is None:
+        raw_data_folder = pathlib.Path(PARAMETERS['projects_root'])
+        raw_data_folder /= session_data['project']
+        raw_data_folder /= PARAMETERS['data_subfolder']['raw']
 
     if session_data['path'] is not None:
         home_folder = pathlib.Path(raw_data_folder) / session_data['path']
@@ -116,7 +116,7 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_h
     """
 
     # autoload datasets
-    datasets = Dataset.from_folder(parent['full_path'])
+    datasets = Dataset.from_folder(parent['full_path'], verbose=verbose)
     error_handling = error_handling.lower()
     if error_handling not in ('crash', 'report'):
         raise IOError('error_handling must be `crash` or `report`')
