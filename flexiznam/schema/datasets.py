@@ -18,6 +18,33 @@ class Dataset(object):
     VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces', 'harp')
     SUBCLASSES = dict()
 
+    @staticmethod
+    def parse_dataset_name(name):
+        """Parse a name into mouse, session, recording, dataset_name
+
+        Returns None if parsing fails, a dictionary otherwise
+        """
+        pattern = '(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
+        pattern += '_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
+        pattern += '_(?P<dataset>.*)'
+        match = re.match(pattern, name)
+        if not match:
+            raise DatasetError('No match in: `%s`. Must be `<MOUSE>_SXXXXXX[...]_<DATASET>`.' % name)
+        # group session num and recording num together
+        output = match.groupdict()
+        sess_num = output.pop('session_num')
+        if sess_num is not None:
+            if output['session'] is None:
+                raise DatasetError('Found session number but not session name in `%s`' % name)
+            output['session'] += '_%s' % sess_num
+        rec_num = output.pop('recording_num')
+        if rec_num is not None:
+            if output['recording'] is None:
+                raise DatasetError('Found recording number but not recording name in `%s`' % name)
+            output['recording'] += '_%s' % rec_num
+        return output
+
+
     @classmethod
     def from_folder(cls, folder, verbose=True):
         """Try to load all datasets found in the folder.
@@ -294,7 +321,7 @@ class Dataset(object):
     def name(self):
         """Full name of the dataset, including mouse, session etc ..."""
         if self.dataset_name is None:
-            raise DatasetError('No name set for dataset')
+            return
         elements = [getattr(self, w) for w in ('mouse', 'session', 'recording', 'dataset_name')]
         name = '_'.join([e for e in elements if e is not None])
         return name
@@ -306,25 +333,15 @@ class Dataset(object):
             for w in ('mouse', 'session', 'recording', 'dataset_name'):
                 setattr(self, w, None)
             return
-        pattern = '(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
-        pattern += '_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
-        pattern += '_(?P<dataset>.*)'
-        match = re.match(pattern, value)
-        if not match:
-            raise DatasetError('Could not parse dataset name. Set self.mouse, self.session, self.recording, '
-                               'and self.dataset_name individually')
-        match = match.groupdict()
+        try:
+            match = Dataset.parse_dataset_name(value)
+        except DatasetError as err:
+            raise DatasetError('Cannot parse dataset name. ' + err.args[0] +
+                               '\nSet self.mouse, self.session, self.recording, and self.dataset_name individually')
         self.mouse = match['mouse']
         self.dataset_name = match['dataset']
         self.session = match['session']
-        if match['session_num'] is not None:
-            self.session += '_%s' % match['session_num']
-        if match['recording'] is None:
-            self.recording = None
-        else:
-            self.recording = match['recording']
-            if match['recording_num'] is not None:
-                self.recording += '_%s' % match['recording_num']
+        self.recording = match['recording']
 
     @property
     def dataset_type(self):
