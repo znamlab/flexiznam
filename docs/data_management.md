@@ -70,3 +70,4 @@ Before uploading, one must then manually edit the yaml to fix it. You can call `
 
 ### Upload to flexilims
 
+The project and the mouse must already exist on flexlims. You can create the project manually from the web interface (and then add its ID to your config file in `~/.flexiznam/config.yml`. The mouse can be added via the web interface or using `flexiznam add-mouse`.
