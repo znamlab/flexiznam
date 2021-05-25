@@ -11,7 +11,7 @@ class ScanimageData(Dataset):
     DATASET_TYPE = 'scanimage'
 
     @staticmethod
-    def from_folder(folder, verbose=True):
+    def from_folder(folder, verbose=True, mouse=None, session=None, recording=None):
         """Create a scanimage dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.tiff', '.tif'))]
         tif_files = [f for f in fnames if f.endswith(('.tif', '.tiff'))]
@@ -48,10 +48,13 @@ class ScanimageData(Dataset):
 
             example_tif = pathlib.Path(folder) / acq_df.filename.iloc[0]
             created = datetime.datetime.fromtimestamp(example_tif.stat().st_mtime)
-            output[acq_id] = ScanimageData(name=acq_id, path=folder,
+            output[acq_id] = ScanimageData(path=folder,
                                            tif_files=list(acq_df.filename.values),
                                            csv_files=associated_csv,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'))
+            for field in ('mouse', 'session', 'recording'):
+                setattr(output[acq_id], field, locals()[field])
+            output[acq_id].dataset_name = acq_id
 
         if verbose:
             unmatched = set(csv_files) - matched_csv
@@ -65,7 +68,7 @@ class ScanimageData(Dataset):
         """Create a camera dataset from flexilims entry"""
         raise NotImplementedError
 
-    def __init__(self, name, path, tif_files, csv_files={}, extra_attributes={}, created=None, project=None,
+    def __init__(self, path, name=None, tif_files=None, csv_files={}, extra_attributes={}, created=None, project=None,
                  is_raw=True, si_acquisition_name=None):
         """Create a Scanimage dataset
 
@@ -98,6 +101,9 @@ class ScanimageData(Dataset):
 
     @tif_files.setter
     def tif_files(self, value):
+        if value is None:
+            self._tif_files = None
+            return
         if isinstance(value, str):
             value = [value]
         value = list(sorted(value))
