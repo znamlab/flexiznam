@@ -62,61 +62,84 @@ def add_mouse(mouse_name, project_id, session=None, mcms_animal_name=None,
     return resp
 
 
-def add_experimental_session(mouse_name, date, project_id=None, session=None,
-                             password=None, username=None, session_name=None):
+def add_experimental_session(mouse_name, date, attributes={}, session_name=None, mode='abort',
+                             other_relations=None, session=None, project_id=None, username=None, password=None):
+    """Add a new session as a child entity of a mouse
+
+    Args:
+        mouse_name: str, name of the mouse. Must exist on flexilims
+        date: str, date of the session. If `session_name` is not provided, will be used as name
+        attributes: dict, dictionary of additional attributes (on top of date)
+        session_name: str or None, name of the session, usually in the shape `S20210420`.
+        mode: `abort`, `append`, or `overwrite`: how to handle conflicts
+        other_relations: ID(s) of custom entities related to the session
+        session: flexilims session
+        project_id: name of the project or hexadecimal project id (needed if session is not provided)
+        username: flexilims username (needed if session is not provided)
+        password: flexilims password (needed if session is not provided)
+
+
+    Returns: flexilims reply
     """
-    Add a new session as a child entity of a mouse
-    """
+
     if session is None:
         session = get_session(project_id, username, password)
 
     mouse_id = get_id(mouse_name, datatype='mouse', session=session)
     if session_name is None:
-        session_num = 0
-        while len(get_entities(
-                session=session,
-                datatype='session',
-                name=mouse_name + '_' + date + '_' + str(session_num))):
-            # session with this name already exists, increment the number
-            session_num += 1
-        session_name = mouse_name + '_' + date + '_' + str(session_num)
+        session_name = date
+    name = mouse_name + '_' + session_name + '_0'
 
-    session_info = {'date': date, }
-    resp = session.post(
-        datatype='session',
-        name=session_name,
-        origin_id=mouse_id,
-        attributes=session_info)
+    session_info = {'date': date}
+    if attributes is None:
+        attributes = {}
+    if ('date' in attributes) and (date != attributes['date']):
+        raise FlexilimsError('Got two values for date: %s and %s' % (date, attributes['date']))
+    session_info.update(attributes)
+    resp = update_by_name(name=name, datatype='session', origin_id=mouse_id, attributes=session_info, session=session,
+                          mode=mode, other_relations=other_relations)
     return resp
 
 
-def add_recording(session_id, recording_type, protocol, recording_name=None,
-                  project_id=None, session=None, password=None, username=None):
+def add_recording(session_id, recording_type, protocol, attributes=None, recording_name=None, mode=None,
+                  other_relations=None, session=None, project_id=None, password=None, username=None):
+    """Add a recording as a child of an experimental session
+
+    Args:
+        session_id: str, hexadecimal ID of the session. Must exist on flexilims
+        recording_type: str, one of [two_photon, widefield, intrinsic, ephys, behaviour]
+        protocol: str, experimental protocol (`retinotopy` for instance)
+        attributes: dict, dictionary of additional attributes (on top of protocol and recording_type)
+        recording_name: str or None, name of the recording, usually in the shape `R152356`.
+        mode: `abort`, `append`, or `overwrite`: how to handle conflicts
+        other_relations: ID(s) of custom entities related to the session
+        session: flexilims session
+        project_id: name of the project or hexadecimal project id (needed if session is not provided)
+        username: flexilims username (needed if session is not provided)
+        password: flexilims password (needed if session is not provided)
+
+
+    Returns: flexilims reply
     """
-    Add a recording as a child of an experimental session
-    """
+
     if session is None:
         session = get_session(project_id, username, password)
 
+    experimental_session = get_entity(datatype=session, id=session_id)
     if recording_name is None:
-        session_name = get_entities(
-            session=session, datatype='session', id=session_id
-        )['name'][0]
-        recording_num = 0
-        while len(get_entities(
-                session=session,
-                datatype='recording',
-                name=session_name + '_' + protocol + '_' + str(recording_num))):
-            # session with this name already exists, increment the number
-            recording_num += 1
-        recording_name = session_name + '_' + protocol + '_' + str(recording_num)
+        recording_name = experimental_session['name'] + '_' + protocol + '_0'
+    else:
+        recording_name = experimental_session['name'] + recording_name
 
     recording_info = {'recording_type': recording_type, 'protocol': protocol}
-    resp = session.post(
-        datatype='recording',
-        name=recording_name,
-        origin_id=session_id,
-        attributes=recording_info)
+    if attributes is None:
+        attributes = {}
+    for key in recording_info.keys():
+        if (key in attributes) and (attributes[key] != locals()[key]):
+            raise FlexilimsError('Got two values for %s: `%s` and `%s`' % (key, attributes[key], locals()[key]))
+    recording_info.update(attributes)
+    resp = update_by_name(name=recording_name, datatype='recording', origin_id=session_id, attributes=recording_info,
+                          session=session, mode=mode, other_relations=other_relations)
     return resp
 
 
@@ -185,7 +208,7 @@ def update_dataset(dataset_name=None, dataset_id=None, project_id=None,
         name=dataset_name,
         id=dataset_id
     )
-    assert len(dataset_series)==1
+    assert len(dataset_series) == 1
     dataset_series = dataset_series.loc[dataset_name]
     if parent_id is None:
         parent_id = dataset_series['origin_id']
