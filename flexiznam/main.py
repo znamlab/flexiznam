@@ -359,7 +359,8 @@ def format_results(results):
 
     for result in results:
         for attr_name, attr_value in result['attributes'].items():
-            assert attr_name not in result
+            if attr_name in result:
+                raise FlexilimsError('An entity should not have %s as attribute' % attr_name)
             result[attr_name] = attr_value
         result.pop('attributes')
     df = pd.DataFrame(results)
