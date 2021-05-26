@@ -13,8 +13,6 @@ from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 
 
-
-
 def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, log_func=print):
     """Upload data from one yaml to flexilims
 
@@ -56,7 +54,7 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
             attributes[field] = value
 
     flexi_sess = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
-                                 session=sess, mode=mode, date=date, attributes=attributes)
+                                              session=sess, mode=mode, date=date, attributes=attributes)
 
 
 

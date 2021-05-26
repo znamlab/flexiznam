@@ -3,7 +3,7 @@ import flexilims as flm
 from pathlib import Path
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
-from flexiznam.errors import NameNotUniqueException
+from flexiznam.errors import NameNotUniqueException, FlexilimsError
 
 
 def _format_project(project_id, prm):
@@ -250,9 +250,10 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
         results.set_index('name', drop=False, inplace=True)
     return results
 
+
 def get_entity(datatype, query_key=None, query_value=None,
-                 project_id=None, username=None, session=None, password=None,
-                 name=None, origin_id=None, id=None):
+               project_id=None, username=None, session=None, password=None,
+               name=None, origin_id=None, id=None):
     """
     Get one entity and format result.
 
@@ -284,8 +285,44 @@ def get_entity(datatype, query_key=None, query_value=None,
     if not len(entity):
         return None
     if len(entity) != 1:
-        raise NameNotUniqueException('Found %d entities, not 1' %  len(entity))
+        raise NameNotUniqueException('Found %d entities, not 1' % len(entity))
     return entity.iloc[0]
+
+
+def update_by_name(name, datatype, project_id=None, username=None, session=None, password=None,
+                   origin_id=None, mode='abort', attributes=None, other_relations=None):
+    assert (project_id is not None) or (session is not None)
+    if session is None:
+        session = get_session(project_id, username, password)
+    entity = get_entity(datatype=datatype, name=name, session=session)
+    if entity is not None:
+        if (mode is None) or (mode.lower() == 'abort'):
+            raise FlexilimsError('An entry named `%s` already exist. Use `overwrite` flag to replace' % name)
+        if mode.lower() == 'update':
+            # Set all old attributes to None and use only new one
+            attributes = session
+            raise NotImplementedError
+            rep = session.update_one(id=entity['id'], datatype=datatype,
+                                     origin_id=None, name=None, attributes=None, strict_validation=True,
+                                     project_id=None)
+            return rep
+        if mode.lower() == 'append':
+            # I need to generate a new name
+            suffix = name.split('_')[-1]
+            root = name[:-len(suffix) - 1]
+            if not suffix.isnumeric():
+                root += suffix
+                suffix = 0
+            else:
+                suffix = int(suffix)
+            while get_entity(datatype, name='%s_%s' % (root, suffix), session=session) is not None:
+                suffix += 1
+            name = '%s_%s' % (root, suffix)
+
+    # new name, will create one entry
+    rep = session.post(datatype=datatype, name=name, attributes=attributes, origin_id=origin_id,
+                       other_relations=other_relations, strict_validation=False)
+    return rep
 
 
 def format_results(results):
