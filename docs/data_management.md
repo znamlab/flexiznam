@@ -43,6 +43,18 @@ recording folder like the recording.
 
 File transfer is not handled by flexiznam. You should transfer all the data to CAMP first. We will just check that it is available. The path to the camp folder containing the projects must be set in the config file.
 
+The best way to transfer files from a windows computer might be to use [`robocopy`](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy). Mount the CAMP drive and just do:
+
+```
+robocopy <SOURCE_FOLDER> <DESTINATION> /e /z
+```
+
+With `/e` to copy recursively, including empty directory and `/z` to use restartable mode (in case connection is lost)
+
+You can also consider: 
+- `/j` to copy using unbuffered I/O (recommended for large files). 
+- `/copy:DAT` to copy data, attributes and timestamps but not ownership or ACL.
+- `/move` to move instead of copying (delete after successful upload)
 
 ### Validating the YAML
 
