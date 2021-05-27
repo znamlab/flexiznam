@@ -293,16 +293,18 @@ def update_entity(datatype, name=None, id=None,
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id, username, password)
-    entity = get_entity(datatype=datatype, name=name, id=id, flexilims_session=flexilims_session)
+    entity = get_entity(datatype=datatype,
+        name=name,
+        id=id,
+        flexilims_session=flexilims_session,
+        format_reply=False)
     if entity is not None:
         if (mode is None) or (mode.lower() == 'abort'):
             raise FlexilimsError('An entry named `%s` already exist. Use `overwrite` flag to replace' % name)
         if mode.lower() == 'overwrite':
-            if attributes:
-                full_attributes = {k: '' for k in entity['attributes'].keys()}
-                full_attributes.update(attributes)
-            else:
-                full_attributes = {}
+            full_attributes = {k: 'null' for k in entity['attributes'].keys()}
+            full_attributes.update(attributes)
+            print(full_attributes)
             if (origin_id is None) and ('origin_id' in entity.keys()):
                 origin_id = entity['origin_id']
             if id is None:
