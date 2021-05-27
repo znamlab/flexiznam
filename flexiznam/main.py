@@ -188,47 +188,6 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
     return resp
 
 
-def update_dataset(dataset_name=None, dataset_id=None, project_id=None,
-                   flexilims_session=None, password=None, username=None, attributes=None,
-                   parent_id=None, strict_validation=False):
-    """
-    Update dataset entry on flexilims selected by name or id
-
-    TODO:
-    Check what happens if a previously added attribute value is not provided.
-    We probably want to clear those if not explicitly passed in the attributes
-    dictionary
-    """
-    assert (dataset_name is not None) or (dataset_id is not None)
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id, username, password)
-    dataset_series = get_entity(
-        flexilims_session=flexilims_session,
-        datatype='dataset',
-        name=dataset_name,
-        id=dataset_id
-    )
-    if parent_id is None:
-        parent_id = dataset_series['origin_id']
-    if dataset_id is None:
-        dataset_id = dataset_series['id']
-    if dataset_name is None:
-        dataset_name = dataset_series['name']
-    dataset_info = {}
-    if attributes is not None:
-        for attribute in attributes:
-            dataset_info[attribute] = attributes[attribute]
-    resp = flexilims_session.update_one(
-        datatype='dataset',
-        name=dataset_name,
-        id=dataset_id,
-        origin_id=parent_id,
-        attributes=dataset_info,
-        strict_validation=strict_validation
-    )
-    return resp
-
-
 def get_entities(datatype='mouse', query_key=None, query_value=None,
                  project_id=None, username=None, flexilims_session=None, password=None,
                  name=None, origin_id=None, id=None):
