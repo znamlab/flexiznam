@@ -208,8 +208,6 @@ def update_dataset(dataset_name=None, dataset_id=None, project_id=None,
         name=dataset_name,
         id=dataset_id
     )
-    assert len(dataset_series) == 1
-    dataset_series = dataset_series.loc[dataset_name]
     if parent_id is None:
         parent_id = dataset_series['origin_id']
     if dataset_id is None:
@@ -221,9 +219,8 @@ def update_dataset(dataset_name=None, dataset_id=None, project_id=None,
         for attribute in attributes:
             dataset_info[attribute] = attributes[attribute]
     resp = flexilims_session.update_one(
-        session=flexilims_session,
         datatype='dataset',
-        name='dataset_name',
+        name=dataset_name,
         id=dataset_id,
         origin_id=parent_id,
         attributes=dataset_info,
@@ -312,9 +309,9 @@ def get_entity(datatype, query_key=None, query_value=None,
     return entity.iloc[0]
 
 
-def update_by_name(name, datatype,
-                   origin_id=None, mode='abort', attributes=None, other_relations=None,
-                   flexilims_session=None, project_id=None, username=None,password=None,):
+def update_entity(datatype, name=None, id=None,
+                   origin_id=None, mode='overwrite', attributes={}, other_relations=None,
+                   flexilims_session=None, project_id=None, username=None, password=None):
     """Update one entity identified with its datatype and name
 
     Args:
@@ -323,7 +320,8 @@ def update_by_name(name, datatype,
         origin_id (str or None): hexadecimal id of the origin
         mode (`abort`=None, `append`, `overwrite`): How to handle conflicts
         attributes (dict or None): attributes to update
-        other_relations (str or list of str): hexadecimal ID(s) of custom entities link to the entry to update
+        other_relations (str or list of str): hexadecimal ID(s) of custom entities
+            link to the entry to update
         project_id (str): text name of the project
         username (str): Flexylims username
         flexilims_session (Flexilims): Flexylims session object
@@ -333,20 +331,32 @@ def update_by_name(name, datatype,
     Returns:
 
     """
+    assert (name is not None) or (id is not None)
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id, username, password)
-    entity = get_entity(datatype=datatype, name=name, flexilims_session=flexilims_session)
+    entity = get_entity(datatype=datatype, name=name, id=id, flexilims_session=flexilims_session)
     if entity is not None:
         if (mode is None) or (mode.lower() == 'abort'):
             raise FlexilimsError('An entry named `%s` already exist. Use `overwrite` flag to replace' % name)
-        if mode.lower() == 'update':
-            # Set all old attributes to None and use only new one
-            attributes = flexilims_session
-            raise NotImplementedError
-            rep = flexilims_session.update_one(id=entity['id'], datatype=datatype,
-                                               origin_id=None, name=None, attributes=None, strict_validation=True,
-                                               project_id=None)
+        if mode.lower() == 'overwrite':
+            if attributes:
+                full_attributes = {k: '' for k in entity['attributes'].keys()}
+                full_attributes.update(attributes)
+            else:
+                full_attributes = {}
+            if (origin_id is None) and ('origin_id' in entity.keys()):
+                origin_id = entity['origin_id']
+            if id is None:
+                id = entity['id']
+            rep = flexilims_session.update_one(
+                id=id,
+                datatype=datatype,
+                origin_id=origin_id,
+                name=None,
+                attributes=full_attributes,
+                strict_validation=False
+            )
             return rep
         if mode.lower() == 'append':
             # I need to generate a new name
@@ -362,8 +372,14 @@ def update_by_name(name, datatype,
             name = '%s_%s' % (root, suffix)
 
     # new name, will create one entry
-    rep = flexilims_session.post(datatype=datatype, name=name, attributes=attributes, origin_id=origin_id,
-                                 other_relations=other_relations, strict_validation=False)
+    rep = flexilims_session.post(
+        datatype=datatype,
+        name=name,
+        attributes=attributes,
+        origin_id=origin_id,
+        other_relations=other_relations,
+        strict_validation=False
+    )
     return rep
 
 
