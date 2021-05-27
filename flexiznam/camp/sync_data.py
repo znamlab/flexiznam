@@ -32,8 +32,8 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
     session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
 
     # first find the mouse
-    sess = fzn.get_session(project_id=session_data['project'])
-    mouse = fzn.get_entity(datatype='mouse', name=session_data['mouse'], session=sess)
+    sess = fzn.get_flexilims_session(project_id=session_data['project'])
+    mouse = fzn.get_entity(datatype='mouse', name=session_data['mouse'], flexilims_session=sess)
     if mouse is None:
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
@@ -54,7 +54,7 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
             attributes[field] = value
 
     flexi_sess = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
-                                              session=sess, mode=mode, date=date, attributes=attributes)
+                                              flexilims_session=sess, mode=mode, date=date, attributes=attributes)
 
 
 

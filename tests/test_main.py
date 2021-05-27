@@ -5,7 +5,7 @@ from flexiznam.config import PARAMETERS
 
 @pytest.mark.integtest
 def test_get_session():
-    sess = fzn.get_session(project_id=PARAMETERS['project_ids']['test'])
+    sess = fzn.get_flexilims_session(project_id=PARAMETERS['project_ids']['test'])
     assert sess.username == PARAMETERS['flexilims_username']
 
 
