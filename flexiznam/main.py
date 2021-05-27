@@ -190,7 +190,7 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
 
 def get_entities(datatype='mouse', query_key=None, query_value=None,
                  project_id=None, username=None, flexilims_session=None, password=None,
-                 name=None, origin_id=None, id=None):
+                 name=None, origin_id=None, id=None, format_reply=True):
     """
     Get entities of a given type and format results.
 
@@ -209,6 +209,7 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
         name (str): filter by name
         origin_id (str): filter by origin / parent
         id (str): filter by hexadecimal id
+        format_reply (bool, default True): format the reply into a dataframe
 
     Returns:
         DataFrame: containing all matching entities
@@ -217,22 +218,17 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id, username, password)
     # Awaiting implementation on the flexilims side:
-    results = format_results(flexilims_session.get(
-        datatype,
-        query_key=query_key,
-        query_value=query_value,
-        name=name,
-        origin_id=origin_id,
-        id=id
-    ))
+    results =  flexilims_session.get(    datatype,query_key=query_key,query_value=query_value,name=name,origin_id=origin_id,id=id)
+    if not format_reply:
+        return results
+    results = format_results(results)
     if len(results):
         results.set_index('name', drop=False, inplace=True)
     return results
 
 
-def get_entity(datatype, query_key=None, query_value=None,
-               project_id=None, username=None, flexilims_session=None, password=None,
-               name=None, origin_id=None, id=None):
+def get_entity(datatype, query_key=None, query_value=None, project_id=None, username=None, flexilims_session=None, password=None,
+               name=None, origin_id=None, id=None, format_reply=True):
     """
     Get one entity and format result.
 
@@ -254,18 +250,21 @@ def get_entity(datatype, query_key=None, query_value=None,
         name (str): filter by name
         origin_id (str): filter by origin / parent
         id (str): filter by hexadecimal id
+        format_reply (bool, default True): format the reply into a dataframe
 
     Returns:
-        Series: containing the entity
+        Series: containing the entity or dictionary if format_reply is False
     """
     entity = get_entities(datatype=datatype, query_key=query_key, query_value=query_value,
                           project_id=project_id, username=username, flexilims_session=flexilims_session,
-                          password=password, name=name, origin_id=origin_id, id=id)
+                          password=password, name=name, origin_id=origin_id, id=id, format_reply=format_reply)
     if not len(entity):
         return None
     if len(entity) != 1:
         raise NameNotUniqueException('Found %d entities, not 1' % len(entity))
-    return entity.iloc[0]
+    if format_reply:
+        return entity.iloc[0]
+    return entity[0]
 
 
 def update_entity(datatype, name=None, id=None,
