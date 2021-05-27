@@ -96,7 +96,7 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     if ('date' in attributes) and (date != attributes['date']):
         raise FlexilimsError('Got two values for date: %s and %s' % (date, attributes['date']))
     session_info.update(attributes)
-    resp = update_by_name(name=name, datatype='session', origin_id=mouse_id, attributes=session_info, flexilims_session=flexilims_session,
+    resp = update_entity(name=name, datatype='session', origin_id=mouse_id, attributes=session_info, flexilims_session=flexilims_session,
                           mode=mode, other_relations=other_relations)
     return resp
 
@@ -138,7 +138,7 @@ def add_recording(session_id, recording_type, protocol, attributes=None, recordi
         if (key in attributes) and (attributes[key] != locals()[key]):
             raise FlexilimsError('Got two values for %s: `%s` and `%s`' % (key, attributes[key], locals()[key]))
     recording_info.update(attributes)
-    resp = update_by_name(name=recording_name, datatype='recording', origin_id=session_id, attributes=recording_info,
+    resp = update_entity(name=recording_name, datatype='recording', origin_id=session_id, attributes=recording_info,
                           flexilims_session=flexilims_session, mode=mode, other_relations=other_relations)
     return resp
 
@@ -304,7 +304,6 @@ def update_entity(datatype, name=None, id=None,
         if mode.lower() == 'overwrite':
             full_attributes = {k: 'null' for k in entity['attributes'].keys()}
             full_attributes.update(attributes)
-            print(full_attributes)
             if (origin_id is None) and ('origin_id' in entity.keys()):
                 origin_id = entity['origin_id']
             if id is None:
