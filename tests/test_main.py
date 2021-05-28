@@ -41,3 +41,31 @@ def test_get_entities():
 def test_get_mouse_id():
     mid = fzn.get_id(name='test_mouse', project_id=PARAMETERS['project_ids']['test'])
     assert mid == '6094f7212597df357fa24a8c'
+
+
+@pytest.mark.integtest
+def test_update_entity():
+    session = fzn.get_flexilims_session('test')
+    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    res = fzn.update_entity(
+        'dataset',
+        name=dataset_name,
+        flexilims_session=session,
+        attributes={'path': 'old/path'}
+    )
+    assert (res['attributes']['path'] == 'old/path')
+    res = fzn.update_entity(
+        'dataset',
+        name=dataset_name,
+        flexilims_session=session,
+        attributes={'path': 'new/path', 'test': 'test value'}
+    )
+    assert (res['attributes']['path'] == 'new/path')
+    assert (res['attributes']['test'] == 'test value')
+    res = fzn.update_entity(
+        'dataset',
+        name=dataset_name,
+        flexilims_session=session,
+        attributes={'path': 'test/path'}
+    )
+    assert (res['attributes']['test'] == 'null')

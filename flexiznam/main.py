@@ -304,8 +304,6 @@ def update_entity(datatype, name=None, id=None,
         if mode.lower() == 'overwrite':
             full_attributes = {k: 'null' for k in entity['attributes'].keys()}
             full_attributes.update(attributes)
-            if (origin_id is None) and ('origin_id' in entity.keys()):
-                origin_id = entity['origin_id']
             if id is None:
                 id = entity['id']
             rep = flexilims_session.update_one(
