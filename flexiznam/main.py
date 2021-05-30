@@ -286,6 +286,20 @@ def get_entity(datatype, query_key=None, query_value=None, project_id=None, user
     return entity[0]
 
 
+def generate_name(datatype, name, flexilims_session):
+    # I need to generate a new name
+    suffix = name.split('_')[-1]
+    root = name[:-len(suffix) - 1]
+    if not suffix.isnumeric():
+        root += suffix
+        suffix = 0
+    else:
+        suffix = int(suffix)
+    while get_entity(datatype, name='%s_%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
+        suffix += 1
+    name = '%s_%s' % (root, suffix)
+    return name
+
 def update_entity(datatype, name=None, id=None,
                   origin_id=None, conflicts='overwrite', attributes={}, other_relations=None,
                   flexilims_session=None, project_id=None, username=None, password=None):
@@ -335,18 +349,7 @@ def update_entity(datatype, name=None, id=None,
             )
             return rep
         if conflicts.lower() == 'append':
-            # I need to generate a new name
-            suffix = name.split('_')[-1]
-            root = name[:-len(suffix) - 1]
-            if not suffix.isnumeric():
-                root += suffix
-                suffix = 0
-            else:
-                suffix = int(suffix)
-            while get_entity(datatype, name='%s_%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
-                suffix += 1
-            name = '%s_%s' % (root, suffix)
-
+            name = generate_name(datatype, name, flexilims_session)
     # new name, will create one entry
     rep = flexilims_session.post(
         datatype=datatype,
