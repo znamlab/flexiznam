@@ -246,7 +246,7 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     return results
 
 
-def get_entity(datatype, query_key=None, query_value=None, project_id=None, username=None, flexilims_session=None, password=None,
+def get_entity(datatype=None, query_key=None, query_value=None, project_id=None, username=None, flexilims_session=None, password=None,
                name=None, origin_id=None, id=None, format_reply=True):
     """
     Get one entity and format result.
@@ -286,8 +286,13 @@ def get_entity(datatype, query_key=None, query_value=None, project_id=None, user
     return entity[0]
 
 
-def generate_name(datatype, name, flexilims_session):
-    # I need to generate a new name
+def generate_name(datatype, name, flexilims_session=None, project_id=None):
+    """
+    Generate a number for incrementally increasing the numeric suffix
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
     suffix = name.split('_')[-1]
     root = name[:-len(suffix) - 1]
     if not suffix.isnumeric():
@@ -299,6 +304,34 @@ def generate_name(datatype, name, flexilims_session):
         suffix += 1
     name = '%s_%s' % (root, suffix)
     return name
+
+
+def generate_path(name=None, id=None, project_id=None, flexilims_session=None):
+    """
+    Recursively generate a path based on origin_id
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    assert (name is not None) or (id is not None)
+    datatype = get_datatype(
+        project_id=project_id,
+        flexilims_session=flexilims_session,
+        id=id,
+        name=name
+    )
+    entity = get_entity(datatype=datatype,
+        name=name,
+        id=id,
+        flexilims_session=flexilims_session
+    )
+    if datatype == 'mouse':
+        parent_path = Path(project)
+    else:
+        parent_path = generate_path(id=entity['origin_id'], flexilims_session=flexilims_session)
+    path = parent_path / entity['name']
+    return path
+
 
 def update_entity(datatype, name=None, id=None,
                   origin_id=None, conflicts='overwrite', attributes={}, other_relations=None,
@@ -349,7 +382,7 @@ def update_entity(datatype, name=None, id=None,
             )
             return rep
         if conflicts.lower() == 'append':
-            name = generate_name(datatype, name, flexilims_session)
+            name = generate_name(datatype, name, flexilims_session=flexilims_session)
     # new name, will create one entry
     rep = flexilims_session.post(
         datatype=datatype,
@@ -379,6 +412,20 @@ def format_results(results):
         result.pop('attributes')
     df = pd.DataFrame(results)
     return df
+
+
+def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
+    """
+    Loop through possible datatypes and return the first with a matching name
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    assert (name is not None) or (id is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    for datatype in PARAMETERS['datatypes']:
+        resp = get_entity(datatype=datatype, name=name, id=id, flexilims_session=flexilims_session)
+        if resp: return datatype
+    return None
 
 
 def get_id(name, datatype='mouse', project_id=None, username=None, flexilims_session=None, password=None):

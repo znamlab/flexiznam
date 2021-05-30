@@ -72,7 +72,6 @@ class Dataset(object):
     def from_flexilims(project=None, name=None, data_series=None):
         """Loads a dataset from flexilims.
 
-
         If the dataset_type attribute of the flexilims entry defined in Dataset.SUBCLASSES, this
         subclass will be used. Otherwise a generic Dataset is returned
 
@@ -103,6 +102,52 @@ class Dataset(object):
             print('\n!!! Cannot parse the name !!!\nWill not set mouse, session or recording')
             ds.dataset_name = name
         return ds
+
+
+    @staticmethod
+    def from_origin(project=None, origin_type=None, origin_id=None,
+                    dataset_type=None, conflicts=None):
+        """Creates a dataset of a given type as a child of a parent entity
+
+        """
+        raise NotImplementedError()
+        origin = flz.get_entity(
+            datatype=origin_type,
+            id=origin_id,
+            project_id=project
+        )
+        processed = flz.get_entities(
+            project_id=project,
+            datatype='dataset',
+            origin_id=origin_id,
+            query_key='dataset_type',
+            query_value=dataset_type
+        )
+        already_processed = len(processed)>0
+        if already_processed:
+            if conflicts is None:
+                raise flz.errors.NameNotUniqueException(
+                    'Dataset {} already processed'.format(processed['name']))
+            elif conflicts == 'skip':
+                return from_flexilims(data_series=processed)
+            elif conflicts == 'append':
+                dataset_root = '%s_%s' % (origin['name'], dataset_type)
+                dataset_name = fzn.generate_name(
+                    'dataset',
+                    dataset_root,
+                    project_id=project
+                )
+            elif conflicts == 'overwrite':
+                if len(processed)==1:
+                    dataset_name = processed['name'][0]
+                else:
+                    raise flz.errors.NameNotUniqueException(
+                        '{} {} datasets exists for {}, which one to overwrite?'.format(
+                            len(processed),
+                            dataset_type,
+                            origin['name']
+                        ))
+
 
     @staticmethod
     def _format_series_to_kwargs(flm_series):

@@ -13,12 +13,12 @@ from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 
 
-def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, log_func=print):
+def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=True, log_func=print):
     """Upload data from one yaml to flexilims
 
     Args:
         source_yaml: path to clean yaml
-        mode: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
+        conflicts: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
         raw_data_folder: path to the folder containing the data. Default to project_root/projet/raw
         verbose: print progress information
         log_func: function to deal with warnings and messages
@@ -54,7 +54,7 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
             attributes[field] = value
 
     flexi_sess = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
-                                              flexilims_session=sess, mode=mode, date=date, attributes=attributes)
+                                              flexilims_session=sess, conflicts=conflicts, date=date, attributes=attributes)
 
 
 
