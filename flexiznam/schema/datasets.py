@@ -109,6 +109,7 @@ class Dataset(object):
                     dataset_type=None, conflicts=None):
         """Creates a dataset of a given type as a child of a parent entity
 
+        TODO return a dataset object in any case
         """
         raise NotImplementedError()
         origin = flz.get_entity(
@@ -233,6 +234,8 @@ class Dataset(object):
 
     def update_flexilims(self, parent_id, mode='safe'):
         """Create or update (not implemented) flexilims entry for this dataset
+
+        TODO Call the flexiznam update method 
 
         Args:
             parent_id: ID of the parent on flexilims

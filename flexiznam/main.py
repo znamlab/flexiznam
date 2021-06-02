@@ -338,6 +338,8 @@ def update_entity(datatype, name=None, id=None,
                   flexilims_session=None, project_id=None, username=None, password=None):
     """Update one entity identified with its datatype and name
 
+    TODO get rid of conflicts behaviour - this method should always update the existing entry with PUT
+
     Args:
         name (str): name on flexilims
         datatype (str): flexilims type
