@@ -61,27 +61,28 @@ def test_get_mouse_id():
 
 
 @pytest.mark.integtest
-def test_update_by_name():
-    # test the three mode
-    name = 'test_update'
-    # first in append to create a new entity
-    mouse = fzn.get_entities(datatype='mouse', project_id=PARAMETERS['project_ids']['test']).iloc[0]
-    rep = fzn.update_entity(name=name, datatype='sample', origin_id=None, mode='append', attributes={'old_attr': 'bad'},
-                             other_relations=None, project_id=PARAMETERS['project_ids']['test'])
-    assert 'origin_id' not in rep
-    # then in abort, which should crash
-    name = rep['name']
-    with pytest.raises(FlexilimsError) as err:
-        rep = fzn.update_entity(name=name, datatype='sample', origin_id=None, mode='abort', attributes={},
-                                 other_relations=None, project_id=PARAMETERS['project_ids']['test'])
-    assert err.value.args[0] == 'An entry named `%s` already exist. Use `overwrite` flag to replace' % name
-    # then in overwrite, which should get rid of old_attr
-    rep = fzn.update_entity(name=name, datatype='sample', origin_id=mouse['id'], mode='overwrite', attributes={},
-                             other_relations=None, project_id=PARAMETERS['project_ids']['test'])
-    assert rep['origin_id'] == mouse['id']
-    assert rep['attributes']['old_attr'] == 'null'
-    rep = fzn.update_entity(id=rep['id'], datatype='sample', origin_id=None, mode='overwrite',
-                            attributes=dict(new_attr='test'), other_relations=None,
-                            project_id=PARAMETERS['project_ids']['test'])
-    assert rep['attributes']['old_attr'] == 'null'
-    assert rep['attributes']['new_attr'] == 'test'
+def test_update_entity():
+    session = fzn.get_flexilims_session('test')
+    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    res = fzn.update_entity(
+        'dataset',
+        name=dataset_name,
+        flexilims_session=session,
+        attributes={'path': 'old/path'}
+    )
+    assert (res['attributes']['path'] == 'old/path')
+    res = fzn.update_entity(
+        'dataset',
+        name=dataset_name,
+        flexilims_session=session,
+        attributes={'path': 'new/path', 'test': 'test value'}
+    )
+    assert (res['attributes']['path'] == 'new/path')
+    assert (res['attributes']['test'] == 'test value')
+    res = fzn.update_entity(
+        'dataset',
+        name=dataset_name,
+        flexilims_session=session,
+        attributes={'path': 'test/path'}
+    )
+    assert (res['attributes']['test'] == 'null')

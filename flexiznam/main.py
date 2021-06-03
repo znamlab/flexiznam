@@ -58,11 +58,16 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
             mouse_info[k] = float(v)
         else:
             mouse_info[k] = v.strip()
-    resp = flexilims_session.post(datatype='mouse', name=mouse_name, attributes=dict(mouse_info), strict_validation=False)
+    resp = flexilims_session.post(
+        datatype='mouse',
+        name=mouse_name,
+        attributes=dict(mouse_info),
+        strict_validation=False
+    )
     return resp
 
 
-def add_experimental_session(mouse_name, date, attributes={}, session_name=None, mode='abort',
+def add_experimental_session(mouse_name, date, attributes={}, session_name=None, conflicts='abort',
                              other_relations=None, flexilims_session=None, project_id=None, username=None, password=None):
     """Add a new session as a child entity of a mouse
 
@@ -71,7 +76,7 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
         date: str, date of the session. If `session_name` is not provided, will be used as name
         attributes: dict, dictionary of additional attributes (on top of date)
         session_name: str or None, name of the session, usually in the shape `S20210420`.
-        mode: `abort`, `append`, or `overwrite`: how to handle conflicts
+        conflicts: `abort`, `append`, or `overwrite`: how to handle conflicts
         other_relations: ID(s) of custom entities related to the session
         flexilims_session: flexilims session
         project_id: name of the project or hexadecimal project id (needed if session is not provided)
@@ -96,12 +101,19 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     if ('date' in attributes) and (date != attributes['date']):
         raise FlexilimsError('Got two values for date: %s and %s' % (date, attributes['date']))
     session_info.update(attributes)
-    resp = update_entity(name=name, datatype='session', origin_id=mouse_id, attributes=session_info, flexilims_session=flexilims_session,
-                          mode=mode, other_relations=other_relations)
+    resp = update_entity(
+        name=name,
+        datatype='session',
+        origin_id=mouse_id,
+        attributes=session_info,
+        flexilims_session=flexilims_session,
+        conflicts=conflicts,
+        other_relations=other_relations
+    )
     return resp
 
 
-def add_recording(session_id, recording_type, protocol, attributes=None, recording_name=None, mode=None,
+def add_recording(session_id, recording_type, protocol, attributes=None, recording_name=None, conflicts=None,
                   other_relations=None, flexilims_session=None, project_id=None, password=None, username=None):
     """Add a recording as a child of an experimental session
 
@@ -111,7 +123,7 @@ def add_recording(session_id, recording_type, protocol, attributes=None, recordi
         protocol: str, experimental protocol (`retinotopy` for instance)
         attributes: dict, dictionary of additional attributes (on top of protocol and recording_type)
         recording_name: str or None, name of the recording, usually in the shape `R152356`.
-        mode: `abort`, `append`, or `overwrite`: how to handle conflicts
+        conflicts: `abort`, `append`, or `overwrite`: how to handle conflicts
         other_relations: ID(s) of custom entities related to the session
         flexilims_session: flexilims session
         project_id: name of the project or hexadecimal project id (needed if session is not provided)
@@ -138,8 +150,15 @@ def add_recording(session_id, recording_type, protocol, attributes=None, recordi
         if (key in attributes) and (attributes[key] != locals()[key]):
             raise FlexilimsError('Got two values for %s: `%s` and `%s`' % (key, attributes[key], locals()[key]))
     recording_info.update(attributes)
-    resp = update_entity(name=recording_name, datatype='recording', origin_id=session_id, attributes=recording_info,
-                          flexilims_session=flexilims_session, mode=mode, other_relations=other_relations)
+    resp = update_entity(
+        name=recording_name,
+        datatype='recording',
+        origin_id=session_id,
+        attributes=recording_info,
+        flexilims_session=flexilims_session,
+        conflicts=conflicts,
+        other_relations=other_relations
+    )
     return resp
 
 
@@ -227,7 +246,7 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     return results
 
 
-def get_entity(datatype, query_key=None, query_value=None, project_id=None, username=None, flexilims_session=None, password=None,
+def get_entity(datatype=None, query_key=None, query_value=None, project_id=None, username=None, flexilims_session=None, password=None,
                name=None, origin_id=None, id=None, format_reply=True):
     """
     Get one entity and format result.
@@ -267,16 +286,65 @@ def get_entity(datatype, query_key=None, query_value=None, project_id=None, user
     return entity[0]
 
 
+def generate_name(datatype, name, flexilims_session=None, project_id=None):
+    """
+    Generate a number for incrementally increasing the numeric suffix
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    suffix = name.split('_')[-1]
+    root = name[:-len(suffix) - 1]
+    if not suffix.isnumeric():
+        root += suffix
+        suffix = 0
+    else:
+        suffix = int(suffix)
+    while get_entity(datatype, name='%s_%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
+        suffix += 1
+    name = '%s_%s' % (root, suffix)
+    return name
+
+
+def generate_path(name=None, id=None, project_id=None, flexilims_session=None):
+    """
+    Recursively generate a path based on origin_id
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    assert (name is not None) or (id is not None)
+    datatype = get_datatype(
+        project_id=project_id,
+        flexilims_session=flexilims_session,
+        id=id,
+        name=name
+    )
+    entity = get_entity(datatype=datatype,
+        name=name,
+        id=id,
+        flexilims_session=flexilims_session
+    )
+    if datatype == 'mouse':
+        parent_path = Path(project)
+    else:
+        parent_path = generate_path(id=entity['origin_id'], flexilims_session=flexilims_session)
+    path = parent_path / entity['name']
+    return path
+
+
 def update_entity(datatype, name=None, id=None,
-                   origin_id=None, mode='overwrite', attributes={}, other_relations=None,
-                   flexilims_session=None, project_id=None, username=None, password=None):
+                  origin_id=None, conflicts='overwrite', attributes={}, other_relations=None,
+                  flexilims_session=None, project_id=None, username=None, password=None):
     """Update one entity identified with its datatype and name
+
+    TODO get rid of conflicts behaviour - this method should always update the existing entry with PUT
 
     Args:
         name (str): name on flexilims
         datatype (str): flexilims type
         origin_id (str or None): hexadecimal id of the origin
-        mode (`abort`=None, `append`, `overwrite`): How to handle conflicts
+        conflicts (`abort`=None, `append`, `overwrite`): How to handle conflicts
         attributes (dict or None): attributes to update
         other_relations (str or list of str): hexadecimal ID(s) of custom entities
             link to the entry to update
@@ -299,13 +367,11 @@ def update_entity(datatype, name=None, id=None,
         flexilims_session=flexilims_session,
         format_reply=False)
     if entity is not None:
-        if (mode is None) or (mode.lower() == 'abort'):
+        if (conflicts is None) or (conflicts.lower() == 'abort'):
             raise FlexilimsError('An entry named `%s` already exist. Use `overwrite` flag to replace' % name)
-        if mode.lower() == 'overwrite':
+        if conflicts.lower() == 'overwrite':
             full_attributes = {k: 'null' for k in entity['attributes'].keys()}
             full_attributes.update(attributes)
-            if (origin_id is None) and ('origin_id' in entity.keys()):
-                origin_id = entity['origin_id']
             if id is None:
                 id = entity['id']
             rep = flexilims_session.update_one(
@@ -317,19 +383,8 @@ def update_entity(datatype, name=None, id=None,
                 strict_validation=False
             )
             return rep
-        if mode.lower() == 'append':
-            # I need to generate a new name
-            suffix = name.split('_')[-1]
-            root = name[:-len(suffix) - 1]
-            if not suffix.isnumeric():
-                root += suffix
-                suffix = 0
-            else:
-                suffix = int(suffix)
-            while get_entity(datatype, name='%s_%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
-                suffix += 1
-            name = '%s_%s' % (root, suffix)
-
+        if conflicts.lower() == 'append':
+            name = generate_name(datatype, name, flexilims_session=flexilims_session)
     # new name, will create one entry
     rep = flexilims_session.post(
         datatype=datatype,
@@ -359,6 +414,20 @@ def format_results(results):
         result.pop('attributes')
     df = pd.DataFrame(results)
     return df
+
+
+def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
+    """
+    Loop through possible datatypes and return the first with a matching name
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    assert (name is not None) or (id is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    for datatype in PARAMETERS['datatypes']:
+        resp = get_entity(datatype=datatype, name=name, id=id, flexilims_session=flexilims_session)
+        if resp: return datatype
+    return None
 
 
 def get_id(name, datatype='mouse', project_id=None, username=None, flexilims_session=None, password=None):

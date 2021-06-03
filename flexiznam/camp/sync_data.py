@@ -9,18 +9,17 @@ from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 
 
-def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, log_func=print):
+def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=True, log_func=print):
     """Upload data from one yaml to flexilims
 
     Args:
         source_yaml: path to clean yaml
-        mode: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
+        conflicts: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
         raw_data_folder: path to the folder containing the data. Default to project_root/projet/raw
         verbose: print progress information
         log_func: function to deal with warnings and messages
 
-    Returns:
-        dictionary of flexilims ID
+    Returns: dictionary or flexilims ID
     """
 
     errors = find_xxerrorxx(yml_file=source_yaml)

@@ -17,8 +17,9 @@ DEFAULT_CONFIG = dict(
     flexilims_username='blota',
     # the root path to the `project` folder on CAMP
     projects_root='/camp/lab/znamenskiyp/home/shared/projects',
-
     # Use for data dataset detection
     data_subfolder=dict(raw='raw',
-                        processed='processed')
+                        processed='processed'),
+    # list of all datatypes
+    datatypes=('mouse', 'session', 'recording', 'dataset')
 )
