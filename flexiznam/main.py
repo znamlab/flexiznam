@@ -296,7 +296,7 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
     suffix = name.split('_')[-1]
     root = name[:-len(suffix) - 1]
     if not suffix.isnumeric():
-        root += suffix
+        root = root + '_' + suffix
         suffix = 0
     else:
         suffix = int(suffix)
