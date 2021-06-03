@@ -74,7 +74,7 @@ def test_add_entity():
     dataset_name = 'test_ran_on_20210524_162613_dataset'
     with pytest.raises(FlexilimsError) as err:
         fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
-    assert err
+    assert err.value.args[0] == 'Error 400:  &#39;path&#39; is a necessary attribute for dataset'
     with pytest.raises(NameNotUniqueException) as err:
         fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random'))
@@ -88,26 +88,39 @@ def test_add_entity():
 @pytest.mark.integtest
 def test_update_entity():
     session = fzn.get_flexilims_session('test')
-    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    with pytest.raises(FlexilimsError) as err:
+        res = fzn.update_entity(
+            'dataset',
+            name='gibberish',
+            flexilims_session=session)
+    assert err.value.args[0] == 'Cannot find an entity of type `dataset` named ' \
+                                '`gibberish`'
+    dataset_name = 'test_iter_0'
     res = fzn.update_entity(
         'dataset',
         name=dataset_name,
         flexilims_session=session,
-        attributes={'path': 'old/path'}
+        attributes={'path': 'old/path', 'an_attr': 'non null'}
     )
     assert (res['attributes']['path'] == 'old/path')
+    assert (res['attributes']['an_attr'] == 'non null')
     res = fzn.update_entity(
         'dataset',
         name=dataset_name,
         flexilims_session=session,
-        attributes={'path': 'new/path', 'test': 'test value'}
+        attributes={'path': 'new/path', 'test': 'test value'},
+        mode='update',
     )
     assert (res['attributes']['path'] == 'new/path')
     assert (res['attributes']['test'] == 'test value')
+    assert (res['attributes']['an_attr'] == 'non null')
     res = fzn.update_entity(
         'dataset',
         name=dataset_name,
         flexilims_session=session,
         attributes={'path': 'test/path'}
     )
+    assert (res['attributes']['path'] == 'test/path')
     assert (res['attributes']['test'] == 'null')
+    assert (res['attributes']['an_attr'] == 'null')
+

@@ -372,9 +372,9 @@ def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=No
         raise FlexilimsError(err.args[0])
     return rep
 
-def update_entity(datatype, name=None, id=None,
-                  origin_id=None, conflicts='overwrite', attributes={}, other_relations=None,
-                  flexilims_session=None, project_id=None, username=None, password=None):
+def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite',
+                  attributes={}, other_relations=None, flexilims_session=None,
+                  project_id=None, username=None, password=None):
     """Update one entity identified with its datatype and name
 
     TODO get rid of conflicts behaviour - this method should always update the existing entry with PUT
@@ -383,7 +383,11 @@ def update_entity(datatype, name=None, id=None,
         datatype (str): flexilims type
         name (str): name on flexilims
         origin_id (str or None): hexadecimal id of the origin
-        conflicts (`abort`=None, `append`, `overwrite`): How to handle conflicts
+        mode (str): If `overwrite`, (default) all attributes that already existed on
+                                    flexilims but are not specified in the function call
+                                    are set to 'null'.
+                    If `update`, update the attributes given in this call and do not
+                                 change the other
         attributes (dict or None): attributes to update
         other_relations (str or list of str): hexadecimal ID(s) of custom entities
             link to the entry to update
@@ -404,34 +408,26 @@ def update_entity(datatype, name=None, id=None,
         id=id,
         flexilims_session=flexilims_session,
         format_reply=False)
-    if entity is not None:
-        if (conflicts is None) or (conflicts.lower() == 'abort'):
-            raise FlexilimsError('An entry named `%s` already exist. Use `overwrite` flag to replace' % name)
-        if conflicts.lower() == 'overwrite':
-            full_attributes = {k: 'null' for k in entity['attributes'].keys()}
-            full_attributes.update(attributes)
-            if id is None:
-                id = entity['id']
-            rep = flexilims_session.update_one(
-                id=id,
-                datatype=datatype,
-                origin_id=origin_id,
-                name=None,
-                attributes=full_attributes,
-                strict_validation=False
-            )
-            return rep
-        if conflicts.lower() == 'append':
-            name = generate_name(datatype, name, flexilims_session=flexilims_session)
-    # new name, will create one entry
-    rep = flexilims_session.post(
+    if entity is None:
+        err_msg = 'Cannot find an entity of type `%s` named `%s`' % (datatype, name)
+        raise FlexilimsError(err_msg)
+    if mode.lower() == 'overwrite':
+        full_attributes = {k: 'null' for k in entity['attributes'].keys()}
+        full_attributes.update(attributes)
+    elif mode.lower() == 'update':
+        full_attributes = attributes
+    else:
+        raise AttributeError('`mode` must be `overwrite` or `update`')
+    if id is None:
+        id = entity['id']
+    rep = flexilims_session.update_one(
+        id=id,
         datatype=datatype,
-        name=name,
-        attributes=attributes,
         origin_id=origin_id,
-        other_relations=other_relations,
+        name=None,
+        attributes=full_attributes,
         strict_validation=False
-    )
+        )
     return rep
 
 
