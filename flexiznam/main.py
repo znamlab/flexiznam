@@ -333,6 +333,45 @@ def generate_path(name=None, id=None, project_id=None, flexilims_session=None):
     return path
 
 
+def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=None,
+               flexilims_session=None, project_id=None, username=None, password=None):
+    """Add a new entity on flexilims. Name must be unique
+
+    Args:
+        datatype (str): flexilims type
+        name (str): name on flexilims
+        origin_id (str or None): hexadecimal id of the origin
+        attributes (dict or None): attributes to update
+        other_relations (str or list of str): hexadecimal ID(s) of custom entities
+            link to the entry to update
+        project_id (str): text name of the project
+        username (str): Flexylims username
+        flexilims_session (Flexilims): Flexylims session object
+        password (str): Flexylims password
+
+
+    Returns:
+        flexilims reply
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id, username, password)
+
+    try:
+        rep = flexilims_session.post(
+            datatype=datatype,
+            name=name,
+            attributes=attributes,
+            origin_id=origin_id,
+            other_relations=other_relations,
+            strict_validation=False
+        )
+    except OSError as err:
+        if err.args[0].endswith('already exist in the project test'):
+            raise NameNotUniqueException(err.args[0])
+        raise FlexilimsError(err.args[0])
+    return rep
+
 def update_entity(datatype, name=None, id=None,
                   origin_id=None, conflicts='overwrite', attributes={}, other_relations=None,
                   flexilims_session=None, project_id=None, username=None, password=None):
@@ -341,8 +380,8 @@ def update_entity(datatype, name=None, id=None,
     TODO get rid of conflicts behaviour - this method should always update the existing entry with PUT
 
     Args:
-        name (str): name on flexilims
         datatype (str): flexilims type
+        name (str): name on flexilims
         origin_id (str or None): hexadecimal id of the origin
         conflicts (`abort`=None, `append`, `overwrite`): How to handle conflicts
         attributes (dict or None): attributes to update
@@ -352,7 +391,6 @@ def update_entity(datatype, name=None, id=None,
         username (str): Flexylims username
         flexilims_session (Flexilims): Flexylims session object
         password (str): Flexylims password
-
 
     Returns:
         flexilims reply

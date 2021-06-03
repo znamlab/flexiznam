@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import flexiznam.main as fzn
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import FlexilimsError
+from flexiznam.errors import FlexilimsError, NameNotUniqueException
 
 
 @pytest.mark.integtest
@@ -58,6 +58,31 @@ def test_get_entity():
 def test_get_mouse_id():
     mid = fzn.get_id(name='test_mouse', project_id=PARAMETERS['project_ids']['test'])
     assert mid == '6094f7212597df357fa24a8c'
+
+
+@pytest.mark.integtest
+def test_generate_name():
+    flm_sess = fzn.get_flexilims_session('test')
+    name = fzn.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    assert name.startswith('test_iter')
+    assert fzn.get_entity(datatype='dataset', name='test_iter', flexilims_session=flm_sess) is None
+
+
+@pytest.mark.integtest
+def test_add_entity():
+    flm_sess = fzn.get_flexilims_session('test')
+    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    with pytest.raises(FlexilimsError) as err:
+        fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
+    assert err
+    with pytest.raises(NameNotUniqueException) as err:
+        fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
+                       attributes=dict(path='random'))
+    new_name = fzn.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    rep = fzn.add_entity(datatype='dataset', name=new_name, flexilims_session=flm_sess,
+                       attributes=dict(path='random'))
+    assert rep['name'] == new_name
+    assert len(rep) == 9
 
 
 @pytest.mark.integtest
