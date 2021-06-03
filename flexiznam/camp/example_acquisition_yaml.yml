@@ -28,7 +28,7 @@ recordings:                    # list of recording
     timestamp: "182758"            # timestamp used to identified all data link to this recording.
     datasets: # optional. You can specify datasets manually.
       harp_data_csv: # dataset name, must be unique for this recording.
-        type: 'harp'                # dataset type. Must be defined in the lab settings
+        dataset_type: 'harp'                # dataset type. Must be defined in the lab settings
         path: './ParamLog/R193432_Retinotopy'   # path relative to the root data directory, must
           # be specified if the data is not in the main
         # recording folder
@@ -37,14 +37,14 @@ recordings:                    # list of recording
 
 datasets: # datasets attached to the session, not to a recording
   ref_for_motion: # dataset name, must be unique for this session
-    type: 'scanimage'             # dataset type. Must be defined in the lab settings
+    dataset_type: 'scanimage'             # dataset type. Must be defined in the lab settings
     path: './PZAH4.1c/S20210513/Ref' # path relative to the root data directory
   overview00001: # another dataset
-    type: 'scanimage'
+    dataset_type: 'scanimage'
     path: './PZAH4.1c/S20210513/overview_00001_00001.tif' # path should be unqnbiguous. Point to a file if multiple
     # of the same type are present in the same folder
   overview_picture_02:
-    type: 'scanimage'
+    dataset_type: 'scanimage'
     path: './PZAH4.1c/S20210513/overview_00002_00001.tif' # path should be unanbiguous.
     notes: "at any point you can add notes or attributes as below"
     attributes:

@@ -287,7 +287,7 @@ def update_entity(datatype, name=None, id=None,
 
 
     Returns:
-
+        flexilims reply
     """
     assert (name is not None) or (id is not None)
     assert (project_id is not None) or (flexilims_session is not None)

@@ -1,10 +1,6 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
 import pathlib
 import re
-import datetime
-import warnings
-
-import pandas as pd
 import yaml
 
 import flexiznam as fzn
@@ -23,7 +19,8 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
         verbose: print progress information
         log_func: function to deal with warnings and messages
 
-    Returns: dictionary or flexilims ID
+    Returns:
+        dictionary of flexilims ID
     """
 
     errors = find_xxerrorxx(yml_file=source_yaml)
@@ -32,8 +29,8 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
     session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
 
     # first find the mouse
-    sess = fzn.get_flexilims_session(project_id=session_data['project'])
-    mouse = fzn.get_entity(datatype='mouse', name=session_data['mouse'], flexilims_session=sess)
+    flexilims_session = fzn.get_flexilims_session(project_id=session_data['project'])
+    mouse = fzn.get_entity(datatype='mouse', name=session_data['mouse'], flexilims_session=flexilims_session)
     if mouse is None:
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
@@ -53,9 +50,12 @@ def upload_yaml(source_yaml, mode='abort', raw_data_folder=None, verbose=True, l
         if value is not None:
             attributes[field] = value
 
-    flexi_sess = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
-                                              flexilims_session=sess, mode=mode, date=date, attributes=attributes)
+    session = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
+                                           flexilims_session=flexilims_session, mode=mode, date=date,
+                                           attributes=attributes)
+    # now deal with recordings
 
+    return session
 
 
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
@@ -120,7 +120,6 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     return out_dict
 
 
-
 def _clean_dictionary_recursively(dictionary, keys={}, path2string=True, format_dataset=False):
     """Recursively clean a dictionary inplace
 
@@ -148,7 +147,6 @@ def _clean_dictionary_recursively(dictionary, keys={}, path2string=True, format_
                 dictionary[k] = v.format(mode='yaml')
 
 
-
 def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_handling='crash'):
     """ Create dictionary of datasets
 
@@ -174,7 +172,7 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_h
     for ds_name, ds_data in dataset_infos.items():
         ds_path = pathlib.Path(raw_data_folder) / ds_data['path']
         # first deal with dataset that are not in parent['full_path']
-        ds_class = Dataset.SUBCLASSES.get(ds_data['type'], Dataset)
+        ds_class = Dataset.SUBCLASSES.get(ds_data['dataset_type'], Dataset)
         if ds_path.is_dir() and (ds_path != parent['full_path']):
             ds = ds_class.from_folder(ds_path, verbose=verbose)
         elif ds_path.is_file() and (ds_path.parent != parent['full_path']):
@@ -221,8 +219,8 @@ def clean_yaml(path_to_yaml):
         yml_data = yaml.safe_load(yml_file)
 
     session, nested_levels = read_level(yml_data)
-    session['parent'] = session['mouse']  # duplicate info to format as nested layers
-    session['full_name'] = '_'.join([session['session'], session['mouse']])
+    # session['parent'] = session['mouse']  # duplicate info to format as nested layers
+    # session['full_name'] = '_'.join([session['mouse'], session['session']])
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
         ds = read_dataset(name=dataset_name, data=dataset_dict, parent=session)
@@ -250,7 +248,7 @@ def read_recording(name, data, session):
                                      optional_args=('notes', 'attributes', 'path', 'recording_type', 'timestamp'),
                                      nested_levels=('datasets',))
     recording['name'] = name
-    recording['full_name'] = '_'.join([name, session['full_name']])
+    # recording['full_name'] = '_'.join([name, session['full_name']])
 
     # if timestamps is None, the name must start with RHHMMSS
     if recording['timestamp'] is None:
@@ -275,12 +273,12 @@ def read_dataset(name, data, parent):
         parent: a dictionary of the parent level. Can have a parent itself
 
     Returns:
-        a formatted dictionary including 'full_name', 'type', 'path', 'notes', 'attributes' and 'name'
+        a formatted dictionary including,  'dataset_type', 'path', 'notes', 'attributes' and 'name'
     """
-    level, _ = read_level(data, mandatory_args=('type', 'path'), optional_args=('notes', 'attributes', 'autogen_name'),
+    level, _ = read_level(data, mandatory_args=('dataset_type', 'path'), optional_args=('notes', 'attributes', 'autogen_name'),
                           nested_levels=())
     level['name'] = name
-    level['full_name'] = '_'.join([name, parent['full_name']])
+    # level['full_name'] = '_'.join([name, parent['full_name']])
     return level
 
 
