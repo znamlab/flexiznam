@@ -49,9 +49,14 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
         if value is not None:
             attributes[field] = value
 
-    session = fzn.add_experimental_session(mouse_name=mouse['name'], session_name=session_data['session'],
-                                           flexilims_session=flexilims_session, mode=mode, date=date,
-                                           attributes=attributes)
+    session = fzn.add_experimental_session(
+        mouse_name=mouse['name'],
+        session_name=session_data['session'],
+        flexilims_session=flexilims_session,
+        conflicts=conflicts,
+        date=date,
+        attributes=attributes
+    )
     # now deal with recordings
 
     return session
@@ -83,15 +88,23 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     if not home_folder.is_dir():
         raise FileNotFoundError('Session directory %s does not exist' % home_folder)
     session_data['full_path'] = home_folder
-    session_data['datasets'] = create_dataset(dataset_infos=session_data['datasets'], verbose=verbose,
-                                              parent=session_data, raw_data_folder=raw_data_folder,
-                                              error_handling='report')
+    session_data['datasets'] = create_dataset(
+        dataset_infos=session_data['datasets'],
+        verbose=verbose,
+        parent=session_data,
+        raw_data_folder=raw_data_folder,
+        error_handling='report'
+    )
 
     for rec_name, recording in session_data['recordings'].items():
         recording['full_path'] = home_folder / rec_name
-        recording['datasets'] = create_dataset(dataset_infos=recording['datasets'], parent=recording,
-                                               raw_data_folder=raw_data_folder, verbose=verbose,
-                                               error_handling='report')
+        recording['datasets'] = create_dataset(
+            dataset_infos=recording['datasets'],
+            parent=recording,
+            raw_data_folder=raw_data_folder,
+            verbose=verbose,
+            error_handling='report'
+        )
 
     # remove the full path that are not needed
     _clean_dictionary_recursively(session_data, ['full_path'])
