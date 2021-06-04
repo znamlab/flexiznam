@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import flexiznam.main as fzn
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import FlexilimsError
+from flexiznam.errors import FlexilimsError, NameNotUniqueException
 
 
 @pytest.mark.integtest
@@ -61,28 +61,66 @@ def test_get_mouse_id():
 
 
 @pytest.mark.integtest
+def test_generate_name():
+    flm_sess = fzn.get_flexilims_session('test')
+    name = fzn.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    assert name.startswith('test_iter')
+    assert fzn.get_entity(datatype='dataset', name='test_iter', flexilims_session=flm_sess) is None
+
+
+@pytest.mark.integtest
+def test_add_entity():
+    flm_sess = fzn.get_flexilims_session('test')
+    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    with pytest.raises(FlexilimsError) as err:
+        fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
+    assert err.value.args[0] == 'Error 400:  &#39;path&#39; is a necessary attribute for dataset'
+    with pytest.raises(NameNotUniqueException) as err:
+        fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
+                       attributes=dict(path='random'))
+    new_name = fzn.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    rep = fzn.add_entity(datatype='dataset', name=new_name, flexilims_session=flm_sess,
+                       attributes=dict(path='random'))
+    assert rep['name'] == new_name
+    assert len(rep) == 9
+
+
+@pytest.mark.integtest
 def test_update_entity():
     session = fzn.get_flexilims_session('test')
-    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    with pytest.raises(FlexilimsError) as err:
+        res = fzn.update_entity(
+            'dataset',
+            name='gibberish',
+            flexilims_session=session)
+    assert err.value.args[0] == 'Cannot find an entity of type `dataset` named ' \
+                                '`gibberish`'
+    dataset_name = 'test_iter_0'
     res = fzn.update_entity(
         'dataset',
         name=dataset_name,
         flexilims_session=session,
-        attributes={'path': 'old/path'}
+        attributes={'path': 'old/path', 'an_attr': 'non null'}
     )
     assert (res['attributes']['path'] == 'old/path')
+    assert (res['attributes']['an_attr'] == 'non null')
     res = fzn.update_entity(
         'dataset',
         name=dataset_name,
         flexilims_session=session,
-        attributes={'path': 'new/path', 'test': 'test value'}
+        attributes={'path': 'new/path', 'test': 'test value'},
+        mode='update',
     )
     assert (res['attributes']['path'] == 'new/path')
     assert (res['attributes']['test'] == 'test value')
+    assert (res['attributes']['an_attr'] == 'non null')
     res = fzn.update_entity(
         'dataset',
         name=dataset_name,
         flexilims_session=session,
         attributes={'path': 'test/path'}
     )
+    assert (res['attributes']['path'] == 'test/path')
     assert (res['attributes']['test'] == 'null')
+    assert (res['attributes']['an_attr'] == 'null')
+
