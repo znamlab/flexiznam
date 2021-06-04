@@ -21,5 +21,5 @@ DEFAULT_CONFIG = dict(
     data_subfolder=dict(raw='raw',
                         processed='processed'),
     # list of all datatypes
-    datatypes=('mouse', 'session', 'recording', 'dataset')
+    datatypes=['mouse', 'session', 'recording', 'dataset']
 )

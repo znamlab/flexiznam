@@ -101,14 +101,13 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     if ('date' in attributes) and (date != attributes['date']):
         raise FlexilimsError('Got two values for date: %s and %s' % (date, attributes['date']))
     session_info.update(attributes)
-    resp = update_entity(
-        name=name,
+    resp = flexilims_session.post(
         datatype='session',
-        origin_id=mouse_id,
+        name=name,
         attributes=session_info,
-        flexilims_session=flexilims_session,
-        conflicts=conflicts,
-        other_relations=other_relations
+        origin_id=mouse_id,
+        other_relations=other_relations,
+        strict_validation=False
     )
     return resp
 
@@ -150,14 +149,14 @@ def add_recording(session_id, recording_type, protocol, attributes=None, recordi
         if (key in attributes) and (attributes[key] != locals()[key]):
             raise FlexilimsError('Got two values for %s: `%s` and `%s`' % (key, attributes[key], locals()[key]))
     recording_info.update(attributes)
-    resp = update_entity(
-        name=recording_name,
+
+    resp = flexilims_session.post(
         datatype='recording',
-        origin_id=session_id,
+        name=recording_name,
         attributes=recording_info,
-        flexilims_session=flexilims_session,
-        conflicts=conflicts,
-        other_relations=other_relations
+        origin_id=session_id,
+        other_relations=other_relations,
+        strict_validation=False
     )
     return resp
 
@@ -389,8 +388,6 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
                     If `update`, update the attributes given in this call and do not
                                  change the other
         attributes (dict or None): attributes to update
-        other_relations (str or list of str): hexadecimal ID(s) of custom entities
-            link to the entry to update
         project_id (str): text name of the project
         username (str): Flexylims username
         flexilims_session (Flexilims): Flexylims session object
