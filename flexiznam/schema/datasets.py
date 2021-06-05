@@ -310,14 +310,21 @@ class Dataset(object):
         Args:
             mode: 'flexilims' or 'yaml'
         """
-        data = dict(path=str(self.path), created=self.created, dataset_type=self.dataset_type,
-                    is_raw='yes' if self.is_raw else 'no')
-        data.update(self.extra_attributes)
+        data = dict(path=str(self.path),
+                    created=self.created,
+                    dataset_type=self.dataset_type,
+                    is_raw='yes' if self.is_raw else 'no',
+                    name=self.name,
+                    project=self.project_id,
+                    type='dataset')
+
+        attributes = self.extra_attributes
         if mode.lower() == 'flexilims':
-            data.update(dict(name=self.name, project=self.project_id, type='dataset'))
+            data.update(attributes)
             series = pd.Series(data, name=self.name)
             return series
         elif mode.lower() == 'yaml':
+            data['extra_attributes'] = attributes
             return data
         else:
             raise IOError('Unknown mode "%s". Must be `flexilims` or `yaml`' % mode)
