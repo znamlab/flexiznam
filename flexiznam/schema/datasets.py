@@ -318,13 +318,12 @@ class Dataset(object):
                     project=self.project_id,
                     type='dataset')
 
-        attributes = self.extra_attributes
         if mode.lower() == 'flexilims':
-            data.update(attributes)
+            data.update(self.extra_attributes)
             series = pd.Series(data, name=self.name)
             return series
         elif mode.lower() == 'yaml':
-            data['extra_attributes'] = attributes
+            data['extra_attributes'] = self.extra_attributes
             return data
         else:
             raise IOError('Unknown mode "%s". Must be `flexilims` or `yaml`' % mode)
