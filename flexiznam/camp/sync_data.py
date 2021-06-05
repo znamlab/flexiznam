@@ -3,7 +3,7 @@ import pathlib
 import re
 import yaml
 
-import flexiznam as fzn
+import flexiznam as flz
 from flexiznam.errors import SyncYmlError, ConfigurationError, NameNotUniqueException
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
@@ -28,8 +28,8 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
     session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
 
     # first find the mouse
-    flexilims_session = fzn.get_flexilims_session(project_id=session_data['project'])
-    mouse = fzn.get_entity(datatype='mouse', name=session_data['mouse'], flexilims_session=flexilims_session)
+    flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
+    mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'], flexilims_session=flexilims_session)
     if mouse is None:
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
@@ -49,7 +49,7 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
         if value is not None:
             attributes[field] = value
 
-    session = fzn.add_experimental_session(
+    session = flz.add_experimental_session(
         mouse_name=mouse['name'],
         session_name=session_data['session'],
         flexilims_session=flexilims_session,

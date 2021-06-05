@@ -5,7 +5,7 @@ import pathlib
 import re
 
 import pandas as pd
-import flexiznam as fzn
+import flexiznam as flz
 from flexiznam.utils import compare_series
 from flexiznam.errors import FlexilimsError, DatasetError
 
@@ -72,20 +72,21 @@ class Dataset(object):
     def from_flexilims(project=None, name=None, data_series=None):
         """Loads a dataset from flexilims.
 
-        If the dataset_type attribute of the flexilims entry defined in Dataset.SUBCLASSES, this
-        subclass will be used. Otherwise a generic Dataset is returned
+        If the dataset_type attribute of the flexilims entry defined in
+        Dataset.SUBCLASSES,this subclass will be used. Otherwise a generic Dataset is
+        returned
 
         Args:
             project: Name of the project or hexadecimal project_id
             name: Unique name of the dataset on flexilims
-            data_series: default to None. pd.Series as returned by fzn.get_entities. If provided, superseeds project and
-                         name
+            data_series: default to None. pd.Series as returned by flz.get_entities.
+                         If provided, superseeds project and name
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
                 raise AttributeError('Specify either data_series OR project + name')
         else:
-            data_series = fzn.get_entities(project_id=project, datatype='dataset', name=name)
+            data_series = flz.get_entities(project_id=project, datatype='dataset', name=name)
             assert len(data_series) == 1
             data_series = data_series.loc[name]
         dataset_type = data_series.dataset_type
@@ -133,7 +134,7 @@ class Dataset(object):
                 return from_flexilims(data_series=processed)
             elif conflicts == 'append':
                 dataset_root = '%s_%s' % (origin['name'], dataset_type)
-                dataset_name = fzn.generate_name(
+                dataset_name = flz.generate_name(
                     'dataset',
                     dataset_root,
                     project_id=project
@@ -229,7 +230,7 @@ class Dataset(object):
             raise IOError('You must specify the project to get flexilims status')
         if self.name is None:
             raise IOError('You must specify the dataset name to get flexilims status')
-        series = fzn.get_entity(datatype='dataset', project_id=self.project_id, name=self.name)
+        series = flz.get_entity(datatype='dataset', project_id=self.project_id, name=self.name)
         return series
 
     def update_flexilims(self, parent_id, mode='safe'):
@@ -255,7 +256,7 @@ class Dataset(object):
             print('Already up to date, nothing to do')
             return
         # we are in 'not online' case
-        resp = fzn.add_dataset(parent_id=parent_id, dataset_type=self.dataset_type, created=self.created,
+        resp = flz.add_dataset(parent_id=parent_id, dataset_type=self.dataset_type, created=self.created,
                                path=self.path, is_raw='yes' if self.is_raw else 'no', project_id=self.project_id,
                                dataset_name=self.name, attributes=self.extra_attributes)
         return resp
@@ -335,7 +336,7 @@ class Dataset(object):
 
     @project_id.setter
     def project_id(self, value):
-        project = fzn.main._lookup_project(value, fzn.PARAMETERS)
+        project = flz.main._lookup_project(value, flz.PARAMETERS)
         if project is None:
             raise IOError('Unknown project ID. Please update config file')
         self._project = project
@@ -348,10 +349,10 @@ class Dataset(object):
 
     @project.setter
     def project(self, value):
-        if value not in fzn.PARAMETERS['project_ids']:
+        if value not in flz.PARAMETERS['project_ids']:
             raise IOError('Unknown project name. Please update config file')
 
-        proj_id = fzn.PARAMETERS['project_ids'][value]
+        proj_id = flz.PARAMETERS['project_ids'][value]
         self._project_id = proj_id
         self._project = value
 
