@@ -49,13 +49,27 @@ def test_dataset_flexilims_integration():
     st = ds.flexilims_status()
     assert st == 'different'
     rep = ds.flexilims_report()
-    expected = pd.DataFrame(dict(offline={'created': '', 'is_raw': 'no', 'path': 'fake/path'},
-                                 flexilims={'created': 'N/A', 'is_raw': 'N/A', 'path': 'random'}))
+    expected = pd.DataFrame(dict(offline={'created': '',
+                                          'is_raw': 'no',
+                                          'path': 'fake/path',
+                                          'only_online': 'NA',
+                                          },
+                                 flexilims={'created': 'NA',
+                                            'is_raw': 'NA',
+                                            'path': 'random',
+                                            'only_online': 'this attribute is only on '
+                                                           'flexilims',
+                                            }))
     assert all(rep.sort_index() == expected.sort_index())
+    ds_name = 'test_ran_on_20210513_113928_dataset'
     fmt = {'path': 'fake/path', 'created': '', 'dataset_type': 'camera', 'is_raw': 'no',
-           'name': 'test_ran_on_20210513_113928_dataset', 'project': '606df1ac08df4d77c72c9aa4', 'type': 'dataset'}
-    assert ds.format().name == 'test_ran_on_20210513_113928_dataset'
-    assert all(ds.format() == pd.Series(data=fmt, name='test_ran_on_20210513_113928_dataset'))
+           'name': ds_name, 'project': '606df1ac08df4d77c72c9aa4', 'type': 'dataset'}
+    assert ds.format().name == ds_name
+    assert all(ds.format() == pd.Series(data=fmt, name=ds_name))
+
+    # same with yaml mode
+    fmt['extra_attributes'] = {}
+    assert ds.format(mode='yaml') == fmt
 
     # check that updating project change id
     ds.project = '3d_vision'
