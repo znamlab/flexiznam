@@ -67,8 +67,8 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
     return resp
 
 
-def add_experimental_session(mouse_name, date, attributes={}, session_name=None, conflicts='abort',
-                             other_relations=None, flexilims_session=None, project_id=None, username=None, password=None):
+def add_experimental_session(mouse_name, date, attributes={}, session_name=None, other_relations=None,
+                             flexilims_session=None, project_id=None, username=None, password=None):
     """Add a new session as a child entity of a mouse
 
     Args:
@@ -92,18 +92,22 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
 
     mouse_id = get_id(mouse_name, datatype='mouse', flexilims_session=flexilims_session)
     if session_name is None:
-        session_name = date
-    name = mouse_name + '_' + session_name + '_0'
+        session_name = mouse_name + '_' + date + '_0'
+    session_name = generate_name('session', name, flexilims_session=flexilims_session)
 
     session_info = {'date': date}
     if attributes is None:
         attributes = {}
     if ('date' in attributes) and (date != attributes['date']):
         raise FlexilimsError('Got two values for date: %s and %s' % (date, attributes['date']))
+    if ('path' not in attributes):
+        attributes['path'] = str(Path(get_path(
+            mouse_name, datatype='mouse', flexilims_session=flexilims_session
+        )) / session_name)
     session_info.update(attributes)
     resp = flexilims_session.post(
         datatype='session',
-        name=name,
+        name=session_name,
         attributes=session_info,
         origin_id=mouse_id,
         other_relations=other_relations,
@@ -139,12 +143,15 @@ def add_recording(session_id, recording_type, protocol, attributes=None, recordi
     experimental_session = get_entity(datatype=flexilims_session, id=session_id)
     if recording_name is None:
         recording_name = experimental_session['name'] + '_' + protocol + '_0'
-    else:
-        recording_name = experimental_session['name'] + recording_name
+    recording_name = generate_name('recording', recording_name, flexilims_session=flexilims_session)
 
     recording_info = {'recording_type': recording_type, 'protocol': protocol}
     if attributes is None:
         attributes = {}
+    if ('path' not in attributes):
+        attributes['path'] = str(Path(get_path(
+            experimental_session['path'], datatype='session', flexilims_session=flexilims_session
+        )) / recording_name)
     for key in recording_info.keys():
         if (key in attributes) and (attributes[key] != locals()[key]):
             raise FlexilimsError('Got two values for %s: `%s` and `%s`' % (key, attributes[key], locals()[key]))
@@ -175,14 +182,8 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes',
             get_entities(flexilims_session=flexilims_session, datatype='recording', id=parent_id),
             get_entities(flexilims_session=flexilims_session, datatype='session', id=parent_id)
         ])['name'][0]
-        dataset_num = 0
-        while len(get_entities(
-                flexilims_session=flexilims_session,
-                datatype='dataset',
-                name=parent_name + '_' + dataset_type + '_' + str(dataset_num))):
-            # session with this name already exists, increment the number
-            dataset_num += 1
-        dataset_name = parent_name + '_' + dataset_type + '_' + str(dataset_num)
+        dataset_name = parent_name + '_' + dataset_type + '_0'
+    dataset_name = generate_name('dataset', dataset_name, flexilims_session=flexilims_session)
 
     dataset_info = {
         'dataset_type': dataset_type,
@@ -235,8 +236,14 @@ def get_entities(datatype='mouse', query_key=None, query_value=None,
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id, username, password)
-    # Awaiting implementation on the flexilims side:
-    results =  flexilims_session.get(    datatype,query_key=query_key,query_value=query_value,name=name,origin_id=origin_id,id=id)
+    results =  flexilims_session.get(
+        datatype,
+        query_key=query_key,
+        query_value=query_value,
+        name=name,
+        origin_id=origin_id,
+        id=id
+    )
     if not format_reply:
         return results
     results = format_results(results)
@@ -371,6 +378,7 @@ def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=No
         raise FlexilimsError(err.args[0])
     return rep
 
+
 def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite',
                   attributes={}, other_relations=None, flexilims_session=None,
                   project_id=None, username=None, password=None):
@@ -477,6 +485,24 @@ def get_id(name, datatype='mouse', project_id=None, username=None, flexilims_ses
         return None
     else:
         return entities['id'][0]
+
+
+def get_path(name, datatype='mouse', project_id=None, username=None, flexilims_session=None, password=None):
+    """Get database ID for entity by name"""
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id, username, password)
+
+    entities = get_entities(datatype=datatype,
+                            flexilims_session=flexilims_session,
+                            name=name)
+    if len(entities) != 1:
+        raise NameNotUniqueException(
+            'ERROR: Found {num} entities of type {datatype} with name {name}!'
+                .format(num=len(entities), datatype=datatype, name=name))
+        return None
+    else:
+        return entities['path'][0]
 
 
 def get_experimental_sessions(project_id=None, username=None, flexilims_session=None, password=None,
