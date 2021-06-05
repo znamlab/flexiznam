@@ -296,7 +296,7 @@ class Dataset(object):
                                   'id', 'origin_id'])
         fmt = self.format()
 
-        differences = compare_series(fmt, flm_data)
+        differences = compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
         return differences
 
     def format(self, mode='flexilims'):
