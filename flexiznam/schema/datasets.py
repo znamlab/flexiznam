@@ -291,9 +291,9 @@ class Dataset(object):
             if not len(flm_data):
                 raise IOError('No flexilims entry for dataset %s' % self.name)
 
-        # remove the flexilims keywords that are not used by Dataset
-        flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities', 'incrementalId',
-                                  'id', 'origin_id'])
+        # remove the flexilims keywords that are not used by Dataset if they are present
+        flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities',
+                                  'incrementalId', 'id', 'origin_id'], errors='ignore')
         fmt = self.format()
 
         differences = compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
