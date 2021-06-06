@@ -76,10 +76,10 @@ def test_add_entity():
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
     assert err.value.args[0] == 'Error 400:  &#39;path&#39; is a necessary attribute for dataset'
     with pytest.raises(NameNotUniqueException) as err:
-        fzn.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
+        flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
-    new_name = fzn.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
-    rep = fzn.add_entity(datatype='dataset', name=new_name, flexilims_session=flm_sess,
+    new_name = flz.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    rep = flz.add_entity(datatype='dataset', name=new_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
     assert rep['name'] == new_name
     assert len(rep) == 9
