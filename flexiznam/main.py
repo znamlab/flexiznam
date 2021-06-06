@@ -225,7 +225,7 @@ def get_entities(datatype='mouse', query_key=None, query_value=None, project_id=
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
-    results =  flexilims_session.get(
+    results = flexilims_session.get(
         datatype,
         query_key=query_key,
         query_value=query_value,

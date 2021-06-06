@@ -3,7 +3,7 @@ import pathlib
 import pandas as pd
 from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError
+from flexiznam.errors import DatasetError, NameNotUniqueException
 from tests.tests_resources import acq_yaml_and_files
 
 
@@ -86,6 +86,33 @@ def test_dataset_flexilims_integration():
 def test_from_flexilims():
     project = 'test'
     ds = Dataset.from_flexilims(project, name='R101501_retinotopy_suite2p_traces')
+
+@pytest.mark.integtest
+def test_from_origin():
+    project = 'test'
+    origin_name = 'PZAH4.1c_S20210513_0_R150615_0'
+    ds = Dataset.from_origin(
+        project,
+        origin_type='recording',
+        origin_name=origin_name,
+        dataset_type='suite2p_rois',
+        conflicts='skip')
+    assert ds.name == 'PZAH4.1c_S20210513_0_R150615_0_suite2p_rois_0'
+    ds = Dataset.from_origin(
+        project,
+        origin_type='recording',
+        origin_name=origin_name,
+        dataset_type='suite2p_rois',
+        conflicts='append')
+    assert ds.name == 'PZAH4.1c_S20210513_0_R150615_0_suite2p_rois_1'
+    with pytest.raises(NameNotUniqueException) as err:
+        ds = Dataset.from_origin(
+            project,
+            origin_type='recording',
+            origin_name=origin_name,
+            dataset_type='suite2p_rois',
+            conflicts='abort')
+    assert 'already processed' in err.value.args[0]
 
 
 def test_camera(tmp_path):
