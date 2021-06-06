@@ -4,18 +4,21 @@ import re
 import yaml
 
 import flexiznam as flz
-from flexiznam.errors import SyncYmlError, ConfigurationError, NameNotUniqueException
+from flexiznam.errors import SyncYmlError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 
 
-def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=True, log_func=print):
+def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=True,
+                log_func=print):
     """Upload data from one yaml to flexilims
 
     Args:
         source_yaml: path to clean yaml
-        conflicts: `abort`, `append` or `overwrite`. How to deal with conflicts on flexilims
-        raw_data_folder: path to the folder containing the data. Default to project_root/projet/raw
+        conflicts: `abort`, `append` or `overwrite`. How to deal with conflicts on
+                   flexilims
+        raw_data_folder: path to the folder containing the data. Default to
+                         project_root/project/raw
         verbose: print progress information
         log_func: function to deal with warnings and messages
 
@@ -29,12 +32,13 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
 
     # first find the mouse
     flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
-    mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'], flexilims_session=flexilims_session)
+    mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'],
+                           flexilims_session=flexilims_session)
     if mouse is None:
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
     # deal with the session
-    m = re.match('S(\d{4})(\d\d)(\d\d)', session_data['session'])
+    m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
     if m:
         date = '-'.join(m.groups())
     else:
@@ -69,7 +73,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         raw_data_folder: root folder containing the mice folders
         verbose: print info while looking for datasets
 
-    Returns: A yaml dictionary with datset classes
+    Returns: A yaml dictionary with dataset classes
     """
 
     session_data = clean_yaml(path_to_yaml)
@@ -82,7 +86,8 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     if session_data['path'] is not None:
         home_folder = pathlib.Path(raw_data_folder) / session_data['path']
     else:
-        home_folder = pathlib.Path(raw_data_folder) / session_data['mouse'] / session_data['session']
+        home_folder = pathlib.Path(raw_data_folder) / session_data['mouse'] / \
+                      session_data['session']
         # first load datasets in the session level
     if not home_folder.is_dir():
         raise FileNotFoundError('Session directory %s does not exist' % home_folder)
@@ -121,7 +126,7 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     Returns: the pure yaml dictionary
     """
     out_dict = session_data.copy()
-    _clean_dictionary_recursively(out_dict, format_dataset=True)
+    _clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
     if target_file is not None:
         target_file = pathlib.Path(target_file)
         if target_file.exists() and not overwrite:
@@ -131,14 +136,17 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     return out_dict
 
 
-def _clean_dictionary_recursively(dictionary, keys={}, path2string=True, format_dataset=False):
+def _clean_dictionary_recursively(dictionary, keys=(), path2string=True,
+                                  format_dataset=False):
     """Recursively clean a dictionary inplace
 
     Args:
         dictionary: dict (of dict)
-        keys: list of keys to pop from the dictionary
-        path2string: replace Path object by their string representation (default True)
-        format_dataset: replace Dataset instances by their yaml representation (default False)
+        keys (list): list of keys to pop from the dictionary
+        path2string (str): replace Path object by their string representation
+                           (default True)
+        format_dataset (bool): replace Dataset instances by their yaml representation
+                               (default False)
     """
 
     if isinstance(keys, str):
@@ -155,19 +163,32 @@ def _clean_dictionary_recursively(dictionary, keys={}, path2string=True, format_
             dictionary[k] = str(v)
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
-                dictionary[k] = v.format(mode='yaml')
+                ds_dict = v.format(mode='yaml')
+                # we have now a dictionary with a flat structure. Reshape it to match
+                # what acquisition yaml are supposed to look like
+                for field in ['created', 'is_raw']:
+                    ds_dict['extra_attributes'][field] = ds_dict.pop(field)
+                for field in ['name', 'project', 'type']:
+                    ds_dict.pop(field, None)
+
+                # rename extra_attributes to match acquisition yaml
+                ds_dict['attributes'] = ds_dict.pop('extra_attributes')
+                dictionary[k] = ds_dict
 
 
-def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_handling='crash'):
+def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
+                   error_handling='crash'):
     """ Create dictionary of datasets
 
     Args:
-        dataset_infos: extra information for reading dataset outside of raw_data_folder or adding optional arguments
+        dataset_infos: extra information for reading dataset outside of raw_data_folder
+                       or adding optional arguments
         parent: yaml dictionary of the parent level
         raw_data_folder: folder where to look for data
         verbose: (True) Print info about dataset found
-        error_handling: `crash` or `report`. When something goes wrong, raise an error if `crash` otherwise replace the
-                        dataset instance by the error message in the output dictionary
+        error_handling: `crash` or `report`. When something goes wrong, raise an error if
+                        `crash` otherwise replace the dataset instance by the error
+                        message in the output dictionary
 
     Returns: dictionary of dataset instances
 
@@ -207,7 +228,8 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_h
         if ds_name in ds:
             ds = ds[ds_name]
         else:      # now we're in trouble.
-            err_msg = 'Could not find dataset "%s". Found "%s" instead' % (ds_name, ', '.join(ds.keys()))
+            err_msg = 'Could not find dataset "%s". Found "%s" instead' % (
+                       ds_name, ', '.join(ds.keys()))
             if error_handling == 'crash':
                 raise SyncYmlError(err_msg)
             datasets[ds_name] = 'XXERRORXX!! ' + err_msg
@@ -223,8 +245,8 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True, error_h
 def clean_yaml(path_to_yaml):
     """Read a yaml file and check that it is correctly formatted
 
-    This does not do any processing, just make sure that I can read the whole yaml and generate dictionary will
-    all expected fields
+    This does not do any processing, just make sure that I can read the whole yaml and
+    generate dictionary will all expected fields
     """
     with open(path_to_yaml, 'r') as yml_file:
         yml_data = yaml.safe_load(yml_file)
@@ -234,73 +256,76 @@ def clean_yaml(path_to_yaml):
     # session['full_name'] = '_'.join([session['mouse'], session['session']])
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
-        ds = read_dataset(name=dataset_name, data=dataset_dict, parent=session)
+        ds = read_dataset(name=dataset_name, data=dataset_dict)
         session['datasets'][dataset_name] = ds
 
     session['recordings'] = {}
     for rec_name, rec_dict in nested_levels['recordings'].items():
-        ds = read_recording(name=rec_name, data=rec_dict, session=session)
+        ds = read_recording(name=rec_name, data=rec_dict)
         session['recordings'][rec_name] = ds
     return session
 
 
-def read_recording(name, data, session):
+def read_recording(name, data):
     """Read YAML information corresponding to a recording
 
     Args:
-        name: str the name of the dataset, will be composed with parent names to generate an identifier
+        name: str the name of the recording
         data: dict data for this dataset only
-        session: a dictionary of the parent session
 
     Returns:
-
+        recording: dict, the dictionary read from the yaml
     """
     recording, datasets = read_level(data, mandatory_args=('protocol',),
-                                     optional_args=('notes', 'attributes', 'path', 'recording_type', 'timestamp'),
+                                     optional_args=('notes', 'attributes', 'path',
+                                                    'recording_type', 'timestamp'),
                                      nested_levels=('datasets',))
     recording['name'] = name
-    # recording['full_name'] = '_'.join([name, session['full_name']])
 
     # if timestamps is None, the name must start with RHHMMSS
     if recording['timestamp'] is None:
-        m = re.match('R(\d\d\d\d\d\d)', recording['name'])
+        m = re.match(r'R(\d\d\d\d\d\d)', recording['name'])
         if not m:
-            raise SyncYmlError('Timestamp must be provided if recording name is not properly formatted')
+            raise SyncYmlError('Timestamp must be provided if recording name is not '
+                               'properly formatted')
         recording['timestamp'] = m.groups()[0]
     recording['datasets'] = dict()
     for ds_name, ds_data in datasets['datasets'].items():
-        ds = read_dataset(name=ds_name, data=ds_data, parent=recording)
+        ds = read_dataset(name=ds_name, data=ds_data)
         recording['datasets'][ds_name] = ds
 
     return recording
 
 
-def read_dataset(name, data, parent):
+def read_dataset(name, data):
     """Read YAML information corresponding to a dataset
 
     Args:
-        name: str the name of the dataset, will be composed with parent names to generate an identifier
+        name: str the name of the dataset, will be composed with parent names to
+        generate an identifier
         data: dict data for this dataset only
-        parent: a dictionary of the parent level. Can have a parent itself
 
     Returns:
-        a formatted dictionary including,  'dataset_type', 'path', 'notes', 'attributes' and 'name'
+        a formatted dictionary including,  'dataset_type', 'path', 'notes',
+        'attributes' and 'name'
     """
-    level, _ = read_level(data, mandatory_args=('dataset_type', 'path'), optional_args=('notes', 'attributes', 'autogen_name'),
+    level, _ = read_level(data, mandatory_args=('dataset_type', 'path'),
+                          optional_args=('notes', 'attributes', 'autogen_name'),
                           nested_levels=())
     level['name'] = name
-    # level['full_name'] = '_'.join([name, parent['full_name']])
     return level
 
 
-def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'), optional_args=('path', 'notes', 'attributes'),
+def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
+               optional_args=('path', 'notes', 'attributes'),
                nested_levels=('recordings', 'datasets')):
-    """Read one layer of the yml file (i.e. a dictionnary)
+    """Read one layer of the yml file (i.e. a dictionary)
 
     Args:
         yml_level: a dictionary containing the yml level to analyse (and all sublevels)
         mandatory_args: arguments that must be in this level
-        optional_args: arguments that are expected but not mandatory, will be `None` if absent
+        optional_args: arguments that are expected but not mandatory, will be `None` if
+                       absent
         nested_levels: name of any nested level that should not be parsed
 
     Returns: (level, nested_levels) two dictionary
@@ -320,7 +345,8 @@ def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'), option
 
     # the rest is unexpected
     if len(yml_level):
-        raise SyncYmlError('Got unexpected attribute(s): %s' % (', '.join(yml_level.keys())))
+        raise SyncYmlError('Got unexpected attribute(s): %s' % (
+                           ', '.join(yml_level.keys())))
     return level, nested_levels
 
 
