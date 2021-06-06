@@ -311,7 +311,7 @@ def generate_path(name=None, id=None, project_id=None, flexilims_session=None):
     """
     Recursively generate a path based on origin_id
     """
-    assert (project_id is not None) or (flexilims_session is not None)
+    assert (project_id is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     assert (name is not None) or (id is not None)
@@ -327,7 +327,7 @@ def generate_path(name=None, id=None, project_id=None, flexilims_session=None):
         flexilims_session=flexilims_session
     )
     if datatype == 'mouse':
-        parent_path = Path(project)
+        parent_path = Path(project_id)
     else:
         parent_path = generate_path(id=entity['origin_id'], flexilims_session=flexilims_session)
     path = parent_path / entity['name']
