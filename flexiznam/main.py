@@ -294,16 +294,21 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
-    suffix = name.split('_')[-1]
-    root = name[:-len(suffix) - 1]
-    if not suffix.isnumeric():
-        root = root + '_' + suffix
+    parts = name.split('_')
+    if not parts[-1].isnumeric():
+        root =  name + '_'
         suffix = 0
     else:
-        suffix = int(suffix)
-    while get_entity(datatype, name='%s_%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
+        root = '_'.join(parts[:-1])
+        if root:
+            root += '_'
+            suffix = int(parts[-1])
+        else:
+            root = parts[-1] + '_'
+            suffix = 0
+    while get_entity(datatype, name='%s%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
         suffix += 1
-    name = '%s_%s' % (root, suffix)
+    name = '%s%s' % (root, suffix)
     return name
 
 

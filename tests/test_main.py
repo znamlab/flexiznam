@@ -63,9 +63,21 @@ def test_get_mouse_id():
 @pytest.mark.integtest
 def test_generate_name():
     flm_sess = flz.get_flexilims_session('test')
-    name = flz.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    name = flz.generate_name(datatype='dataset', name='test_iter',
+                             flexilims_session=flm_sess)
     assert name.startswith('test_iter')
-    assert flz.get_entity(datatype='dataset', name='test_iter', flexilims_session=flm_sess) is None
+    assert flz.get_entity(datatype='dataset', name=name,
+                          flexilims_session=flm_sess) is None
+    name = flz.generate_name(datatype='dataset', name='nounderscore',
+                             flexilims_session=flm_sess)
+    assert name.startswith('nounderscore')
+    assert name.endswith('_0')
+    name = flz.generate_name(datatype='dataset', name='suffix_already_01',
+                             flexilims_session=flm_sess)
+    assert name  == 'suffix_already_1'
+    name = flz.generate_name(datatype='dataset', name='134241',
+                             flexilims_session=flm_sess)
+    assert name == '134241_0'
 
 
 @pytest.mark.integtest
