@@ -3,7 +3,7 @@ import pathlib
 import pandas as pd
 from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError, NameNotUniqueError
+from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
 from tests.tests_resources import acq_yaml_and_files
 
 
@@ -121,6 +121,16 @@ def test_from_origin():
             conflicts='abort')
     assert 'already processed' in err.value.args[0]
 
+
+@pytest.mark.intertest
+def test_update_flexilims():
+    project = 'test'
+    ds = Dataset.from_flexilims(project, name='R101501_retinotopy_suite2p_traces')
+    ds.path = 'new/test/path'
+    with pytest.raises(FlexilimsError) as err:
+        ds.update_flexilims()
+    assert err.value.args[0] == "Cannot change existing flexilims entry with mode=`safe`"
+    ds.update_flexilims(mode='overwrite')
 
 def test_camera(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)

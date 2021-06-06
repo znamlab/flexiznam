@@ -3,7 +3,7 @@ Class to handle dataset identification and validation
 """
 from pathlib import Path
 import re
-
+import numpy as np
 import pandas as pd
 import flexiznam as flz
 from flexiznam.utils import compare_series
@@ -239,32 +239,57 @@ class Dataset(object):
         series = flz.get_entity(datatype='dataset', project_id=self.project_id, name=self.name)
         return series
 
-    def update_flexilims(self, parent_id, mode='safe'):
-        """Create or update (not implemented) flexilims entry for this dataset
-
-        TODO Call the flexiznam update method
+    def update_flexilims(self, mode='safe'):
+        """Create or update flexilims entry for this dataset
 
         Args:
-            parent_id: ID of the parent on flexilims
             mode: One of: 'update', 'overwrite', 'safe' (default).
                   If 'safe', will only create entry if it does not exist online.
-                  If 'update' [NotImplemented] will update existing entry.
-                  If 'overwrite' [NotImplemented] will delete existing entry and upload a new.
+                  If 'update' will update existing entry but keep any existing attributes that are
+                    not specified.
+                  If 'overwrite' will update existing entry and clear any attributes that are not
+                    specified.
 
         Returns: Flexilims reply
         """
         status = self.flexilims_status()
+        attributes = self.extra_attributes.copy()
+        # the following lines are necessary because pandas converts python types to numpy types,
+        # which JSON does not understand
+        for attribute in attributes:
+            if isinstance(attributes[attribute], np.integer):
+                attributes[attribute] = int(attributes[attribute])
+            if isinstance(attributes[attribute], np.bool_):
+                attributes[attribute] = bool(attributes[attribute])
+
         if status == 'different':
             if mode == 'safe':
                 raise FlexilimsError('Cannot change existing flexilims entry with mode=`safe`')
-            raise NotImplementedError('Updating entries is not')
+            if (mode == 'overwrite') or (mode == 'update'):
+                attributes['is_raw'] = 'yes' if self.is_raw else 'no'
+                resp = flz.update_entity(
+                    datatype='dataset',
+                    name=self.name,
+                    origin_id=self.origin_id,
+                    mode=mode,
+                    attributes=attributes,
+                    project_id=self.project_id
+                )
+            return resp
         if status == 'up-to-date':
             print('Already up to date, nothing to do')
             return
         # we are in 'not online' case
-        resp = flz.add_dataset(parent_id=parent_id, dataset_type=self.dataset_type, created=self.created,
-                               path=self.path, is_raw='yes' if self.is_raw else 'no', project_id=self.project_id,
-                               dataset_name=self.name, attributes=self.extra_attributes)
+        resp = flz.add_dataset(
+            parent_id=self.origin_id,
+            dataset_type=self.dataset_type,
+            created=self.created,
+            path=self.path,
+            is_raw='yes' if self.is_raw else 'no',
+            project_id=self.project_id,
+            dataset_name=self.name,
+            attributes=self.extra_attributes
+        )
         return resp
 
     def flexilims_status(self):
