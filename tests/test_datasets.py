@@ -92,7 +92,8 @@ def test_dataset_flexilims_integration():
 @pytest.mark.integtest
 def test_from_flexilims():
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='R101501_retinotopy_suite2p_traces')
+    ds = Dataset.from_flexilims(project, name='suite2p')
+
 
 @pytest.mark.integtest
 def test_from_origin():
@@ -125,7 +126,7 @@ def test_from_origin():
 @pytest.mark.intertest
 def test_update_flexilims():
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='R101501_retinotopy_suite2p_traces')
+    ds = Dataset.from_flexilims(project, name='suite2p')
     ds.path = 'new/test/path'
     with pytest.raises(FlexilimsError) as err:
         ds.update_flexilims()
