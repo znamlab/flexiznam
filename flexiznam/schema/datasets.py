@@ -85,9 +85,11 @@ class Dataset(object):
             if (project is not None) or (name is not None):
                 raise AttributeError('Specify either data_series OR project + name')
         else:
-            data_series = flz.get_entities(project_id=project, datatype='dataset', name=name)
-            assert len(data_series) == 1
-            data_series = data_series.loc[name]
+            data_series = flz.get_entity(project_id=project, datatype='dataset',
+                                         name=name)
+            if data_series is None:
+                raise FlexilimsError('No dataset named {} in project {}'.format(name,
+                                                                                project))
         dataset_type = data_series.dataset_type
         if dataset_type in Dataset.SUBCLASSES:
             return Dataset.SUBCLASSES[dataset_type].from_flexilims(data_series=data_series)
@@ -421,7 +423,8 @@ class Dataset(object):
     @dataset_type.setter
     def dataset_type(self, value):
         if value.lower() not in Dataset.VALID_TYPES:
-            raise IOError('dataset_type "%s" not valid. Valid types are: %s' % (value, Dataset.VALID_TYPES))
+            raise IOError('dataset_type "%s" not valid. Valid types are: '
+                          '%s' % (value, Dataset.VALID_TYPES))
         self._dataset_type = value.lower()
 
     @property
