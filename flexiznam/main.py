@@ -3,7 +3,7 @@ import flexilims as flm
 from pathlib import Path
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
-from flexiznam.errors import NameNotUniqueException, FlexilimsError
+from flexiznam.errors import NameNotUniqueError, FlexilimsError
 
 
 def _format_project(project_id, prm):
@@ -246,7 +246,7 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
     """
     Get one entity and format result.
 
-    If multiple entities on the database match the query, raise a NameNotUniqueException,
+    If multiple entities on the database match the query, raise a NameNotUniqueError,
     if nothing match, return None
 
     If an open Flexylims session is provided, the other authentication arguments
@@ -281,7 +281,7 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
     if not len(entity):
         return None
     if len(entity) != 1:
-        raise NameNotUniqueException('Found %d entities, not 1' % len(entity))
+        raise NameNotUniqueError('Found %d entities, not 1' % len(entity))
     if format_reply:
         return entity.iloc[0]
     return entity[0]
@@ -339,7 +339,7 @@ def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=No
         )
     except OSError as err:
         if 'already exist in the project ' in err.args[0]:
-            raise NameNotUniqueException(err.args[0])
+            raise NameNotUniqueError(err.args[0])
         raise FlexilimsError(err.args[0])
     return rep
 
@@ -440,7 +440,7 @@ def get_id(name, datatype='mouse', project_id=None, flexilims_session=None):
                             flexilims_session=flexilims_session,
                             name=name)
     if len(entities) != 1:
-        raise NameNotUniqueException(
+        raise NameNotUniqueError(
             'ERROR: Found {num} entities of type {datatype} with name {name}!'
                 .format(num=len(entities), datatype=datatype, name=name))
         return None
@@ -458,7 +458,7 @@ def get_path(name, datatype='mouse', project_id=None, flexilims_session=None):
                             flexilims_session=flexilims_session,
                             name=name)
     if len(entities) != 1:
-        raise NameNotUniqueException(
+        raise NameNotUniqueError(
             'ERROR: Found {num} entities of type {datatype} with name {name}!'
                 .format(num=len(entities), datatype=datatype, name=name))
         return None

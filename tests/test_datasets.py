@@ -3,7 +3,7 @@ import pathlib
 import pandas as pd
 from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError, NameNotUniqueException
+from flexiznam.errors import DatasetError, NameNotUniqueError
 from tests.tests_resources import acq_yaml_and_files
 
 
@@ -105,7 +105,7 @@ def test_from_origin():
         dataset_type='suite2p_rois',
         conflicts='append')
     assert ds.name == 'PZAH4.1c_S20210513_0_R150615_0_suite2p_rois_1'
-    with pytest.raises(NameNotUniqueException) as err:
+    with pytest.raises(NameNotUniqueError) as err:
         ds = Dataset.from_origin(
             project,
             origin_type='recording',

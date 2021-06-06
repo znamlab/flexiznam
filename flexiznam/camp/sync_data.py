@@ -4,7 +4,7 @@ import re
 import yaml
 
 import flexiznam as flz
-from flexiznam.errors import SyncYmlError, ConfigurationError, NameNotUniqueException
+from flexiznam.errors import SyncYmlError, ConfigurationError, NameNotUniqueError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 

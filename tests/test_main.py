@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import flexiznam.main as flz
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import FlexilimsError, NameNotUniqueException
+from flexiznam.errors import FlexilimsError, NameNotUniqueError
 
 
 @pytest.mark.integtest
@@ -75,7 +75,7 @@ def test_add_entity():
     with pytest.raises(FlexilimsError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
     assert err.value.args[0] == 'Error 400:  &#39;path&#39; is a necessary attribute for dataset'
-    with pytest.raises(NameNotUniqueException) as err:
+    with pytest.raises(NameNotUniqueError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
     new_name = flz.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)

@@ -1,4 +1,4 @@
-class NameNotUniqueException(Exception):
+class NameNotUniqueError(Exception):
     """
     Mouse name does not correspond to exactly 1 entry
     """
