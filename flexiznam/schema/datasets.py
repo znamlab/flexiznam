@@ -1,7 +1,7 @@
 """
 Class to handle dataset identification and validation
 """
-import pathlib
+from pathlib import Path
 import re
 
 import pandas as pd
@@ -106,45 +106,54 @@ class Dataset(object):
 
 
     @staticmethod
-    def from_origin(project=None, origin_type=None, origin_id=None,
+    def from_origin(project=None, origin_type=None, origin_id=None, origin_name=None,
                     dataset_type=None, conflicts=None):
         """Creates a dataset of a given type as a child of a parent entity
 
-        TODO return a dataset object in any case
         """
-        raise NotImplementedError()
+        assert (origin_id is not None) or (origin_name is not None)
         origin = flz.get_entity(
             datatype=origin_type,
             id=origin_id,
+            name=origin_name,
             project_id=project
         )
         processed = flz.get_entities(
             project_id=project,
             datatype='dataset',
-            origin_id=origin_id,
+            origin_id=origin['id'],
             query_key='dataset_type',
             query_value=dataset_type
         )
         already_processed = len(processed)>0
-        if already_processed:
-            if conflicts is None:
-                raise flz.errors.NameNotUniqueException(
+        if (not already_processed) or (conflicts == 'append'):
+            dataset_root = '%s_%s' % (origin['name'], dataset_type)
+            dataset_name = flz.generate_name(
+                'dataset',
+                dataset_root,
+                project_id=project
+            )
+            dataset_path = str(
+                Path(origin['path']) / Dataset.parse_dataset_name(dataset_name)['dataset'])
+            return Dataset(
+                path=dataset_path,
+                is_raw='no',
+                dataset_type=dataset_type,
+                name=dataset_name,
+                created=None,
+                project=project
+            )
+        else:
+            if (conflicts is None) or (conflicts == 'abort'):
+                raise flz.errors.NameNotUniqueError(
                     'Dataset {} already processed'.format(processed['name']))
-            elif conflicts == 'skip':
-                return from_flexilims(data_series=processed)
-            elif conflicts == 'append':
-                dataset_root = '%s_%s' % (origin['name'], dataset_type)
-                dataset_name = flz.generate_name(
-                    'dataset',
-                    dataset_root,
-                    project_id=project
-                )
-            elif conflicts == 'overwrite':
+            elif conflicts == 'skip' or conflicts == 'overwrite':
                 if len(processed)==1:
-                    dataset_name = processed['name'][0]
+                    return Dataset.from_flexilims(data_series=processed.iloc[0])
                 else:
-                    raise flz.errors.NameNotUniqueException(
-                        '{} {} datasets exists for {}, which one to overwrite?'.format(
+                    print(processed['origin_id'])
+                    raise flz.errors.NameNotUniqueError(
+                        '{} {} datasets exists for {}, which one to return?'.format(
                             len(processed),
                             dataset_type,
                             origin['name']
@@ -188,7 +197,7 @@ class Dataset(object):
         self.recording = None
         self.dataset_name = None
         self.name = name
-        self.path = pathlib.Path(path)
+        self.path = Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
         self.extra_attributes = extra_attributes
@@ -236,7 +245,7 @@ class Dataset(object):
     def update_flexilims(self, parent_id, mode='safe'):
         """Create or update (not implemented) flexilims entry for this dataset
 
-        TODO Call the flexiznam update method 
+        TODO Call the flexiznam update method
 
         Args:
             parent_id: ID of the parent on flexilims
