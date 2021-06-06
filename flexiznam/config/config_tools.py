@@ -1,5 +1,5 @@
 import os.path
-import pathlib
+from pathlib import Path
 import sys
 import yaml
 from flexiznam.errors import ConfigurationError
@@ -17,21 +17,21 @@ def _find_file(file_name, config_folder=None):
        - then in sys.path
        """
     if config_folder is not None:
-        in_config_folder = pathlib.Path(config_folder) / file_name
+        in_config_folder = Path(config_folder) / file_name
         if in_config_folder.is_file():
             return in_config_folder
         raise ConfigurationError('Cannot find %s in %s' % (file_name, config_folder))
-    local = pathlib.Path.cwd() / file_name
+    local = Path.cwd() / file_name
     if local.is_file():
         return local
-    config = pathlib.Path(__file__).parent.absolute() / 'config' / file_name
-    home = pathlib.Path.home() / '.flexiznam'
+    config = Path(__file__).parent.absolute() / 'config' / file_name
+    home = Path.home() / '.flexiznam'
     if home.is_dir() and (home / file_name).is_file():
         return home / file_name
     if config.is_file():
         return config
     for directory in sys.path:
-        fname = pathlib.Path(directory) / file_name
+        fname = Path(directory) / file_name
         if fname.is_file():
             return fname
     raise ConfigurationError('Cannot find %s' % file_name)
@@ -42,7 +42,7 @@ def load_param(param_folder=None, config_file='config.yml'):
     if param_folder is None:
         param_file = _find_file(config_file)
     else:
-        param_file = pathlib.Path(param_folder) / config_file
+        param_file = Path(param_folder) / config_file
     with open(param_file, 'r') as yml_file:
         prm = yaml.safe_load(yml_file)
     return prm
@@ -68,13 +68,13 @@ def add_password(app, username, password, password_file=None):
         try:
             password_file = _find_file('secret_password.yml')
         except ConfigurationError:
-            home = pathlib.Path.home() / '.flexiznam'
+            home = Path.home() / '.flexiznam'
             if not home.is_dir():
                 os.mkdir(home)
             password_file = home / 'secret_password.yml'
     if os.path.isfile(password_file):
         with open(password_file, 'r') as yml_file:
-            pwd = yaml.safe_load(yml_file) or {}  # use empty dict if load returns None or False
+            pwd = yaml.safe_load(yml_file) or {}  # use empty dict if load returns None
     else:
         pwd = {}
     # create or copy the app field
@@ -88,29 +88,32 @@ def add_password(app, username, password, password_file=None):
 def update_config(param_file=None, config_folder=None, skip_checks=False, **kwargs):
     """Update the current configuration
 
-    You can give any keyword arguments. For nested levels, provide a dictionary (of dictionaries)
-    For instance:
+    You can give any keyword arguments. For nested levels, provide a dictionary (of
+    dictionaries). For instance:
     update_config(project_ids=dict(my_project='its_id'))
 
-    will add the new project into the project_ids dictionary without removing existing projects.
+    will add the new project into the project_ids dictionary without removing existing
+    projects.
 
-    If you want to replace a nested field by a flat structure, use the skip_checks=True flag
+    If you want to replace a nested field by a flat structure, use the skip_checks=True
+    flag
     """
     if config_folder is not None:
-        full_param_path = pathlib.Path(config_folder) / param_file
+        full_param_path = Path(config_folder) / param_file
     else:
         full_param_path = param_file
     create_config(config_folder=config_folder, config_file=param_file, overwrite=True,
                   template=full_param_path, skip_checks=skip_checks, **kwargs)
 
 
-def create_config(overwrite=False, config_folder=None, template=None, skip_checks=False, config_file='config.yml',
-                  **kwargs):
+def create_config(overwrite=False, config_folder=None, template=None, skip_checks=False, 
+                  config_file='config.yml', **kwargs):
     """Create a config file based on a template
 
-    If no template is provided, use ./config/default_config.py to generate a new config file
+    If no template is provided, use ./config/default_config.py to generate a new config 
+    file
 
-    **kwargs elements are used to update/supplement infos found in the template
+    **kwargs elements are used to update/supplement info found in the template
     """
     if template is not None:
         if isinstance(template, dict):
@@ -123,11 +126,11 @@ def create_config(overwrite=False, config_folder=None, template=None, skip_check
     cfg = _recursive_update(cfg, kwargs, skip_checks=skip_checks)
 
     if config_folder is None:
-        config_folder = pathlib.Path.home() / '.flexiznam'
+        config_folder = Path.home() / '.flexiznam'
         if not config_folder.is_dir():
             os.mkdir(config_folder)
     else:
-        config_folder = pathlib.Path(config_folder)
+        config_folder = Path(config_folder)
         assert config_folder.is_dir()
     target_file = config_folder / config_file
     if (not overwrite) and os.path.isfile(target_file):
@@ -151,9 +154,10 @@ def _recursive_update(source, new_values, skip_checks=False):
 try:
     PARAMETERS = load_param()
     # expanduser for file paths:
-    PARAMETERS['download_folder'] = pathlib.Path(PARAMETERS['download_folder']).expanduser()
+    PARAMETERS['download_folder'] = Path(PARAMETERS['download_folder']).expanduser()
 except ConfigurationError:
     print('Could not load the parameters. Check your configuration file')
     PARAMETERS = {}
 
-__all__ = ['load_param', 'get_password', 'add_password', 'update_config', 'create_config', 'PARAMETERS']
+__all__ = ['load_param', 'get_password', 'add_password', 'update_config', 'create_config',
+           'PARAMETERS']
