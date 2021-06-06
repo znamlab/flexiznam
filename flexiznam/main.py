@@ -307,33 +307,6 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
     return name
 
 
-def generate_path(name=None, id=None, project_id=None, flexilims_session=None):
-    """
-    Recursively generate a path based on origin_id
-    """
-    assert (project_id is not None)
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id)
-    assert (name is not None) or (id is not None)
-    datatype = get_datatype(
-        project_id=project_id,
-        flexilims_session=flexilims_session,
-        id=id,
-        name=name
-    )
-    entity = get_entity(datatype=datatype,
-        name=name,
-        id=id,
-        flexilims_session=flexilims_session
-    )
-    if datatype == 'mouse':
-        parent_path = Path(project_id)
-    else:
-        parent_path = generate_path(id=entity['origin_id'], flexilims_session=flexilims_session)
-    path = parent_path / entity['name']
-    return path
-
-
 def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=None,
                flexilims_session=None, project_id=None):
     """Add a new entity on flexilims. Name must be unique
