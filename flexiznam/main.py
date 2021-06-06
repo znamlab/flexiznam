@@ -371,7 +371,7 @@ def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=No
             strict_validation=False
         )
     except OSError as err:
-        if err.args[0].endswith('already exist in the project test'):
+        if 'already exist in the project ' in err.args[0]:
             raise NameNotUniqueException(err.args[0])
         raise FlexilimsError(err.args[0])
     return rep
@@ -380,9 +380,7 @@ def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=No
 def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite',
                   attributes={}, other_relations=None, flexilims_session=None,
                   project_id=None, username=None, password=None):
-    """Update one entity identified with its datatype and name
-
-    TODO get rid of conflicts behaviour - this method should always update the existing entry with PUT
+    """Update one entity identified with its datatype and name or id
 
     Args:
         datatype (str): flexilims type
