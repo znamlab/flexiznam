@@ -93,7 +93,7 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     mouse_id = get_id(mouse_name, datatype='mouse', flexilims_session=flexilims_session)
     if session_name is None:
         session_name = mouse_name + '_' + date + '_0'
-    session_name = generate_name('session', name, flexilims_session=flexilims_session)
+    session_name = generate_name('session', session_name, flexilims_session=flexilims_session)
 
     session_info = {'date': date}
     if attributes is None:
