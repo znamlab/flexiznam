@@ -53,7 +53,6 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
         mouse_name=mouse['name'],
         session_name=session_data['session'],
         flexilims_session=flexilims_session,
-        conflicts=conflicts,
         date=date,
         attributes=attributes
     )
