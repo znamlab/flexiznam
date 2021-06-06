@@ -168,7 +168,7 @@ class Dataset(object):
                       is_raw=attr.pop('is_raw'),
                       dataset_type=attr.pop('dataset_type'),
                       created=attr.pop('created', None),
-                      origin_id=flm_series.origin_id,
+                      origin_id=flm_series.get('origin_id', None),
                       extra_attributes=attr,
                       project_id=flm_series.project,
                       name=flm_series.name)
