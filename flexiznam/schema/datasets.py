@@ -45,7 +45,6 @@ class Dataset(object):
             output['recording'] += '_%s' % rec_num
         return output
 
-
     @classmethod
     def from_folder(cls, folder, verbose=True):
         """Try to load all datasets found in the folder.
@@ -96,14 +95,12 @@ class Dataset(object):
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
         ds = Dataset(**kwargs)
-        ds = Dataset(**kwargs)
         try:
             ds.name = name
         except DatasetError:
             print('\n!!! Cannot parse the name !!!\nWill not set mouse, session or recording')
             ds.dataset_name = name
         return ds
-
 
     @staticmethod
     def from_origin(project=None, origin_type=None, origin_id=None, origin_name=None,
@@ -151,14 +148,12 @@ class Dataset(object):
                 if len(processed)==1:
                     return Dataset.from_flexilims(data_series=processed.iloc[0])
                 else:
-                    print(processed['origin_id'])
                     raise flz.errors.NameNotUniqueError(
                         '{} {} datasets exists for {}, which one to return?'.format(
                             len(processed),
                             dataset_type,
                             origin['name']
                         ))
-
 
     @staticmethod
     def _format_series_to_kwargs(flm_series):
@@ -173,13 +168,14 @@ class Dataset(object):
                       is_raw=attr.pop('is_raw'),
                       dataset_type=attr.pop('dataset_type'),
                       created=attr.pop('created', None),
+                      origin_id=flm_series.origin_id,
                       extra_attributes=attr,
                       project_id=flm_series.project,
                       name=flm_series.name)
         return kwargs
 
     def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes={}, created=None, project=None,
-                 project_id=None):
+                 project_id=None, origin_id=None):
         """Construct a dataset manually. Is usually called through static methods 'from_folder' or 'from_flexilims'
 
         Args:
@@ -202,6 +198,7 @@ class Dataset(object):
         self.dataset_type = str(dataset_type)
         self.extra_attributes = extra_attributes
         self.created = str(created)
+        self.origin_id = origin_id
         if project is not None:
             self.project = project
             if project_id is not None:
@@ -295,7 +292,6 @@ class Dataset(object):
 
         Attributes not present in either dataset or on flexilims are labelled as 'N/A'
         """
-
         if flm_data is None:
             flm_data = self.get_flexilims_entry()
             if not len(flm_data):
@@ -303,7 +299,7 @@ class Dataset(object):
 
         # remove the flexilims keywords that are not used by Dataset if they are present
         flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities',
-                                  'incrementalId', 'id', 'origin_id'], errors='ignore')
+                                  'incrementalId', 'id'], errors='ignore')
         fmt = self.format()
 
         differences = compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
@@ -326,6 +322,7 @@ class Dataset(object):
                     is_raw='yes' if self.is_raw else 'no',
                     name=self.name,
                     project=self.project_id,
+                    origin_id=self.origin_id,
                     type='dataset')
 
         if mode.lower() == 'flexilims':

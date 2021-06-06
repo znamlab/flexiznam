@@ -53,23 +53,30 @@ def test_dataset_flexilims_integration():
                                           'is_raw': 'no',
                                           'path': 'fake/path',
                                           'only_online': 'NA',
+                                          'origin_id': None
                                           },
                                  flexilims={'created': 'NA',
                                             'is_raw': 'NA',
                                             'path': 'random',
                                             'only_online': 'this attribute is only on '
                                                            'flexilims',
+                                            'origin_id': 'NA'
                                             }))
     assert all(rep.sort_index() == expected.sort_index())
     ds_name = 'test_ran_on_20210513_113928_dataset'
     fmt = {'path': 'fake/path', 'created': '', 'dataset_type': 'camera', 'is_raw': 'no',
            'name': ds_name, 'project': '606df1ac08df4d77c72c9aa4', 'type': 'dataset'}
     assert ds.format().name == ds_name
-    assert all(ds.format() == pd.Series(data=fmt, name=ds_name))
+    assert all(ds.format().drop('origin_id') == pd.Series(data=fmt, name=ds_name))
 
     # same with yaml mode
     fmt['extra_attributes'] = {}
-    assert ds.format(mode='yaml') == fmt
+    ds_yaml = ds.format(mode='yaml')
+    try:
+        del ds_yaml['origin_id']
+    except KeyError:
+        pass
+    assert ds_yaml == fmt
 
     # check that updating project change id
     ds.project = '3d_vision'

@@ -310,7 +310,7 @@ def read_dataset(name, data):
         'attributes' and 'name'
     """
     level, _ = read_level(data, mandatory_args=('dataset_type', 'path'),
-                          optional_args=('notes', 'attributes', 'autogen_name'),
+                          optional_args=('notes', 'attributes', 'autogen_name', 'origin_id'),
                           nested_levels=())
     level['name'] = name
     return level
