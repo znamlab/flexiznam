@@ -280,7 +280,7 @@ class Dataset(object):
         'incrementalId', 'id', 'origin_id'
         """
         series = self.get_flexilims_entry()
-        if not len(series):
+        if series is None:
             return 'not online'
         differences = self.flexilims_report(flm_data=series)
         if len(differences):
