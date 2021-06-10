@@ -1,6 +1,7 @@
 """
 Class to handle dataset identification and validation
 """
+import pathlib
 from pathlib import Path
 import re
 import numpy as np
@@ -314,7 +315,7 @@ class Dataset(object):
             parent_id=self.origin_id,
             dataset_type=self.dataset_type,
             created=self.created,
-            path=self.path,
+            path=str(self.path),
             is_raw='yes' if self.is_raw else 'no',
             project_id=self.project_id,
             dataset_name=self.name,
