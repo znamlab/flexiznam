@@ -270,6 +270,7 @@ class Dataset(object):
         Returns: Flexilims reply
         """
         status = self.flexilims_status()
+
         attributes = self.extra_attributes.copy()
         # the following lines are necessary because pandas converts python types to numpy
         # types, which JSON does not understand
@@ -284,7 +285,10 @@ class Dataset(object):
                 raise FlexilimsError('Cannot change existing flexilims entry with '
                                      'mode=`safe`')
             if (mode == 'overwrite') or (mode == 'update'):
-                attributes['is_raw'] = 'yes' if self.is_raw else 'no'
+                # I need to pack the dataset field in attributes
+                fmt = self.format()
+                for field in ['path', 'created', 'is_raw', 'dataset_type']:
+                    attributes[field] = fmt[field]
                 resp = flz.update_entity(
                     datatype='dataset',
                     name=self.name,
@@ -293,6 +297,8 @@ class Dataset(object):
                     attributes=attributes,
                     project_id=self.project_id
                 )
+            else:
+                raise IOError('`mode` must be `safe`, `overwrite` or `update`')
             return resp
         if status == 'up-to-date':
             print('Already up to date, nothing to do')
@@ -306,7 +312,7 @@ class Dataset(object):
             is_raw='yes' if self.is_raw else 'no',
             project_id=self.project_id,
             dataset_name=self.name,
-            attributes=self.extra_attributes
+            attributes=attributes
         )
         return resp
 
