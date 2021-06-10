@@ -212,7 +212,7 @@ class Dataset(object):
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
         self.extra_attributes = extra_attributes
-        self.created = str(created)
+        self.created = created
         self.origin_id = origin_id
         if project is not None:
             self.project = project
