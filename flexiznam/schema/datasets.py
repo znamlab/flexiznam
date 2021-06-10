@@ -349,6 +349,11 @@ class Dataset(object):
         # remove the flexilims keywords that are not used by Dataset if they are present
         flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities',
                                   'incrementalId', 'id'], errors='ignore')
+        # add the fields that are always present in Dataset but returned by flexilims
+        # only when they are non null
+        for na_field in ['origin_id', 'is_raw', 'dataset_type', 'path', 'created']:
+            if na_field not in flm_data:
+                flm_data[na_field] = None
         fmt = self.format()
 
         differences = compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
@@ -469,3 +474,4 @@ class Dataset(object):
         else:
             value = bool(value)
         self._is_raw = value
+

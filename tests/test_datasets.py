@@ -53,14 +53,12 @@ def test_dataset_flexilims_integration():
                                           'is_raw': 'no',
                                           'path': 'fake/path',
                                           'only_online': 'NA',
-                                          'origin_id': None
                                           },
-                                 flexilims={'created': 'NA',
-                                            'is_raw': 'NA',
+                                 flexilims={'created': None,
+                                            'is_raw': None,
                                             'path': 'random',
                                             'only_online': 'this attribute is only on '
                                                            'flexilims',
-                                            'origin_id': 'NA'
                                             }))
     assert all(rep.sort_index() == expected.sort_index())
     ds_name = 'test_ran_on_20210513_113928_dataset'
