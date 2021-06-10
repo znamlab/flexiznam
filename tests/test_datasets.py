@@ -138,6 +138,19 @@ def test_update_flexilims():
     ds.path = original_path
     ds.update_flexilims(mode='overwrite')
 
+    # try to change the origin_id
+    ds.origin_id = '60c1fd7a5c6930620e4a4bc4'
+    ds.update_flexilims(mode='overwrite')
+    assert ds.get_flexilims_entry()['origin_id'] == '60c1fd7a5c6930620e4a4bc4'
+    ds.origin_id = '60c1fc875c6930620e4a4bc1'
+    ds.update_flexilims(mode='overwrite')
+    assert ds.get_flexilims_entry()['origin_id'] == '60c1fc875c6930620e4a4bc1'
+    with pytest.raises(FlexilimsError) as err:
+        ds.origin_id = None
+        ds.update_flexilims(mode='overwrite')
+    assert err.value.args[0] == 'Cannot set origin_id to null'
+
+
 
 def test_camera(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)

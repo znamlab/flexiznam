@@ -270,7 +270,6 @@ class Dataset(object):
         Returns: Flexilims reply
         """
         status = self.flexilims_status()
-
         attributes = self.extra_attributes.copy()
         # the following lines are necessary because pandas converts python types to numpy
         # types, which JSON does not understand
@@ -289,6 +288,13 @@ class Dataset(object):
                 fmt = self.format()
                 for field in ['path', 'created', 'is_raw', 'dataset_type']:
                     attributes[field] = fmt[field]
+
+                # reseting origin_id to null is not implemented. Specifically check
+                # that it is not attempted and crash if it is
+                if self.origin_id is None:
+                    if self.get_flexilims_entry().get('origin_id', None) is not None:
+                        raise FlexilimsError('Cannot set origin_id to null')
+
                 resp = flz.update_entity(
                     datatype='dataset',
                     name=self.name,
