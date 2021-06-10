@@ -111,8 +111,9 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     return resp
 
 
-def add_recording(session_id, recording_type, protocol, attributes=None, recording_name=None, conflicts=None,
-                  other_relations=None, flexilims_session=None, project_id=None):
+def add_recording(session_id, recording_type, protocol, attributes=None,
+                  recording_name=None, conflicts=None, other_relations=None,
+                  flexilims_session=None, project_id=None):
     """Add a recording as a child of an experimental session
 
     Args:

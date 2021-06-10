@@ -11,10 +11,22 @@ def test_dataset():
     ds = Dataset(project='test', dataset_type='camera', is_raw=False, path='')
     # test a bunch of names and check we have what expected
     parts_label = ['mouse', 'session', 'recording', 'dataset_name']
-    names = [dict(mouse='mouse', session='S12345678', recording='R123456', dataset_name='name_with_underscore'),
-             dict(mouse='mouse', session='S12345678_00', recording='R123456_00', dataset_name='name_with_underscore'),
-             dict(mouse='mo_use', session='S12345678', recording='R123456', dataset_name='name_with_underscore'),
-             dict(mouse='mo_use', session='S12345678_123456', recording=None, dataset_name='name_with_underscore')
+    names = [dict(mouse='mouse', session='S12345678', recording='R123456',
+                  dataset_name='name_with_underscore'),
+             dict(mouse='mouse', session='S12345678_00', recording='R123456_00',
+                  dataset_name='name_with_underscore'),
+             dict(mouse='mo_use', session='S12345678', recording='R123456',
+                  dataset_name='name_with_underscore'),
+             dict(mouse='mo_use', session='S12345678_123456', recording=None,
+                  dataset_name='name_with_underscore'),
+             # dict(mouse='mo_use', session='S12345678_123456', recording='R123456wihttext',
+             #      dataset_name='name_with_underscore'),
+             # dict(mouse='mo_use', session='S12345678_123456',
+             #      recording='R123456_recording_with_underscore',
+             #      dataset_name='name_with_underscore'),
+             # dict(mouse='mo_use', session='S12345678_1',
+             #      recording='R123456_recording_with_underscore_12',
+             #      dataset_name='name_with_underscore'),
              ]
 
     for n in names:
@@ -27,14 +39,15 @@ def test_dataset():
     bad_names = ['hopeles',
                  'mo_use_S12345678_123456_000_norec',
                  'mo_use_000_R123456_000_nosess']
-    msgs = ['Cannot parse dataset name. No match in: `hopeles`. Must be `<MOUSE>_SXXXXXX[...]_<DATASET>`.' +
-              '\nSet self.mouse, self.session, self.recording, and self.dataset_name individually',
-            'Cannot parse dataset name. Found recording number but not recording name in ' +
-              '`mo_use_S12345678_123456_000_norec`\nSet self.mouse, self.session, self.recording, ' +
-              'and self.dataset_name individually',
-            'Cannot parse dataset name. No match in: `mo_use_000_R123456_000_nosess`. Must be ' +
-              '`<MOUSE>_SXXXXXX[...]_<DATASET>`.\nSet self.mouse, self.session, self.recording, and ' +
-              'self.dataset_name individually']
+    msgs = [('Cannot parse dataset name. No match in: `hopeles`. Must be '
+             '`<MOUSE>_SXXXXXX[...]_<DATASET>`.\nSet self.mouse, self.session, '
+             'self.recording, and self.dataset_name individually'),
+            ('Cannot parse dataset name. Found recording number but not recording name '
+             'in `mo_use_S12345678_123456_000_norec`\nSet self.mouse, self.session, '
+             'self.recording, and self.dataset_name individually'),
+            ('Cannot parse dataset name. No match in: `mo_use_000_R123456_000_nosess`. '
+             'Must be `<MOUSE>_SXXXXXX[...]_<DATASET>`.\nSet self.mouse, self.session, '
+             'self.recording, and self.dataset_name individually')]
     for name, err_msg in zip(bad_names, msgs):
         with pytest.raises(DatasetError) as exc:
             ds.name = name
