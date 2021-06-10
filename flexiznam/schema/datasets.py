@@ -16,7 +16,8 @@ class Dataset(object):
     SUBCLASSES are held in different files and added to the Dataset class by
     schema.__init__.py
     """
-    VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces', 'harp')
+    VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces',
+                   'harp')
     SUBCLASSES = dict()
 
     @staticmethod
@@ -25,23 +26,26 @@ class Dataset(object):
 
         Returns None if parsing fails, a dictionary otherwise
         """
-        pattern = '(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
-        pattern += '_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
-        pattern += '_(?P<dataset>.*)'
+        pattern = (r'(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
+                   r'_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
+                   r'_(?P<dataset>.*)')
         match = re.match(pattern, name)
         if not match:
-            raise DatasetError('No match in: `%s`. Must be `<MOUSE>_SXXXXXX[...]_<DATASET>`.' % name)
+            raise DatasetError('No match in: `%s`. Must be '
+                               '`<MOUSE>_SXXXXXX[...]_<DATASET>`.' % name)
         # group session num and recording num together
         output = match.groupdict()
         sess_num = output.pop('session_num')
         if sess_num is not None:
             if output['session'] is None:
-                raise DatasetError('Found session number but not session name in `%s`' % name)
+                raise DatasetError('Found session number but not session name in `%s`'
+                                   % name)
             output['session'] += '_%s' % sess_num
         rec_num = output.pop('recording_num')
         if rec_num is not None:
             if output['recording'] is None:
-                raise DatasetError('Found recording number but not recording name in `%s`' % name)
+                raise DatasetError('Found recording number but not recording name in `%s`'
+                                   % name)
             output['recording'] += '_%s' % rec_num
         return output
 
@@ -49,8 +53,8 @@ class Dataset(object):
     def from_folder(cls, folder, verbose=True):
         """Try to load all datasets found in the folder.
 
-        Will try all defined subclasses of datasets and keep everything that does not crash
-        If you know which dataset to expect, use the subclass directly
+        Will try all defined subclasses of datasets and keep everything that does not
+        crash. If you know which dataset to expect, use the subclass directly
         """
         data = dict()
         if not cls.SUBCLASSES:
@@ -92,7 +96,8 @@ class Dataset(object):
                                                                                 project))
         dataset_type = data_series.dataset_type
         if dataset_type in Dataset.SUBCLASSES:
-            return Dataset.SUBCLASSES[dataset_type].from_flexilims(data_series=data_series)
+            ds_cls = Dataset.SUBCLASSES[dataset_type]
+            return ds_cls.from_flexilims(data_series=data_series)
         # No subclass, let's do it myself
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
@@ -100,7 +105,8 @@ class Dataset(object):
         try:
             ds.name = name
         except DatasetError:
-            print('\n!!! Cannot parse the name !!!\nWill not set mouse, session or recording')
+            print('\n!!! Cannot parse the name !!!\nWill not set mouse, session '
+                  'or recording')
             ds.dataset_name = name
         return ds
 
@@ -124,7 +130,7 @@ class Dataset(object):
             query_key='dataset_type',
             query_value=dataset_type
         )
-        already_processed = len(processed)>0
+        already_processed = len(processed) > 0
         if (not already_processed) or (conflicts == 'append'):
             dataset_root = '%s_%s' % (origin['name'], dataset_type)
             dataset_name = flz.generate_name(
@@ -133,7 +139,8 @@ class Dataset(object):
                 project_id=project
             )
             dataset_path = str(
-                Path(origin['path']) / Dataset.parse_dataset_name(dataset_name)['dataset'])
+                Path(origin['path']) / Dataset.parse_dataset_name(dataset_name
+                                                                  )['dataset'])
             return Dataset(
                 path=dataset_path,
                 is_raw='no',
@@ -147,7 +154,7 @@ class Dataset(object):
                 raise flz.errors.NameNotUniqueError(
                     'Dataset {} already processed'.format(processed['name']))
             elif conflicts == 'skip' or conflicts == 'overwrite':
-                if len(processed)==1:
+                if len(processed) == 1:
                     return Dataset.from_flexilims(data_series=processed.iloc[0])
                 else:
                     raise flz.errors.NameNotUniqueError(
@@ -160,7 +167,8 @@ class Dataset(object):
     @staticmethod
     def _format_series_to_kwargs(flm_series):
         """Format a flm get reply into kwargs valid for Dataset constructor"""
-        flm_attributes = {'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'origin_id', 'objects',
+        flm_attributes = {'id', 'type', 'name', 'incrementalId', 'createdBy',
+                          'dateCreated', 'origin_id', 'objects',
                           'customEntities', 'project'}
         d = dict()
         for k, v in flm_series.items():
@@ -176,19 +184,24 @@ class Dataset(object):
                       name=flm_series.name)
         return kwargs
 
-    def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes={}, created=None, project=None,
-                 project_id=None, origin_id=None):
-        """Construct a dataset manually. Is usually called through static methods 'from_folder' or 'from_flexilims'
+    def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes={},
+                 created=None, project=None, project_id=None, origin_id=None):
+        """Construct a dataset manually. Is usually called through static methods
+        'from_folder' or 'from_flexilims'
 
         Args:
-            path: folder containing the dataset or path to file (valid only for single file datasets)
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
             dataset_type: type of the dataset, must be in Dataset.VALID_TYPES
-            name: name of the dataset as on flexilims. Is expected to include mouse, session etc...
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
             extra_attributes: optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
-            project: name of the project. Must be in config, can be guessed from project_id
-            project_id: hexadecimal code for the project. Must be in config, can be guessed from project
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
         """
         self.mouse = None
         self.session = None
@@ -238,7 +251,9 @@ class Dataset(object):
             raise IOError('You must specify the project to get flexilims status')
         if self.name is None:
             raise IOError('You must specify the dataset name to get flexilims status')
-        series = flz.get_entity(datatype='dataset', project_id=self.project_id, name=self.name)
+        series = flz.get_entity(datatype='dataset',
+                                project_id=self.project_id,
+                                name=self.name)
         return series
 
     def update_flexilims(self, mode='safe'):
@@ -247,17 +262,17 @@ class Dataset(object):
         Args:
             mode: One of: 'update', 'overwrite', 'safe' (default).
                   If 'safe', will only create entry if it does not exist online.
-                  If 'update' will update existing entry but keep any existing attributes that are
-                    not specified.
-                  If 'overwrite' will update existing entry and clear any attributes that are not
-                    specified.
+                  If 'update' will update existing entry but keep any existing attributes
+                     that are not specified.
+                  If 'overwrite' will update existing entry and clear any attributes that
+                     are not specified.
 
         Returns: Flexilims reply
         """
         status = self.flexilims_status()
         attributes = self.extra_attributes.copy()
-        # the following lines are necessary because pandas converts python types to numpy types,
-        # which JSON does not understand
+        # the following lines are necessary because pandas converts python types to numpy
+        # types, which JSON does not understand
         for attribute in attributes:
             if isinstance(attributes[attribute], np.integer):
                 attributes[attribute] = int(attributes[attribute])
@@ -266,7 +281,8 @@ class Dataset(object):
 
         if status == 'different':
             if mode == 'safe':
-                raise FlexilimsError('Cannot change existing flexilims entry with mode=`safe`')
+                raise FlexilimsError('Cannot change existing flexilims entry with '
+                                     'mode=`safe`')
             if (mode == 'overwrite') or (mode == 'update'):
                 attributes['is_raw'] = 'yes' if self.is_raw else 'no'
                 resp = flz.update_entity(
@@ -335,10 +351,11 @@ class Dataset(object):
     def format(self, mode='flexilims'):
         """Format a dataset
 
-        This can generate either a 'flexilims' type of output (a series similar to get_entities output) or a 'yaml'
-        type as that used by flexiznam.camp
+        This can generate either a 'flexilims' type of output (a series similar to
+        get_entities output) or a 'yaml' type as that used by flexiznam.camp
 
-        The flexilims series will not include elements that are not used by the Dataset class such as created_by
+        The flexilims series will not include elements that are not used by the Dataset
+        class such as created_by
 
         Args:
             mode: 'flexilims' or 'yaml'
@@ -394,7 +411,8 @@ class Dataset(object):
         """Full name of the dataset, including mouse, session etc ..."""
         if self.dataset_name is None:
             return
-        elements = [getattr(self, w) for w in ('mouse', 'session', 'recording', 'dataset_name')]
+        elements = [getattr(self, w) for w in ('mouse', 'session', 'recording',
+                                               'dataset_name')]
         name = '_'.join([e for e in elements if e is not None])
         return name
 
@@ -409,7 +427,8 @@ class Dataset(object):
             match = Dataset.parse_dataset_name(value)
         except DatasetError as err:
             raise DatasetError('Cannot parse dataset name. ' + err.args[0] +
-                               '\nSet self.mouse, self.session, self.recording, and self.dataset_name individually')
+                               '\nSet self.mouse, self.session, self.recording, and '
+                               'self.dataset_name individually')
         self.mouse = match['mouse']
         self.dataset_name = match['dataset']
         self.session = match['session']

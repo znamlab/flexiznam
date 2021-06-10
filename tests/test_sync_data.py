@@ -49,17 +49,20 @@ def test_write_yaml(tmp_path):
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     with open(path_to_full_yaml, 'w') as fullfile:
         yaml.dump(acq_yaml_and_files.FAML, fullfile)
-    sess_data = sync_data.parse_yaml(path_to_full_yaml, raw_data_folder=tmp_path, verbose=False)
+    sess_data = sync_data.parse_yaml(path_to_full_yaml, raw_data_folder=tmp_path,
+                                     verbose=False)
     target = tmp_path / 'target_out.yml'
-    pure_yaml = sync_data.write_session_data_as_yaml(session_data=sess_data, target_file=target)
+    pure_yaml = sync_data.write_session_data_as_yaml(session_data=sess_data,
+                                                     target_file=target)
+
     def rec_test(d):
-        for k,v in d.items():
+        for k, v in d.items():
             if isinstance(v, dict):
                 rec_test(v)
             elif not isinstance(v, str):
                 if v is None:
                     continue
-                raise IOError('Potentially unvalid yaml. It contains: %s' % v)
+                raise IOError('Potentially invalid yaml. It contains: %s' % v)
     rec_test(pure_yaml)
     with open(target, 'r') as reader:
         reload = yaml.safe_load(reader)
@@ -73,8 +76,12 @@ def test_upload(tmp_path):
     with open(path_to_mini_yaml, 'w') as fullfile:
         yaml.dump(acq_yaml_and_files.MINIAML, fullfile)
 
-    sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path, conflicts='overwrite')
-    parsed = sync_data.parse_yaml(path_to_yaml=path_to_mini_yaml, raw_data_folder=tmp_path)
+    sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
+                          conflicts='overwrite')
+    parsed = sync_data.parse_yaml(path_to_yaml=path_to_mini_yaml,
+                                  raw_data_folder=tmp_path)
     path_to_parsed = tmp_path / 'parsed_mini_yaml.yml'
-    sync_data.write_session_data_as_yaml(parsed, target_file=path_to_parsed, overwrite=True)
-    sync_data.upload_yaml(source_yaml=path_to_parsed, raw_data_folder=tmp_path, conflicts='overwrite')
+    sync_data.write_session_data_as_yaml(parsed, target_file=path_to_parsed,
+                                         overwrite=True)
+    sync_data.upload_yaml(source_yaml=path_to_parsed, raw_data_folder=tmp_path,
+                          conflicts='overwrite')
