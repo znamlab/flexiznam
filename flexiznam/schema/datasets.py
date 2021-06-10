@@ -184,7 +184,7 @@ class Dataset(object):
                       name=flm_series.name)
         return kwargs
 
-    def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes={},
+    def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None):
         """Construct a dataset manually. Is usually called through static methods
         'from_folder' or 'from_flexilims'
@@ -196,7 +196,7 @@ class Dataset(object):
             dataset_type: type of the dataset, must be in Dataset.VALID_TYPES
             name: name of the dataset as on flexilims. Is expected to include mouse,
                   session etc...
-            extra_attributes: optional attributes.
+            extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
                      project_id
@@ -211,7 +211,7 @@ class Dataset(object):
         self.path = Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
-        self.extra_attributes = extra_attributes
+        self.extra_attributes = extra_attributes if extra_attributes is not None else {}
         self.created = created
         self.origin_id = origin_id
         if project is not None:
