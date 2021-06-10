@@ -167,7 +167,7 @@ class Dataset(object):
             d[k] = v
         attr = {k: v for k, v in flm_series.items() if k not in flm_attributes}
         kwargs = dict(path=attr.pop('path'),
-                      is_raw=attr.pop('is_raw'),
+                      is_raw=attr.pop('is_raw', None),
                       dataset_type=attr.pop('dataset_type'),
                       created=attr.pop('created', None),
                       origin_id=flm_series.get('origin_id', None),
