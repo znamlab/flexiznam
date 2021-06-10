@@ -133,8 +133,8 @@ def test_update_entity():
         'dataset',
         name=dataset_name,
         flexilims_session=session,
-        attributes={'path': 'test/path'}
+        attributes={'path': 'test/path', 'dataset_type': 'scanimage'}
     )
     assert (res['attributes']['path'] == 'test/path')
-    assert (res['attributes']['test'] == 'null')
-    assert (res['attributes']['an_attr'] == 'null')
+    assert (res['attributes']['test'] is None)
+    assert (res['attributes']['an_attr'] is None)
