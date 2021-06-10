@@ -61,6 +61,34 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
         date=date,
         attributes=attributes
     )
+    # session datasets
+    if 'datasets' in session_data:
+        for ds_name, ds in session_data['datasets'].items():
+            ds.mouse = mouse.name
+            ds.session = session['name']
+            flz.add_dataset(parent_id=session['id'],
+                            dataset_type=ds.dataset_type,
+                            created=ds.created,
+                            path=str(ds.path),
+                            is_raw='yes' if ds.is_raw else 'no',
+                            flexilims_session=flexilims_session,
+                            dataset_name=ds.name,
+                            attributes=ds.extra_attributes,
+                            strict_validation=False)
+            ds.project_id = session['project']
+            ds.update_flexilims()
+    # now deal with recordings
+    for rec_name, rec_data in session_data['recordings'].items():
+        attributes = rec_data.get('attributes', {})
+        attributes.update(rec_data.get('notes', ''))
+        attributes.update(rec_data.get('path', ''))
+        attributes.update(rec_data.get('timestamp', ''))
+        flz.add_recording(session_id=session['id'],
+                          recording_type=rec_data.get('recording_type', ''),
+                          protocol=rec_data.get('protocol', ''),
+                          attributes=rec_data.get,
+                          recording_name=None, conflicts=None, other_relations=None,
+                          flexilims_session=None, project_id=None)
     # now deal with recordings
 
     return session
