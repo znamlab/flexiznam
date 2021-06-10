@@ -7,6 +7,7 @@ import flexiznam as flz
 from flexiznam.errors import SyncYmlError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
+from flexiznam.utils import clean_dictionary_recursively
 
 
 def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=True,
@@ -111,7 +112,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         )
 
     # remove the full path that are not needed
-    _clean_dictionary_recursively(session_data, ['full_path'])
+    clean_dictionary_recursively(session_data, ['full_path'])
     return session_data
 
 
@@ -126,7 +127,7 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     Returns: the pure yaml dictionary
     """
     out_dict = session_data.copy()
-    _clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
+    clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
     if target_file is not None:
         target_file = pathlib.Path(target_file)
         if target_file.exists() and not overwrite:
@@ -134,46 +135,6 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
         with open(target_file, 'w') as writer:
             yaml.dump(out_dict, writer)
     return out_dict
-
-
-def _clean_dictionary_recursively(dictionary, keys=(), path2string=True,
-                                  format_dataset=False):
-    """Recursively clean a dictionary inplace
-
-    Args:
-        dictionary: dict (of dict)
-        keys (list): list of keys to pop from the dictionary
-        path2string (str): replace Path object by their string representation
-                           (default True)
-        format_dataset (bool): replace Dataset instances by their yaml representation
-                               (default False)
-    """
-
-    if isinstance(keys, str):
-        keys = [keys]
-    for k in keys:
-        dictionary.pop(k, None)
-    if format_dataset:
-        ds_classes = set(Dataset.SUBCLASSES.values())
-        ds_classes.add(Dataset)
-    for k, v in dictionary.items():
-        if isinstance(v, dict):
-            _clean_dictionary_recursively(v, keys, path2string, format_dataset)
-        if path2string and isinstance(v, pathlib.Path):
-            dictionary[k] = str(v)
-        if format_dataset:
-            if any([isinstance(v, cls) for cls in ds_classes]):
-                ds_dict = v.format(mode='yaml')
-                # we have now a dictionary with a flat structure. Reshape it to match
-                # what acquisition yaml are supposed to look like
-                for field in ['created', 'is_raw']:
-                    ds_dict['extra_attributes'][field] = ds_dict.pop(field)
-                for field in ['name', 'project', 'type']:
-                    ds_dict.pop(field, None)
-
-                # rename extra_attributes to match acquisition yaml
-                ds_dict['attributes'] = ds_dict.pop('extra_attributes')
-                dictionary[k] = ds_dict
 
 
 def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,

@@ -6,7 +6,7 @@ import re
 import numpy as np
 import pandas as pd
 import flexiznam as flz
-from flexiznam.utils import compare_series
+from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
 
 
@@ -318,7 +318,7 @@ class Dataset(object):
             is_raw='yes' if self.is_raw else 'no',
             project_id=self.project_id,
             dataset_name=self.name,
-            attributes=attributes
+            attributes=utils.clean_dictionary_recursively(attributes)
         )
         return resp
 
@@ -362,7 +362,7 @@ class Dataset(object):
                 flm_data[na_field] = None
         fmt = self.format()
 
-        differences = compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
+        differences = utils.compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
         return differences
 
     def format(self, mode='flexilims'):
