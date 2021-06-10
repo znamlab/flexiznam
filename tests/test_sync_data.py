@@ -1,8 +1,6 @@
 import pytest
-import pathlib
 import yaml
 from flexiznam.camp import sync_data
-from flexiznam.config import PARAMETERS
 from tests.tests_resources import acq_yaml_and_files
 
 
@@ -36,7 +34,7 @@ def test_parse_yaml(tmp_path):
     # I should be able to re-parse the output
     target = tmp_path / 'parsed.yml'
     sync_data.write_session_data_as_yaml(session_data=m, target_file=target)
-    m2 = sync_data.parse_yaml(target, raw_data_folder=tmp_path, verbose=False)
+    sync_data.parse_yaml(target, raw_data_folder=tmp_path, verbose=False)
     # test error
     sess_data = sync_data.parse_yaml(path_to_full_yaml, raw_data_folder=tmp_path,
                                      verbose=False)

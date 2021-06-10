@@ -90,7 +90,9 @@ def test_dataset_flexilims_integration():
 @pytest.mark.integtest
 def test_from_flexilims():
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='suite2p')
+    ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    assert ds.name == 'test_from_flexi'
+    assert ds.flexilims_status() == 'up-to-date'
 
 
 @pytest.mark.integtest
@@ -124,12 +126,18 @@ def test_from_origin():
 @pytest.mark.intertest
 def test_update_flexilims():
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='suite2p')
+    ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    original_path = ds.path
     ds.path = 'new/test/path'
     with pytest.raises(FlexilimsError) as err:
         ds.update_flexilims()
     assert err.value.args[0] == "Cannot change existing flexilims entry with mode=`safe`"
     ds.update_flexilims(mode='overwrite')
+    reloaded_ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    assert str(reloaded_ds.path) == ds.path
+    ds.path = original_path
+    ds.update_flexilims(mode='overwrite')
+
 
 def test_camera(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)
