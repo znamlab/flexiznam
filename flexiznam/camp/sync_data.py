@@ -120,7 +120,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         # first load datasets in the session level
     if not home_folder.is_dir():
         raise FileNotFoundError('Session directory %s does not exist' % home_folder)
-    session_data['full_path'] = home_folder
+    session_data['path'] = home_folder
     session_data['datasets'] = create_dataset(
         dataset_infos=session_data['datasets'],
         verbose=verbose,
@@ -130,7 +130,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     )
 
     for rec_name, recording in session_data['recordings'].items():
-        recording['full_path'] = home_folder / rec_name
+        recording['path'] = home_folder / rec_name
         recording['datasets'] = create_dataset(
             dataset_infos=recording['datasets'],
             parent=recording,
@@ -140,7 +140,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         )
 
     # remove the full path that are not needed
-    clean_dictionary_recursively(session_data, ['full_path'])
+    clean_dictionary_recursively(session_data)
     return session_data
 
 
@@ -184,7 +184,7 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
     """
 
     # autoload datasets
-    datasets = Dataset.from_folder(parent['full_path'], verbose=verbose)
+    datasets = Dataset.from_folder(parent['path'], verbose=verbose)
     error_handling = error_handling.lower()
     if error_handling not in ('crash', 'report'):
         raise IOError('error_handling must be `crash` or `report`')
@@ -192,11 +192,11 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
     # check dataset_infos for extra datasets
     for ds_name, ds_data in dataset_infos.items():
         ds_path = pathlib.Path(raw_data_folder) / ds_data['path']
-        # first deal with dataset that are not in parent['full_path']
+        # first deal with dataset that are not in parent path']
         ds_class = Dataset.SUBCLASSES.get(ds_data['dataset_type'], Dataset)
-        if ds_path.is_dir() and (ds_path != parent['full_path']):
+        if ds_path.is_dir() and (ds_path != parent['path']):
             ds = ds_class.from_folder(ds_path, verbose=verbose)
-        elif ds_path.is_file() and (ds_path.parent != parent['full_path']):
+        elif ds_path.is_file() and (ds_path.parent != parent['path']):
             ds = ds_class.from_folder(ds_path.parent, verbose=verbose)
         elif not ds_path.exists():
             err_msg = 'Dataset not found. Path %s does not exist' % ds_path
@@ -205,7 +205,7 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
             datasets[ds_name] = 'XXERRORXX!! ' + err_msg
             continue
         else:
-            # if it is in the parent['full_path'] folder, I already loaded it.
+            # if it is in the parent['path'] folder, I already loaded it.
             ds = {k: v for k, v in datasets.items() if isinstance(v, ds_class)}
         if not ds:
             err_msg = 'Dataset "%s" not found in %s' % (ds_name, ds_path)
