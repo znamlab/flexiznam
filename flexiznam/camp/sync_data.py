@@ -88,19 +88,21 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
             value = rec_data.get(field, '')
             attributes[field] = value if value is not None else ''
         rec_type = rec_data.get('recording_type', 'unspecified')
-        flz.add_recording(session_id=session['id'],
-                          recording_type=rec_type if rec_type else 'unspecified',
-                          protocol=rec_data.get('protocol', ''),
-                          attributes=attributes,
-                          recording_name=rec_name,
-                          other_relations=None,
-                          flexilims_session=flexilims_session)
+        if not rec_type:
+            rec_type = 'unspecified'
+        rec_rep = flz.add_recording(session_id=session['id'],
+                                    recording_type=rec_type,
+                                    protocol=rec_data.get('protocol', ''),
+                                    attributes=attributes,
+                                    recording_name=rec_name,
+                                    other_relations=None,
+                                    flexilims_session=flexilims_session)
 
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.mouse = mouse.name
             ds.session = session['name']
-            flz.add_dataset(parent_id=session['id'],
+            flz.add_dataset(parent_id=rec_rep['id'],
                             dataset_type=ds.dataset_type,
                             created=ds.created,
                             path=str(ds.path),
