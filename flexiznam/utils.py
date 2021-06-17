@@ -64,8 +64,6 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
                 ds_dict = v.format(mode='yaml')
                 # we have now a dictionary with a flat structure. Reshape it to match
                 # what acquisition yaml are supposed to look like
-                for field in ['created', 'is_raw']:
-                    ds_dict['extra_attributes'][field] = ds_dict.pop(field)
                 for field in ['name', 'project', 'type']:
                     ds_dict.pop(field, None)
 
