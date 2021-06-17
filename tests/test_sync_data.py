@@ -74,12 +74,10 @@ def test_upload(tmp_path):
     with open(path_to_mini_yaml, 'w') as fullfile:
         yaml.dump(acq_yaml_and_files.MINIAML, fullfile)
 
-    sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
-                          conflicts='overwrite')
+    sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path)
     parsed = sync_data.parse_yaml(path_to_yaml=path_to_mini_yaml,
                                   raw_data_folder=tmp_path)
     path_to_parsed = tmp_path / 'parsed_mini_yaml.yml'
     sync_data.write_session_data_as_yaml(parsed, target_file=path_to_parsed,
                                          overwrite=True)
-    sync_data.upload_yaml(source_yaml=path_to_parsed, raw_data_folder=tmp_path,
-                          conflicts='overwrite')
+    sync_data.upload_yaml(source_yaml=path_to_parsed, raw_data_folder=tmp_path)
