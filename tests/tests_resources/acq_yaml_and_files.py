@@ -13,17 +13,18 @@ def create_acq_files(target_folder):
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.touch()
 
+
 MINIAML = {"project": "test",
            "mouse": "PZAH4.1c",
            "session": "S20210513",
            "recordings": {
                "R182758_SphereCylinder": {"protocol": "SphereCylinder"},
                "R193432_Retinotopy": {"protocol": "Retinotopy"}
-                       }
+           }
            }
 
-
-FAML = dict(project="test", mouse="PZAH4.1c", session="S20210513", path="./PZAH4.1c/S20210513",
+FAML = dict(project="test", mouse="PZAH4.1c", session="S20210513",
+            path="./PZAH4.1c/S20210513",
             notes="Notes can be added at any level of the hierarchy in this yaml file.",
             attributes=dict(quality='test data'),
             recordings=dict(
@@ -44,8 +45,9 @@ FAML = dict(project="test", mouse="PZAH4.1c", session="S20210513", path="./PZAH4
                           overview_picture_02=dict(dataset_type='scanimage',
                                                    path='./PZAH4.1c/S20210513/overview_00002_00001.tif',
                                                    notes="at any point you can add notes or attributes as below",
-                                                   attributes=dict(channels=['red', 'blue'],
-                                                                   led_knob=12, )
+                                                   attributes=dict(
+                                                       channels=['red', 'blue'],
+                                                       led_knob=12, )
                                                    )
                           )
             )
@@ -109,7 +111,8 @@ FILE_LIST = ['overview_00001_00001.tif',
              'Ref/ref_00002.tif', 'Ref/ref_00004.tif', 'Ref/ref_Motion_00004.csv',
              'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00005.tif',
              'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00004.tif',
-             'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00002.tif', 'Ref/ref_00003.tif',
+             'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00002.tif',
+             'Ref/ref_00003.tif',
              'Ref/PZAH4.1c_S20210513_R181858_SphereCylinder_Motion_00001.csv',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00006.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00012.tif',
@@ -119,13 +122,15 @@ FILE_LIST = ['overview_00001_00001.tif',
              'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00001.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00001.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00010.tif',
-             'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00007.tif', 'Ref/ref_00001.tif',
+             'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00007.tif',
+             'Ref/ref_00001.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00005.tif',
              'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00003.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00002.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00003.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00008.tif',
-             'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00008.tif', 'Ref/ref_Motion_00003.csv',
+             'Ref/PZAH4.1c_S20210513_R182758_SphereCylinder_00001_00008.tif',
+             'Ref/ref_Motion_00003.csv',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00009.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00004.tif',
              'Ref/PZAH4.1c_S20210513_R182025_SphereCylinder_00001_00011.tif',

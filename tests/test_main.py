@@ -24,11 +24,12 @@ def test_format_results():
 
 @pytest.mark.integtest
 def test_get_experimental_sessions():
-    exp_sess = flz.get_experimental_sessions(project_id=PARAMETERS['project_ids']['test'])
+    proj_id = PARAMETERS['project_ids']['test']
+    exp_sess = flz.get_experimental_sessions(project_id=proj_id)
     assert all(exp_sess.type == 'session')
-    assert all(exp_sess.project == PARAMETERS['project_ids']['test'])
+    assert all(exp_sess.project == proj_id)
     assert len(exp_sess.origin.unique()) > 1
-    exp_sess_mouse = flz.get_experimental_sessions(project_id=PARAMETERS['project_ids']['test'], mouse='test_mouse')
+    exp_sess_mouse = flz.get_experimental_sessions(project_id=proj_id, mouse='test_mouse')
     assert len(exp_sess) > len(exp_sess_mouse)
     assert len(exp_sess_mouse.origin.unique()) == 1
 
@@ -44,19 +45,23 @@ def test_get_entities():
 
 @pytest.mark.integtest
 def test_get_entity():
-    mouse = flz.get_entity(id='6094f7212597df357fa24a8c', project_id=PARAMETERS['project_ids']['test'],
+    mouse = flz.get_entity(id='6094f7212597df357fa24a8c',
+                           project_id=PARAMETERS['project_ids']['test'],
                            datatype='mouse')
     assert isinstance(mouse, pd.Series)
     assert mouse.shape == (12,)
-    mouse = flz.get_entity(id='6094f7212597df357fa24a8c', project_id=PARAMETERS['project_ids']['test'],
-                           datatype='mouse', format_reply=False)
+    mouse = flz.get_entity(id='6094f7212597df357fa24a8c',
+                           project_id=PARAMETERS['project_ids']['test'],
+                           datatype='mouse',
+                           format_reply=False)
     assert isinstance(mouse, dict)
     assert len(mouse) == 10
 
 
 @pytest.mark.integtest
 def test_get_mouse_id():
-    mid = flz.get_id(name='test_mouse', project_id=PARAMETERS['project_ids']['test'])
+    mid = flz.get_id(name='test_mouse',
+                     project_id=PARAMETERS['project_ids']['test'])
     assert mid == '6094f7212597df357fa24a8c'
 
 

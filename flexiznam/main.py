@@ -134,21 +134,27 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
-    experimental_session = get_entity(datatype=flexilims_session, id=session_id)
+    experimental_session = get_entity(datatype='session',
+                                      flexilims_session=flexilims_session,
+                                      id=session_id)
     if recording_name is None:
         recording_name = experimental_session['name'] + '_' + protocol + '_0'
-    recording_name = generate_name('recording', recording_name, flexilims_session=flexilims_session)
+    recording_name = generate_name('recording',
+                                   recording_name,
+                                   flexilims_session=flexilims_session)
 
     recording_info = {'recording_type': recording_type, 'protocol': protocol}
     if attributes is None:
         attributes = {}
     if ('path' not in attributes):
         attributes['path'] = str(Path(get_path(
-            experimental_session['path'], datatype='session', flexilims_session=flexilims_session
-        )) / recording_name)
+            experimental_session['path'],
+            datatype='session',
+            flexilims_session=flexilims_session)) / recording_name)
     for key in recording_info.keys():
         if (key in attributes) and (attributes[key] != locals()[key]):
-            raise FlexilimsError('Got two values for %s: `%s` and `%s`' % (key, attributes[key], locals()[key]))
+            raise FlexilimsError('Got two values for %s: '
+                                 '`%s` and `%s`' % (key, attributes[key], locals()[key]))
     recording_info.update(attributes)
 
     resp = flexilims_session.post(
