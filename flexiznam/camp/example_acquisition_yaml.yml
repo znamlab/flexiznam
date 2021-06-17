@@ -20,7 +20,7 @@ recordings:                    # list of recording
   R182758_SphereCylinder: # name of the recording. Must be unique for this session but can be anything.
     protocol: "SphereCylinder"     # protocol type - mandatory
     timestamp: "182758"            # timestamp used to identified all data link to this recording - mandatory
-    recording_type: "two_photon"   # optional type of recording. Will be guessed from datatypes if not specified
+    recording_type: "two_photon"   # optional type of recording.
     notes: "note or the recording level"   # the notes field does no need to be specified (see second example below)
 
   R193432_Retinotopy: # another recording in the same session
