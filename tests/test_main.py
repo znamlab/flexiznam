@@ -36,11 +36,13 @@ def test_get_experimental_sessions():
 
 @pytest.mark.integtest
 def test_get_entities():
-    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'], datatype='mouse')
-    assert mice_df.shape == (3, 70)
-    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'], datatype='mouse', format_reply=False)
+    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
+                               datatype='mouse')
+    assert mice_df.shape == (4, 79)
+    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
+                               datatype='mouse', format_reply=False)
     assert isinstance(mice_df, list)
-    assert len(mice_df) == 3
+    assert len(mice_df) == 4
 
 
 @pytest.mark.integtest
