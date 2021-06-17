@@ -10,29 +10,33 @@ from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_dictionary_recursively
 
 
-def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=True,
-                log_func=print):
+def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
+                log_func=print, flexilims_session=None):
     """Upload data from one yaml to flexilims
 
     Args:
         source_yaml: path to clean yaml
-        conflicts: `abort`, `append` or `overwrite`. How to deal with conflicts on
-                   flexilims
         raw_data_folder: path to the folder containing the data. Default to
                          project_root/project/raw
         verbose: print progress information
         log_func: function to deal with warnings and messages
+        flexilims_session: session to avoid recreating a token
 
     Returns: dictionary or flexilims ID
     """
-
+    # if there are errors, I cannot safely parse the yaml
     errors = find_xxerrorxx(yml_file=source_yaml)
     if errors:
         raise SyncYmlError('The yaml file still contains error. Fix it')
     session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
+    # parsing can created errors, check again
+    errors = find_xxerrorxx(yml_file=source_yaml)
+    if errors:
+        raise SyncYmlError('Invalid yaml. Use `parse_yaml` and fix errors manually.')
 
     # first find the mouse
-    flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
+    if flexilims_session is None:
+        flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
     mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'],
                            flexilims_session=flexilims_session)
     if mouse is None:
@@ -59,11 +63,41 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
         session_name=session_data['session'],
         flexilims_session=flexilims_session,
         date=date,
-        attributes=attributes
-    )
+        attributes=attributes)
+
     # session datasets
-    if 'datasets' in session_data:
-        for ds_name, ds in session_data['datasets'].items():
+    for ds_name, ds in session_data.get('datasets', {}).items():
+        ds.mouse = mouse.name
+        ds.session = session['name']
+        flz.add_dataset(parent_id=session['id'],
+                        dataset_type=ds.dataset_type,
+                        created=ds.created,
+                        path=str(ds.path),
+                        is_raw='yes' if ds.is_raw else 'no',
+                        flexilims_session=flexilims_session,
+                        dataset_name=ds.name,
+                        attributes=ds.extra_attributes,
+                        strict_validation=False)
+
+    # now deal with recordings
+    for rec_name, rec_data in session_data['recordings'].items():
+        attributes = rec_data.get('attributes', None)
+        if attributes is None:
+            attributes = {}
+        for field in ['notes', 'path', 'timestamp']:
+            value = rec_data.get(field, '')
+            attributes[field] = value if value is not None else ''
+        rec_type = rec_data.get('recording_type', 'unspecified')
+        flz.add_recording(session_id=session['id'],
+                          recording_type=rec_type if rec_type else 'unspecified',
+                          protocol=rec_data.get('protocol', ''),
+                          attributes=attributes,
+                          recording_name=rec_name,
+                          other_relations=None,
+                          flexilims_session=flexilims_session)
+
+        # now deal with recordings' datasets
+        for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.mouse = mouse.name
             ds.session = session['name']
             flz.add_dataset(parent_id=session['id'],
@@ -75,22 +109,6 @@ def upload_yaml(source_yaml, conflicts='abort', raw_data_folder=None, verbose=Tr
                             dataset_name=ds.name,
                             attributes=ds.extra_attributes,
                             strict_validation=False)
-            ds.project_id = session['project']
-            ds.update_flexilims()
-    # now deal with recordings
-    for rec_name, rec_data in session_data['recordings'].items():
-        attributes = rec_data.get('attributes', {})
-        attributes.update(rec_data.get('notes', ''))
-        attributes.update(rec_data.get('path', ''))
-        attributes.update(rec_data.get('timestamp', ''))
-        flz.add_recording(session_id=session['id'],
-                          recording_type=rec_data.get('recording_type', ''),
-                          protocol=rec_data.get('protocol', ''),
-                          attributes=rec_data.get,
-                          recording_name=None, conflicts=None, other_relations=None,
-                          flexilims_session=None, project_id=None)
-    # now deal with recordings
-
     return session
 
 
@@ -299,7 +317,8 @@ def read_dataset(name, data):
         'attributes' and 'name'
     """
     level, _ = read_level(data, mandatory_args=('dataset_type', 'path'),
-                          optional_args=('notes', 'attributes', 'autogen_name', 'origin_id'),
+                          optional_args=('notes', 'attributes', 'created', 'is_raw',
+                                         'origin_id'),
                           nested_levels=())
     level['name'] = name
     return level
