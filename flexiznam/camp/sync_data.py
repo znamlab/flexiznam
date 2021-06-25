@@ -62,7 +62,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
 
     session = flz.add_experimental_session(
         mouse_name=mouse['name'],
-        session_name=session_data['session'],
+        session_name=mouse['name'] + '_' + session_data['session'],
         flexilims_session=flexilims_session,
         date=date,
         attributes=attributes)
@@ -83,6 +83,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
 
     # now deal with recordings
     for rec_name, rec_data in session_data['recordings'].items():
+        rec_name = session['name'] + '_' + rec_name
         attributes = rec_data.get('attributes', None)
         if attributes is None:
             attributes = {}
