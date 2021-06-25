@@ -17,7 +17,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
     Args:
         source_yaml: path to clean yaml
         raw_data_folder: path to the folder containing the data. Default to
-                         project_root/project/raw
+                         data_root['raw']
         verbose: print progress information
         log_func: function to deal with warnings and messages
         flexilims_session: session to avoid recreating a token
@@ -128,9 +128,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     session_data = clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
-        raw_data_folder = pathlib.Path(PARAMETERS['projects_root'])
-        raw_data_folder /= session_data['project']
-        raw_data_folder /= PARAMETERS['data_subfolder']['raw']
+        raw_data_folder = pathlib.Path(PARAMETERS['data_root']['raw'])
 
     if session_data['path'] is not None:
         home_folder = pathlib.Path(raw_data_folder) / session_data['path']

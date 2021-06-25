@@ -546,8 +546,8 @@ def get_datasets(origin_id, recording_type=None, dataset_type=None, project_id=N
                                 flexilims_session=flexilims_session)
         datapaths = []
         for (dataset_path, is_raw) in zip(datasets['path'], datasets['is_raw']):
-            prefix = 'raw' if is_raw=='yes' else 'processed'
-            this_path = Path(PARAMETERS['projects_root']) / project_id / prefix / dataset_path
+            prefix = PARAMETERS['data_root']['raw'] if is_raw=='yes' else PARAMETERS['data_root']['processed']
+            this_path = Path(prefix) / dataset_path
             if this_path.exists():
                 datapaths.append(str(this_path))
             else:
