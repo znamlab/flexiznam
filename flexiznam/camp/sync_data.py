@@ -1,5 +1,5 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
-import pathlib
+from pathlib import Path
 import re
 import yaml
 
@@ -49,6 +49,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
     else:
         log_func('Cannot parse date for session %s.' % session_data['session'])
         date = 'N/A'
+
+    session_data = trim_paths(session_data, raw_data_folder)
 
     attributes = session_data.get('attributes', None)
     if attributes is None:
@@ -114,6 +116,27 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
     return session
 
 
+def trim_paths(session_data, raw_data_folder):
+    """Parses paths to make them relative to data
+
+    """
+    if raw_data_folder is None:
+        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
+        raw_data_folder /= session_data['project']
+    if 'path' in session_data.keys():
+        session_data['path'] = \
+            str(Path(session_data['path']).relative_to(raw_data_folder))
+    for ds_name, ds in session_data.get('datasets', {}).items():
+        ds.path = ds.path.relative_to(raw_data_folder)
+    for rec_name, rec_data in session_data['recordings'].items():
+        session_data['recordings'][rec_name]['path'] = \
+            str(Path(session_data['recordings'][rec_name]['path'])
+                .relative_to(raw_data_folder))
+        for ds_name, ds in rec_data.get('datasets', {}).items():
+            ds.path = ds.path.relative_to(raw_data_folder)
+    return session_data
+
+
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     """Read an acquisition yaml and create corresponding datasets
 
@@ -128,12 +151,13 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     session_data = clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
-        raw_data_folder = pathlib.Path(PARAMETERS['data_root']['raw'])
+        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
+        raw_data_folder /= session_data['project']
 
     if session_data['path'] is not None:
-        home_folder = pathlib.Path(raw_data_folder) / session_data['path']
+        home_folder = Path(raw_data_folder) / session_data['path']
     else:
-        home_folder = pathlib.Path(raw_data_folder) / session_data['mouse'] / \
+        home_folder = Path(raw_data_folder) / session_data['mouse'] / \
                       session_data['session']
         # first load datasets in the session level
     if not home_folder.is_dir():
@@ -175,7 +199,7 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     out_dict = session_data.copy()
     clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
     if target_file is not None:
-        target_file = pathlib.Path(target_file)
+        target_file = Path(target_file)
         if target_file.exists() and not overwrite:
             raise IOError('Target file %s already exists' % target_file)
         with open(target_file, 'w') as writer:
@@ -209,7 +233,7 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
 
     # check dataset_infos for extra datasets
     for ds_name, ds_data in dataset_infos.items():
-        ds_path = pathlib.Path(raw_data_folder) / ds_data['path']
+        ds_path = Path(raw_data_folder) / ds_data['path']
         # first deal with dataset that are not in parent path']
         ds_class = Dataset.SUBCLASSES.get(ds_data['dataset_type'], Dataset)
         if ds_path.is_dir() and (ds_path != parent['path']):
