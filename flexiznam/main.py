@@ -538,6 +538,8 @@ def get_datasets(origin_id, recording_type=None, dataset_type=None, project_id=N
                               query_value=recording_type,
                               flexilims_session=flexilims_session)
     datapath_dict = {}
+    if len(recordings)<1:
+        return datapath_dict
     for recording_id in recordings['id']:
         datasets = get_entities(datatype='dataset',
                                 origin_id=recording_id,
