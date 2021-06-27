@@ -123,7 +123,6 @@ def trim_paths(session_data, raw_data_folder):
     """
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
-        raw_data_folder /= session_data['project']
     if 'path' in session_data.keys():
         session_data['path'] = \
             str(Path(session_data['path']).relative_to(raw_data_folder))
