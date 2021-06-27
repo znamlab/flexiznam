@@ -136,7 +136,7 @@ def test_from_origin():
     assert 'already processed' in err.value.args[0]
 
 
-@pytest.mark.intertest
+@pytest.mark.integtest
 def test_update_flexilims():
     project = 'test'
     ds = Dataset.from_flexilims(project, name='test_from_flexi')
@@ -202,3 +202,12 @@ def test_scanimage(tmp_path):
     assert d.name == next(iter(ds.keys()))
     assert d.is_valid()
     assert len(d) == 39
+
+
+@pytest.mark.integtest
+def test_dataset_paths():
+    project = 'test'
+    ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    assert str(ds.path_root) == PARAMETERS['data_root']['processed']
+    assert str(ds.path_full) == \
+        str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))

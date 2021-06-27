@@ -9,7 +9,7 @@ import pandas as pd
 import flexiznam as flz
 from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
-
+from flexiznam.config import PARAMETERS
 
 class Dataset(object):
     """Master class. Should be inherited by all datasets
@@ -482,3 +482,15 @@ class Dataset(object):
             value = bool(value)
         self._is_raw = value
 
+    @property
+    def path_root(self):
+        """Get CAMP root path that should apply to this dataset"""
+        if self.is_raw:
+            return Path(flz.config.PARAMETERS['data_root']['raw'])
+        else:
+            return Path(flz.config.PARAMETERS['data_root']['processed'])
+
+    @property
+    def path_full(self):
+        """Get full path including the CAMP root"""
+        return self.path_root / self.path
