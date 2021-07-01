@@ -150,7 +150,8 @@ class Dataset(object):
                 dataset_type=dataset_type,
                 name=dataset_name,
                 created=None,
-                project=project
+                project=project,
+                origin_id=origin['id']
             )
         else:
             if (conflicts is None) or (conflicts == 'abort'):
