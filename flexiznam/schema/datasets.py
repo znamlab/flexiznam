@@ -124,6 +124,8 @@ class Dataset(object):
             name=origin_name,
             project_id=project
         )
+        if origin is None:
+            raise FlexilimsError('Origin not found')
         processed = flz.get_entities(
             project_id=project,
             datatype='dataset',
