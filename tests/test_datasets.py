@@ -111,27 +111,27 @@ def test_from_flexilims():
 @pytest.mark.integtest
 def test_from_origin():
     project = 'test'
-    origin_name = 'PZAH4.1c_S20210513_0_R150615_0'
+    origin_name = 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0'
     ds = Dataset.from_origin(
         project,
         origin_type='recording',
         origin_name=origin_name,
         dataset_type='suite2p_rois',
         conflicts='skip')
-    assert ds.name == 'PZAH4.1c_S20210513_0_R150615_0_suite2p_rois_0'
+    assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_rois_0'
     ds = Dataset.from_origin(
         project,
         origin_type='recording',
         origin_name=origin_name,
-        dataset_type='suite2p_rois',
+        dataset_type='suite2p_traces',
         conflicts='append')
-    assert ds.name == 'PZAH4.1c_S20210513_0_R150615_0_suite2p_rois_1'
+    assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_traces_4'
     with pytest.raises(NameNotUniqueError) as err:
-        ds = Dataset.from_origin(
+        Dataset.from_origin(
             project,
             origin_type='recording',
             origin_name=origin_name,
-            dataset_type='suite2p_rois',
+            dataset_type='suite2p_traces',
             conflicts='abort')
     assert 'already processed' in err.value.args[0]
 
