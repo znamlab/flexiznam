@@ -32,9 +32,11 @@ pip install --upgrade git+ssh://git@github.com/znamlab/flexiznam.git
 
 ## Configuration
 
-The default configuration settings can be created simply by running: `flexiznam config`. This will create a `~/.flexiznam` directory with a `config.yml` file.
+The default configuration settings can be created simply by running: `flexiznam config`. This will create a `~/.flexiznam` directory with a `config.yml` file. 
 
-This file can be edited manually or using `flexiznam.config.update_config`. The option should be self explaining but in doubt, see the comments in `flexiznam.config.default_config.py`.
+To add newly defined configuration field and set them to their default value, you can run  `flexiznam config --update`. This will not change any existing field or remove any obsolete fields.
+
+The configuration file can be edited manually or using `flexiznam.config.update_config`. The option should be self explaining but in doubt, see the comments in `flexiznam.config.default_config.py`.
 
 ## Password management
 
