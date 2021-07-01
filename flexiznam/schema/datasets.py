@@ -353,7 +353,7 @@ class Dataset(object):
         """
         if flm_data is None:
             flm_data = self.get_flexilims_entry()
-            if not len(flm_data):
+            if flm_data is None:
                 raise IOError('No flexilims entry for dataset %s' % self.name)
 
         # remove the flexilims keywords that are not used by Dataset if they are present
