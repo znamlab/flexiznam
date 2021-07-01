@@ -27,11 +27,20 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 @cli.command()
 @click.option('-t', '--template', default=None, help='Template config file.')
 @click.option('--config_folder', default=None, help='Folder containing the config file.')
-def config(template=None, config_folder=None):
+@click.option('--update/--no-update', default=False,
+              help='Update the config file to include all fields present in the default '
+                   'config. Will not change already defined fields.')
+def config(template=None, config_folder=None, update=False):
     """Create a configuration file if none exists."""
     try:
         fname = config_tools._find_file('config.yml', config_folder=config_folder)
         click.echo('Configuration file currently used is:\n%s' % fname)
+        if update:
+            click.echo('Updating file')
+            prm = config_tools.load_param(param_folder=config_folder)
+            config_tools.create_config(overwrite=True, template=template,
+                                       config_folder=config_folder,
+                                       **prm)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
         config_tools.create_config(template=template, config_folder=config_folder)
