@@ -17,8 +17,6 @@ class Dataset(object):
     SUBCLASSES are held in different files and added to the Dataset class by
     schema.__init__.py
     """
-    VALID_TYPES = ('scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces',
-                   'harp')
     SUBCLASSES = dict()
 
     @staticmethod
@@ -197,7 +195,7 @@ class Dataset(object):
             path: folder containing the dataset or path to file (valid only for single
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            dataset_type: type of the dataset, must be in Dataset.VALID_TYPES
+            dataset_type: type of the dataset, must be in PARAMETERS['dataset_types']
             name: name of the dataset as on flexilims. Is expected to include mouse,
                   session etc...
             extra_attributes: dict, optional attributes.
@@ -458,14 +456,14 @@ class Dataset(object):
 
     @property
     def dataset_type(self):
-        """Type of the dataset. Must be in Dataset.VALID_TYPES"""
+        """Type of the dataset. Must be in PARAMETERS['dataset_types']"""
         return self._dataset_type
 
     @dataset_type.setter
     def dataset_type(self, value):
-        if value.lower() not in Dataset.VALID_TYPES:
+        if value.lower() not in PARAMETERS['dataset_types']:
             raise IOError('dataset_type "%s" not valid. Valid types are: '
-                          '%s' % (value, Dataset.VALID_TYPES))
+                          '%s' % (value, PARAMETERS['dataset_types']))
         self._dataset_type = value.lower()
 
     @property

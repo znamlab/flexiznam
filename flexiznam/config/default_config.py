@@ -19,5 +19,8 @@ DEFAULT_CONFIG = dict(
     data_root=dict(raw='/camp/lab/znamenskiyp/home/shared/projects',
                    processed='/camp/lab/znamenskiyp/data/instruments/raw_data'),
     # list of all datatypes
-    datatypes=['mouse', 'session', 'recording', 'dataset']
+    datatypes=['mouse', 'session', 'recording', 'dataset'],
+    # list of valid dataset type
+    dataset_types = ['scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces',
+                     'harp']
 )
