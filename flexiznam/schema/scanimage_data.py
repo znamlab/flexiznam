@@ -11,7 +11,8 @@ class ScanimageData(Dataset):
     DATASET_TYPE = 'scanimage'
 
     @staticmethod
-    def from_folder(folder, verbose=True, mouse=None, session=None, recording=None):
+    def from_folder(folder, verbose=True, mouse=None, session=None, recording=None,
+                    flm_session=None):
         """Create a scanimage dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.tiff', '.tif'))]
         tif_files = [f for f in fnames if f.endswith(('.tif', '.tiff'))]
@@ -57,7 +58,8 @@ class ScanimageData(Dataset):
             output[acq_id] = ScanimageData(path=folder,
                                            tif_files=list(acq_df.filename.values),
                                            csv_files=associated_csv,
-                                           created=created.strftime('%Y-%m-%d %H:%M:%S'))
+                                           created=created.strftime('%Y-%m-%d %H:%M:%S'),
+                                           flm_session=flm_session)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[acq_id], field, locals()[field])
             output[acq_id].dataset_name = acq_id
@@ -70,12 +72,13 @@ class ScanimageData(Dataset):
                     print('    %s' % m)
         return output
 
-    def from_flexilims(project=None, name=None, data_series=None):
+    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
         """Create a camera dataset from flexilims entry"""
         raise NotImplementedError
 
     def __init__(self, path, name=None, tif_files=None, csv_files=None,
-                 extra_attributes=None, created=None, project=None, is_raw=True):
+                 extra_attributes=None, created=None, project=None, is_raw=True,
+                 flm_session=None):
         """Create a Scanimage dataset
 
         Args:
@@ -89,11 +92,12 @@ class ScanimageData(Dataset):
             created: Date of creation. Default to the creation date of a tif file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
+            flm_session: authentication session for connecting to flexilims
         """
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project)
+                         project=project, flm_session=flm_session)
         self.csv_files = csv_files
         self.tif_files = tif_files
 

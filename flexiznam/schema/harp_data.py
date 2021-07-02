@@ -10,7 +10,7 @@ class HarpData(Dataset):
     DATASET_TYPE = 'harp'
 
     @staticmethod
-    def from_folder(folder, verbose=True):
+    def from_folder(folder, verbose=True, flm_session=None):
         """Create a harp dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
         bin_files = [f for f in fnames if f.endswith('.bin')]
@@ -29,17 +29,21 @@ class HarpData(Dataset):
 
             pattern = '(.*)'.join(m.groups()) + '.csv'
             matches = [re.match(pattern, f) for f in csv_files]
-            associated_csv = {m.groups()[0].strip('_'): f for f, m in zip(csv_files, matches) if m}
+            associated_csv = {m.groups()[0].strip('_'): f for f, m in
+                              zip(csv_files, matches) if m}
             if matched_files.intersection(associated_csv.values()):
                 raise IOError('A csv file matched with multiple binary files.')
             matched_files.update(associated_csv.values())
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
-            output[bin_file[:-4]] = HarpData(name=bin_file[:-4], path=folder,
-                                         binary_file=bin_file,
-                                         csv_files=associated_csv,
-                                         created=created.strftime('%Y-%m-%d %H:%M:%S'))
+            output[bin_file[:-4]] = HarpData(name=bin_file[:-4],
+                                             path=folder,
+                                             binary_file=bin_file,
+                                             csv_files=associated_csv,
+                                             created=created.strftime(
+                                                 '%Y-%m-%d %H:%M:%S'),
+                                             flm_session=flm_session)
         if verbose:
             unmatched = set(csv_files) - matched_files
             if unmatched and verbose:
@@ -52,9 +56,8 @@ class HarpData(Dataset):
         """Create a harp dataset from flexilims entry"""
         raise NotImplementedError
 
-
-    def __init__(self, name, path, binary_file, csv_files={}, extra_attributes={}, created=None, project=None,
-                 is_raw=True):
+    def __init__(self, name, path, binary_file, csv_files={}, extra_attributes={},
+                 created=None, project=None, is_raw=True, flm_session=None):
         """Create a Harp dataset
 
         Args:
@@ -68,9 +71,12 @@ class HarpData(Dataset):
             created: Date of creation. Default to the creation date of the binary file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
+            flm_session: authentication session for connecting to flexilims
         """
-        super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=HarpData.DATASET_TYPE,
-                         extra_attributes=extra_attributes, created=created, project=project)
+        super().__init__(name=name, path=path, is_raw=is_raw,
+                         dataset_type=HarpData.DATASET_TYPE,
+                         extra_attributes=extra_attributes, created=created,
+                         project=project, flm_session=flm_session)
         self.binary_file = binary_file
         self.csv_files = csv_files
 

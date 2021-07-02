@@ -11,7 +11,8 @@ class CameraData(Dataset):
     VALID_EXTENSIONS = {'.txt', '.csv'}.union(VIDEO_EXTENSIONS)
 
     @staticmethod
-    def from_folder(folder, camera_name=None, verbose=True, mouse=None, session=None, recording=None):
+    def from_folder(folder, camera_name=None, verbose=True, mouse=None, session=None,
+                    recording=None, flm_session=None):
         """Create a Camera dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(tuple(CameraData.VALID_EXTENSIONS))]
         metadata_files = [f for f in fnames if f.endswith('_metadata.txt')]
@@ -44,20 +45,25 @@ class CameraData(Dataset):
                 raise IOError('Found more than one potential video file for camera %s' % camera_name)
             video_path = pathlib.Path(folder) / vid[0]
             created = datetime.datetime.fromtimestamp(video_path.stat().st_mtime)
-            output[camera_name] = CameraData(path=folder, timestamp_file='%s_timestamps.csv' % camera_name,
-                                             metadata_file='%s_metadata.txt' % camera_name, video_file=vid[0],
-                                             created=created.strftime('%Y-%m-%d %H:%M:%S'))
+            output[camera_name] = CameraData(path=folder,
+                                             timestamp_file='%s_timestamps.csv' % camera_name,
+                                             metadata_file='%s_metadata.txt' % camera_name,
+                                             video_file=vid[0],
+                                             created=created.strftime('%Y-%m-%d '
+                                                                      '%H:%M:%S'),
+                                             flm_session=flm_session)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[camera_name], field, locals()[field])
             output[camera_name].dataset_name = camera_name
         return output
 
-    def from_flexilims(project=None, name=None, data_series=None):
+    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
         """Create a camera dataset from flexilims entry"""
         raise NotImplementedError
 
     def __init__(self, path, timestamp_file, metadata_file, video_file, name=None,
-                 extra_attributes={}, created=None, project=None, is_raw=True):
+                 extra_attributes={}, created=None, project=None, is_raw=True,
+                 flm_session=None):
         """Create a Camera dataset
 
         Args:
@@ -71,9 +77,12 @@ class CameraData(Dataset):
             created: Date of creation. Default to the creation date of the binary file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
+            flm_session: authentication session for connecting to flexilims
         """
-        super().__init__(name=name, path=path, is_raw=is_raw, dataset_type=CameraData.DATASET_TYPE,
-                         extra_attributes=extra_attributes, created=created, project=project)
+        super().__init__(name=name, path=path, is_raw=is_raw,
+                         dataset_type=CameraData.DATASET_TYPE,
+                         extra_attributes=extra_attributes, created=created,
+                         project=project, flm_session=flm_session)
         self.timestamp_file = timestamp_file
         self.metadata_file = metadata_file
         self.video_file = video_file
