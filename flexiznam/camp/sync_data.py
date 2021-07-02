@@ -11,7 +11,7 @@ from flexiznam.utils import clean_dictionary_recursively
 
 
 def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
-                log_func=print, flexilims_session=None):
+                log_func=print, flexilims_session=None, conflicts='abort'):
     """Upload data from one yaml to flexilims
 
     Args:
@@ -21,6 +21,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
         verbose: print progress information
         log_func: function to deal with warnings and messages
         flexilims_session: session to avoid recreating a token
+        conflicts: `abort` to crash if there is a conflict, `skip` to ignore and proceed
 
     Returns: dictionary or flexilims ID
     """
@@ -65,7 +66,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
         session_name=mouse['name'] + '_' + session_data['session'],
         flexilims_session=flexilims_session,
         date=date,
-        attributes=attributes)
+        attributes=attributes,
+        conflicts=conflicts)
 
     # session datasets
     for ds_name, ds in session_data.get('datasets', {}).items():
@@ -79,7 +81,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
                         flexilims_session=flexilims_session,
                         dataset_name=ds.name,
                         attributes=ds.extra_attributes,
-                        strict_validation=False)
+                        strict_validation=False,
+                        conflicts=conflicts)
 
     # now deal with recordings
     for rec_name, rec_data in session_data['recordings'].items():
@@ -99,7 +102,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
                                     attributes=attributes,
                                     recording_name=rec_name,
                                     other_relations=None,
-                                    flexilims_session=flexilims_session)
+                                    flexilims_session=flexilims_session,
+                                    conflicts=conflicts)
 
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
@@ -113,7 +117,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
                             flexilims_session=flexilims_session,
                             dataset_name=ds.name,
                             attributes=ds.extra_attributes,
-                            strict_validation=False)
+                            strict_validation=False,
+                            conflicts=conflicts)
     return session
 
 
