@@ -348,8 +348,15 @@ class Dataset(object):
             project_id=self.project_id,
             dataset_name=self.name,
             attributes=attributes,
-            flexilims_session=self.flm_session
+            flexilims_session=self.flm_session,
+            conflicts='abort',
         )
+        # update the dataset name to reflex the potential new index due to append
+        online_name = resp['name']
+        root_name = '_'.join([e for e in [self.mouse, self.session, self.recording] if e
+                             is not None])
+        assert online_name.startswith(root_name)
+        self.dataset_name = online_name[len(root_name) + 1:]
         return resp
 
     def flexilims_status(self):
