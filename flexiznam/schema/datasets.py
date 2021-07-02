@@ -49,7 +49,7 @@ class Dataset(object):
         return output
 
     @classmethod
-    def from_folder(cls, folder, verbose=True):
+    def from_folder(cls, folder, verbose=True, flm_session=None):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not
@@ -62,7 +62,8 @@ class Dataset(object):
             if verbose:
                 print('Looking for %s' % ds_type)
             try:
-                res = ds_class.from_folder(folder, verbose=verbose)
+                res = ds_class.from_folder(folder, verbose=verbose,
+                                           flm_session=flm_session)
             except OSError:
                 continue
             if any(k in data for k in res):
@@ -71,7 +72,7 @@ class Dataset(object):
         return data
 
     @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None):
+    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
         """Loads a dataset from flexilims.
 
         If the dataset_type attribute of the flexilims entry defined in
@@ -83,23 +84,25 @@ class Dataset(object):
             name: Unique name of the dataset on flexilims
             data_series: default to None. pd.Series as returned by flz.get_entities.
                          If provided, superseeds project and name
+            flm_session: authentication session to access flexilims
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
                 raise AttributeError('Specify either data_series OR project + name')
         else:
             data_series = flz.get_entity(project_id=project, datatype='dataset',
-                                         name=name)
+                                         name=name, flexilims_session=flm_session)
             if data_series is None:
                 raise FlexilimsError('No dataset named {} in project {}'.format(name,
                                                                                 project))
         dataset_type = data_series.dataset_type
         if dataset_type in Dataset.SUBCLASSES:
             ds_cls = Dataset.SUBCLASSES[dataset_type]
-            return ds_cls.from_flexilims(data_series=data_series)
+            return ds_cls.from_flexilims(data_series=data_series, flm_session=flm_session)
         # No subclass, let's do it myself
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
+        kwargs['flm_session'] = flm_session
         ds = Dataset(**kwargs)
         try:
             ds.name = name
@@ -111,8 +114,21 @@ class Dataset(object):
 
     @staticmethod
     def from_origin(project=None, origin_type=None, origin_id=None, origin_name=None,
-                    dataset_type=None, conflicts=None):
+                    dataset_type=None, conflicts=None, flm_session=None):
         """Creates a dataset of a given type as a child of a parent entity
+
+        Args:
+            project: Name of the project or hexadecimal project_id
+            origin_type: sample type of the origin
+            origin_id: hexadecimal ID of the origin. This or origin_name must be provided
+            origin_name: name of the origin. This or origin_id must be provided
+            dataset_type: type of dataset to create. Must be defined in the config file
+            conflicts: What to do if a dataset of this type already exists? Can be
+            `append`, `abort`=None, `skip` or `overwrite`
+            flm_session: authentication session to connect to flexilims
+
+        Returns:
+            a dataset object (WITHOUT updating flexilims)
 
         """
         assert (origin_id is not None) or (origin_name is not None)
@@ -120,7 +136,8 @@ class Dataset(object):
             datatype=origin_type,
             id=origin_id,
             name=origin_name,
-            project_id=project
+            project_id=project,
+            flexilims_session=flm_session,
         )
         if origin is None:
             raise FlexilimsError('Origin not found')
@@ -129,7 +146,8 @@ class Dataset(object):
             datatype='dataset',
             origin_id=origin['id'],
             query_key='dataset_type',
-            query_value=dataset_type
+            query_value=dataset_type,
+            flexilims_session=flm_session,
         )
         already_processed = len(processed) > 0
         if (not already_processed) or (conflicts == 'append'):
@@ -137,7 +155,8 @@ class Dataset(object):
             dataset_name = flz.generate_name(
                 'dataset',
                 dataset_root,
-                project_id=project
+                project_id=project,
+                flexilims_session=flm_session
             )
             dataset_path = str(
                 Path(origin['path']) / Dataset.parse_dataset_name(dataset_name
@@ -149,7 +168,8 @@ class Dataset(object):
                 name=dataset_name,
                 created=None,
                 project=project,
-                origin_id=origin['id']
+                origin_id=origin['id'],
+                flm_session=flm_session
             )
         else:
             if (conflicts is None) or (conflicts == 'abort'):
@@ -187,9 +207,10 @@ class Dataset(object):
         return kwargs
 
     def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes=None,
-                 created=None, project=None, project_id=None, origin_id=None):
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flm_session=None):
         """Construct a dataset manually. Is usually called through static methods
-        'from_folder' or 'from_flexilims'
+        'from_folder', 'from_flexilims', or 'from_origin'
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
@@ -204,6 +225,7 @@ class Dataset(object):
                      project_id
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
+            flm_session: authentication session to connect to flexilims
         """
         self.mouse = None
         self.session = None
@@ -225,6 +247,7 @@ class Dataset(object):
         else:
             self._project = None
             self._project_id = None
+        self.flm_session = flm_session
 
     def is_valid(self):
         """
@@ -242,7 +265,8 @@ class Dataset(object):
 
         Returns:
         """
-        raise NotImplementedError
+        raise NotImplementedError('`associated_files` is not defined for generic '
+                                  'datasets')
 
     def get_flexilims_entry(self):
         """Get the flexilims entry for this dataset
@@ -255,7 +279,8 @@ class Dataset(object):
             raise IOError('You must specify the dataset name to get flexilims status')
         series = flz.get_entity(datatype='dataset',
                                 project_id=self.project_id,
-                                name=self.name)
+                                name=self.name,
+                                flexilims_session=self.flm_session)
         return series
 
     def update_flexilims(self, mode='safe'):
@@ -303,7 +328,8 @@ class Dataset(object):
                     origin_id=self.origin_id,
                     mode=mode,
                     attributes=attributes,
-                    project_id=self.project_id
+                    project_id=self.project_id,
+                    flexilims_session=self.flm_session
                 )
             else:
                 raise IOError('`mode` must be `safe`, `overwrite` or `update`')
@@ -321,7 +347,8 @@ class Dataset(object):
             is_raw='yes' if self.is_raw else 'no',
             project_id=self.project_id,
             dataset_name=self.name,
-            attributes=attributes
+            attributes=attributes,
+            flexilims_session=self.flm_session
         )
         return resp
 
