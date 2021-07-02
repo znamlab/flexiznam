@@ -175,8 +175,8 @@ def test_update_flexilims(flm_sess):
 
 
 def test_camera(tmp_path, flm_sess):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path, session_name='S202')
-    data_dir = tmp_path / acq_yaml_and_files.MOUSE / acq_yaml_and_files.SESSION / next(
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    data_dir = tmp_path / acq_yaml_and_files.MOUSE / miniaml['session'] / next(
         iter(miniaml['recordings'].keys()))
     ds = CameraData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 4
