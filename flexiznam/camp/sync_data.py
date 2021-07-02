@@ -1,6 +1,7 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
 from pathlib import Path
 import re
+import copy
 import yaml
 
 import flexiznam as flz
@@ -190,7 +191,7 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
 
     Returns: the pure yaml dictionary
     """
-    out_dict = session_data.copy()
+    out_dict = copy.deepcopy(session_data)
     clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
     if target_file is not None:
         target_file = Path(target_file)
@@ -198,6 +199,9 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
             raise IOError('Target file %s already exists' % target_file)
         with open(target_file, 'w') as writer:
             yaml.dump(out_dict, writer)
+        # temp check:
+        with open(target_file, 'r') as reader:
+            writen = yaml.safe_load(reader)
     return out_dict
 
 

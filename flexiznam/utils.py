@@ -67,6 +67,8 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
                 for field in ['name', 'project', 'type']:
                     ds_dict.pop(field, None)
 
-                # rename extra_attributes to match acquisition yaml
-                ds_dict['attributes'] = ds_dict.pop('extra_attributes')
+                # rename extra_attributes to match acquisition yaml.
+                # Making a copy with dict is required to write yaml later on. If I keep
+                # the reference the output file has `*id001` instead of `{}`
+                ds_dict['attributes'] = dict(ds_dict.pop('extra_attributes', {}))
                 dictionary[k] = ds_dict
