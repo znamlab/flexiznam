@@ -72,21 +72,15 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
     # session datasets
     for ds_name, ds in session_data.get('datasets', {}).items():
         ds.mouse = mouse.name
-        ds.session = session['name']
-        flz.add_dataset(parent_id=session['id'],
-                        dataset_type=ds.dataset_type,
-                        created=ds.created,
-                        path=str(ds.path),
-                        is_raw='yes' if ds.is_raw else 'no',
-                        flexilims_session=flexilims_session,
-                        dataset_name=ds.name,
-                        attributes=ds.extra_attributes,
-                        strict_validation=False,
-                        conflicts=conflicts)
+        ds.project = session_data['project']
+        ds.session = session_data['session']
+        ds.origin_id = session['id']
+        ds.flm_session = flexilims_session
+        ds.update_flexilims(mode='safe')
 
     # now deal with recordings
-    for rec_name, rec_data in session_data['recordings'].items():
-        rec_name = session['name'] + '_' + rec_name
+    for short_rec_name, rec_data in session_data['recordings'].items():
+        rec_name = session['name'] + '_' + short_rec_name
         attributes = rec_data.get('attributes', None)
         if attributes is None:
             attributes = {}
@@ -108,17 +102,12 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.mouse = mouse.name
-            ds.session = session['name']
-            flz.add_dataset(parent_id=rec_rep['id'],
-                            dataset_type=ds.dataset_type,
-                            created=ds.created,
-                            path=str(ds.path),
-                            is_raw='yes' if ds.is_raw else 'no',
-                            flexilims_session=flexilims_session,
-                            dataset_name=ds.name,
-                            attributes=ds.extra_attributes,
-                            strict_validation=False,
-                            conflicts=conflicts)
+            ds.project = session_data['project']
+            ds.session = session_data['session']
+            ds.recording = short_rec_name
+            ds.origin_id = rec_rep['id']
+            ds.flm_session = flexilims_session
+            ds.update_flexilims(mode='safe')
     return session
 
 
