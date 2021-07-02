@@ -73,12 +73,25 @@ def test_write_yaml(tmp_path):
 def test_upload(tmp_path, flm_sess):
     miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
-    yaml_data = miniaml.copy()
     with open(path_to_mini_yaml, 'w') as fullfile:
         yaml.dump(miniaml, fullfile)
 
     sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
                           flexilims_session=flm_sess)
+
+    # check that a session has been properly created
+    sess_name = miniaml['mouse'] + '_' + miniaml['session']
+    s = flexiznam.get_entity(datatype='session', name=sess_name,
+                             flexilims_session=flm_sess)
+    assert s is not None
+    r = flexiznam.get_children(s['id'], 'recording', flexilims_session=flm_sess)
+    for _, rec in r.iterrows():
+        rec_name = rec['name']
+        assert rec_name.startswith(sess_name)
+        d = flexiznam.get_children(rec['id'], 'dataset', flexilims_session=flm_sess)
+        for _, ds in d.iterrows():
+            assert ds['name'].startswith(rec_name)
+
     # doing it again will crash
     with pytest.raises(flexiznam.FlexilimsError):
         sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
