@@ -67,8 +67,9 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
     return resp
 
 
-def add_experimental_session(mouse_name, date, attributes={}, session_name=None, other_relations=None,
-                             flexilims_session=None, project_id=None):
+def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
+                             other_relations=None, flexilims_session=None,
+                             project_id=None, conflicts='abort'):
     """Add a new session as a child entity of a mouse
 
     Args:
@@ -80,17 +81,29 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
         other_relations: ID(s) of custom entities related to the session
         flexilims_session: flexilims session
         project_id: name of the project or hexadecimal project id (needed if session is not provided)
-
+        conflicts: What to do if a session with that name already exists? Can be `skip`
+                   for skiping creation and returning the session from flexilims or
+                   `abort` to crash
 
     Returns: flexilims reply
     """
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
+    if conflicts.lower() not in ('skip', 'abort'):
+        raise AttributeError('conflicts must be `skip` or `abort`')
+
     mouse_id = get_id(mouse_name, datatype='mouse', flexilims_session=flexilims_session)
     if session_name is None:
         session_name = mouse_name + '_' + date + '_0'
-    session_name = generate_name('session', session_name, flexilims_session=flexilims_session)
+    online_session = get_entity(datatype='session', name=session_name,
+                                flexilims_session=flexilims_session)
+    if online_session is not None:
+        if conflicts.lower() == 'skip':
+            print('A session named %s already exists' % session_name)
+            return online_session
+        else:
+            raise FlexilimsError('A session named %s already exists' % session_name)
 
     session_info = {'date': date}
     if attributes is None:
@@ -112,7 +125,7 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
 
 
 def add_recording(session_id, recording_type, protocol, attributes=None,
-                  recording_name=None, conflicts=None, other_relations=None,
+                  recording_name=None, conflicts='abort', other_relations=None,
                   flexilims_session=None, project_id=None):
     """Add a recording as a child of an experimental session
 
@@ -122,11 +135,10 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
         protocol: str, experimental protocol (`retinotopy` for instance)
         attributes: dict, dictionary of additional attributes (on top of protocol and recording_type)
         recording_name: str or None, name of the recording, usually in the shape `R152356`.
-        conflicts: `abort`, `append`, or `overwrite`: how to handle conflicts
+        conflicts: `skip` or `abort`: how to handle conflicts
         other_relations: ID(s) of custom entities related to the session
         flexilims_session: flexilims session
         project_id: name of the project or hexadecimal project id (needed if session is not provided)
-
 
     Returns: flexilims reply
     """
@@ -134,14 +146,23 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
+    if conflicts.lower() not in ('skip', 'abort'):
+        raise AttributeError('conflicts must be `skip` or `abort`')
+
     experimental_session = get_entity(datatype='session',
                                       flexilims_session=flexilims_session,
                                       id=session_id)
     if recording_name is None:
         recording_name = experimental_session['name'] + '_' + protocol + '_0'
-    recording_name = generate_name('recording',
-                                   recording_name,
-                                   flexilims_session=flexilims_session)
+    online_recording = get_entity(datatype='recording', name=recording_name,
+                                flexilims_session=flexilims_session)
+    if online_recording is not None:
+        if conflicts.lower() == 'skip':
+            print('A recording named %s already exists' % (recording_name))
+            return online_recording
+        else:
+            raise FlexilimsError('A recording named %s already exists' %
+                                 recording_name)
 
     recording_info = {'recording_type': recording_type, 'protocol': protocol}
     if attributes is None:
@@ -169,20 +190,57 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
 
 
 def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id=None,
-                flexilims_session=None, dataset_name=None, attributes=None, strict_validation=False):
-    """
-    Add a dataset as a child of a recording or session
+                flexilims_session=None, dataset_name=None, attributes=None,
+                strict_validation=False, conflicts='append'):
+    """Add a dataset as a child of a recording or session
+
+    Args:
+        parent_id: hexadecimal ID of the parent (session or recording)
+        dataset_type: dataset_type, must be a type define in the config file
+        created: date of creation as text, usually in this format: '2021-05-24 14:56:41'
+        path: path to the data relative to the project folder
+        is_raw: `yes` or `no`, used to find the root directory
+        project_id: hexadecimal ID or name of the project
+        flexilims_session: authentication session for flexilims
+        dataset_name: name of the dataset, will be autogenerated if not provided
+        attributes: optional attributes
+        strict_validation: default False, if True, only attributes in lab settings are
+                           allowed
+        conflicts: `abort`, `skip`, `append`, what to do if a dataset with this name
+                   already exists? `abort` to crash, `skip` to ignore and return the
+                   online version, `append` to increment name and create a new dataset.
+
+    Returns:
+        the flexilims response
     """
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
+    valid_conflicts = ('abort', 'skip', 'append')
+    if conflicts.lower() not in valid_conflicts:
+        raise AttributeError('`conflicts` must be in [%s]' % ', '.join(valid_conflicts))
 
     if dataset_name is None:
         parent_name = pd.concat([
-            get_entities(flexilims_session=flexilims_session, datatype='recording', id=parent_id),
-            get_entities(flexilims_session=flexilims_session, datatype='session', id=parent_id)
+            get_entities(flexilims_session=flexilims_session,
+                         datatype='recording',
+                         id=parent_id),
+            get_entities(flexilims_session=flexilims_session,
+                         datatype='session',
+                         id=parent_id)
         ])['name'][0]
         dataset_name = parent_name + '_' + dataset_type + '_0'
-    dataset_name = generate_name('dataset', dataset_name, flexilims_session=flexilims_session)
+    if conflicts.lower() == 'append':
+        dataset_name = generate_name('dataset', dataset_name,
+                                     flexilims_session=flexilims_session)
+    else:
+        online_version = get_entity('dataset', name=dataset_name,
+                                    flexilims_session=flexilims_session)
+        if online_version is not None:
+            if conflicts.lower() == 'abort':
+                raise FlexilimsError('A dataset named %s already exists' % (dataset_name))
+            else:
+                print('A dataset named %s already exists' % (dataset_name))
+                return online_version
 
     dataset_info = {
         'dataset_type': dataset_type,
