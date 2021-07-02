@@ -1,10 +1,14 @@
 """A list of file coming from one experiment"""
 from pathlib import Path
+import datetime
 
 
-def create_acq_files(target_folder):
+def create_acq_files(target_folder, session_name='S20210513'):
+    if session_name == 'unique':
+        # create a unique session name
+        session_name = 'S' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     target_folder = Path(target_folder)
-    root = target_folder / MOUSE / SESSION
+    root = target_folder / MOUSE / session_name
     if root.exists():
         raise IOError('Target folder exists')
 
@@ -13,47 +17,47 @@ def create_acq_files(target_folder):
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.touch()
 
+    miniaml = {"project": "test",
+               "mouse": "PZAH4.1c",
+               "session": session_name,
+               "recordings": {
+                   "R182758_SphereCylinder": {"protocol": "SphereCylinder"},
+                   "R193432_Retinotopy": {"protocol": "Retinotopy"}
+               }
+               }
 
-MINIAML = {"project": "test",
-           "mouse": "PZAH4.1c",
-           "session": "S20210513",
-           "recordings": {
-               "R182758_SphereCylinder": {"protocol": "SphereCylinder"},
-               "R193432_Retinotopy": {"protocol": "Retinotopy"}
-           }
-           }
-
-FAML = dict(project="test", mouse="PZAH4.1c", session="S20210513",
-            path="./PZAH4.1c/S20210513",
-            notes="Notes can be added at any level of the hierarchy in this yaml file.",
-            attributes=dict(quality='test data'),
-            recordings=dict(
-                R182758_SphereCylinder=dict(protocol="SphereCylinder",
+    faml = dict(project="test", mouse="PZAH4.1c", session=session_name,
+                path="./PZAH4.1c/%s" % session_name,
+                notes="Notes can be added at any level of the hierarchy in this yaml file.",
+                attributes=dict(quality='test data'),
+                recordings=dict(
+                    R182758_SphereCylinder=dict(protocol="SphereCylinder",
+                                                timestamp="182758",
+                                                recording_type="two_photon",
+                                                notes="note or the recording level"),
+                    R193432_Retinotopy=dict(protocol="Retinotopy",
                                             timestamp="182758",
-                                            recording_type="two_photon",
-                                            notes="note or the recording level"),
-                R193432_Retinotopy=dict(protocol="Retinotopy",
-                                        timestamp="182758",
-                                        datasets=dict(
-                                            harp_data_csv=dict(dataset_type='harp',
-                                                               path='./PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy',
-                                                               notes="Here too you can add notes")))),
-            datasets=dict(ref_for_motion=dict(dataset_type='scanimage',
-                                              path='./PZAH4.1c/S20210513/Ref'),
-                          overview00001=dict(dataset_type='scanimage',
-                                             path='./PZAH4.1c/S20210513/overview_00001_00001.tif'),
-                          overview_picture_02=dict(dataset_type='scanimage',
-                                                   path='./PZAH4.1c/S20210513/overview_00002_00001.tif',
-                                                   notes="at any point you can add notes or attributes as below",
-                                                   attributes=dict(
-                                                       channels=['red', 'blue'],
-                                                       led_knob=12, )
-                                                   )
-                          )
-            )
+                                            datasets=dict(
+                                                harp_data_csv=dict(dataset_type='harp',
+                                                                   path='./PZAH4.1c/%s/ParamLog/R193432_Retinotopy' % session_name,
+                                                                   notes="Here too you can add notes")))),
+                datasets=dict(ref_for_motion=dict(dataset_type='scanimage',
+                                                  path='./PZAH4.1c/%s/Ref' % session_name),
+                              overview00001=dict(dataset_type='scanimage',
+                                                 path='./PZAH4.1c/%s/overview_00001_00001.tif' % session_name),
+                              overview_picture_02=dict(dataset_type='scanimage',
+                                                       path='./PZAH4.1c/%s/overview_00002_00001.tif' % session_name,
+                                                       notes="at any point you can add notes or attributes as below",
+                                                       attributes=dict(
+                                                           channels=['red', 'blue'],
+                                                           led_knob=12, )
+                                                       )
+                              )
+                )
+    return miniaml, faml
+
 
 MOUSE = 'PZAH4.1c'
-SESSION = 'S20210513'
 
 FILE_LIST = ['overview_00001_00001.tif',
              'R193432_Retinotopy/PZAH4.1c_S20210513_R193432_Retinotopy_00001_00037.tif',

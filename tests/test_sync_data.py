@@ -1,3 +1,4 @@
+import flexiznam
 import pytest
 import yaml
 from flexiznam.camp import sync_data
@@ -5,25 +6,26 @@ from tests.tests_resources import acq_yaml_and_files
 
 
 def test_clean_yaml(tmp_path):
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as minifile:
-        yaml.dump(acq_yaml_and_files.MINIAML, minifile)
+        yaml.dump(miniaml, minifile)
     with open(path_to_full_yaml, 'w') as fullfile:
-        yaml.dump(acq_yaml_and_files.FAML, fullfile)
+        yaml.dump(faml, fullfile)
 
     sync_data.clean_yaml(path_to_mini_yaml)
     sync_data.clean_yaml(path_to_full_yaml)
 
 
 def test_parse_yaml(tmp_path):
-    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as minifile:
-        yaml.dump(acq_yaml_and_files.MINIAML, minifile)
+        yaml.dump(miniaml, minifile)
     with open(path_to_full_yaml, 'w') as fullfile:
-        yaml.dump(acq_yaml_and_files.FAML, fullfile)
+        yaml.dump(faml, fullfile)
 
     m = sync_data.parse_yaml(path_to_mini_yaml, raw_data_folder=tmp_path, verbose=False)
     assert len(m) == 8
@@ -43,10 +45,10 @@ def test_parse_yaml(tmp_path):
 
 
 def test_write_yaml(tmp_path):
-    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     with open(path_to_full_yaml, 'w') as fullfile:
-        yaml.dump(acq_yaml_and_files.FAML, fullfile)
+        yaml.dump(faml, fullfile)
     sess_data = sync_data.parse_yaml(path_to_full_yaml, raw_data_folder=tmp_path,
                                      verbose=False)
     target = tmp_path / 'target_out.yml'
@@ -69,17 +71,26 @@ def test_write_yaml(tmp_path):
 
 @pytest.mark.integtest
 def test_upload(tmp_path, flm_sess):
-    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
+    yaml_data = miniaml.copy()
     with open(path_to_mini_yaml, 'w') as fullfile:
-        yaml.dump(acq_yaml_and_files.MINIAML, fullfile)
+        yaml.dump(miniaml, fullfile)
 
     sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
                           flexilims_session=flm_sess)
+    # doing it again will crash
+    with pytest.raises(flexiznam.FlexilimsError):
+        sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
+                              flexilims_session=flm_sess)
+    # but is fine with `skip`
+    sync_data.upload_yaml(source_yaml=path_to_mini_yaml, raw_data_folder=tmp_path,
+                          flexilims_session=flm_sess, conflicts='skip')
+
     parsed = sync_data.parse_yaml(path_to_yaml=path_to_mini_yaml,
                                   raw_data_folder=tmp_path)
     path_to_parsed = tmp_path / 'parsed_mini_yaml.yml'
     sync_data.write_session_data_as_yaml(parsed, target_file=path_to_parsed,
                                          overwrite=True)
     sync_data.upload_yaml(source_yaml=path_to_parsed, raw_data_folder=tmp_path,
-                          flexilims_session=flm_sess)
+                          flexilims_session=flm_sess, conflicts='skip')

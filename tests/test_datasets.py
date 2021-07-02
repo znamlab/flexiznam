@@ -175,9 +175,9 @@ def test_update_flexilims(flm_sess):
 
 
 def test_camera(tmp_path, flm_sess):
-    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path, session_name='S202')
     data_dir = tmp_path / acq_yaml_and_files.MOUSE / acq_yaml_and_files.SESSION / next(
-        iter(acq_yaml_and_files.MINIAML['recordings'].keys()))
+        iter(miniaml['recordings'].keys()))
     ds = CameraData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 4
     d = ds['butt_camera']
@@ -191,7 +191,7 @@ def test_camera(tmp_path, flm_sess):
 
 
 def test_harp(tmp_path, flm_sess):
-    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
     ds = HarpData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 1
@@ -203,7 +203,7 @@ def test_harp(tmp_path, flm_sess):
 
 @pytest.mark.integtest
 def test_scanimage(tmp_path, flm_sess):
-    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/R193432_Retinotopy'
     ds = ScanimageData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 1
