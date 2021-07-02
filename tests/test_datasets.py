@@ -1,3 +1,4 @@
+import flexiznam
 import pytest
 import pathlib
 import pandas as pd
@@ -5,6 +6,7 @@ from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
 from tests.tests_resources import acq_yaml_and_files
+
 
 
 def test_dataset():
@@ -55,9 +57,11 @@ def test_dataset():
 
 
 @pytest.mark.integtest
-def test_dataset_flexilims_integration():
+def test_dataset_flexilims_integration(flm_sess):
+    flm_session = flexiznam.get_flexilims_session(project_id='test', username='blota')
     ds = Dataset(project='test', path='fake/path', is_raw='no',
-                 dataset_type='camera', extra_attributes={}, created='')
+                 dataset_type='camera', extra_attributes={}, created='',
+                 flm_session=flm_sess)
     ds.dataset_name = 'test_ran_on_20210513_113928_dataset'
     st = ds.flexilims_status()
     assert st == 'different'
@@ -101,15 +105,15 @@ def test_dataset_flexilims_integration():
 
 
 @pytest.mark.integtest
-def test_from_flexilims():
+def test_from_flexilims(flm_sess):
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
     assert ds.name == 'test_from_flexi'
     assert ds.flexilims_status() == 'up-to-date'
 
 
 @pytest.mark.integtest
-def test_from_origin():
+def test_from_origin(flm_sess):
     project = 'test'
     origin_name = 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0'
     ds = Dataset.from_origin(
@@ -117,14 +121,17 @@ def test_from_origin():
         origin_type='recording',
         origin_name=origin_name,
         dataset_type='suite2p_rois',
-        conflicts='skip')
+        conflicts='skip',
+        flm_session=flm_sess
+    )
     assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_rois_0'
     ds = Dataset.from_origin(
         project,
         origin_type='recording',
         origin_name=origin_name,
         dataset_type='suite2p_traces',
-        conflicts='append')
+        conflicts='append',
+        flm_session=flm_sess)
     assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_traces_4'
     with pytest.raises(NameNotUniqueError) as err:
         Dataset.from_origin(
@@ -132,21 +139,23 @@ def test_from_origin():
             origin_type='recording',
             origin_name=origin_name,
             dataset_type='suite2p_traces',
-            conflicts='abort')
+            conflicts='abort',
+            flm_session=flm_sess)
     assert 'already processed' in err.value.args[0]
 
 
 @pytest.mark.integtest
-def test_update_flexilims():
+def test_update_flexilims(flm_sess):
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
     original_path = ds.path
     ds.path = 'new/test/path'
     with pytest.raises(FlexilimsError) as err:
         ds.update_flexilims()
     assert err.value.args[0] == "Cannot change existing flexilims entry with mode=`safe`"
     ds.update_flexilims(mode='overwrite')
-    reloaded_ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    reloaded_ds = Dataset.from_flexilims(project, name='test_from_flexi',
+                                         flm_session=flm_sess)
     assert str(reloaded_ds.path) == ds.path
     ds.path = original_path
     ds.update_flexilims(mode='overwrite')
@@ -165,25 +174,26 @@ def test_update_flexilims():
 
 
 
-def test_camera(tmp_path):
+def test_camera(tmp_path, flm_sess):
     acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / acq_yaml_and_files.MOUSE / acq_yaml_and_files.SESSION / next(
         iter(acq_yaml_and_files.MINIAML['recordings'].keys()))
-    ds = CameraData.from_folder(data_dir, verbose=False)
+    ds = CameraData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 4
     d = ds['butt_camera']
     assert d.name == 'butt_camera'
     d.project = 'test'
     assert d.is_valid()
-    ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession', recording='testrecording',
+    ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession',
+                                recording='testrecording', flm_session=flm_sess,
                                 verbose=False)
     assert ds['face_camera'].name == 'testmouse_testsession_testrecording_face_camera'
 
 
-def test_harp(tmp_path):
+def test_harp(tmp_path, flm_sess):
     acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
-    ds = HarpData.from_folder(data_dir, verbose=False)
+    ds = HarpData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
@@ -192,10 +202,10 @@ def test_harp(tmp_path):
 
 
 @pytest.mark.integtest
-def test_scanimage(tmp_path):
+def test_scanimage(tmp_path, flm_sess):
     acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/R193432_Retinotopy'
-    ds = ScanimageData.from_folder(data_dir, verbose=False)
+    ds = ScanimageData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == 'PZAH4.1c_S20210513_R193432_Retinotopy00001'
@@ -205,9 +215,9 @@ def test_scanimage(tmp_path):
 
 
 @pytest.mark.integtest
-def test_dataset_paths():
+def test_dataset_paths(flm_sess):
     project = 'test'
-    ds = Dataset.from_flexilims(project, name='test_from_flexi')
+    ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
     assert str(ds.path_root) == PARAMETERS['data_root']['processed']
     assert str(ds.path_full) == \
         str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))

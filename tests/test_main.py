@@ -23,53 +23,58 @@ def test_format_results():
 
 
 @pytest.mark.integtest
-def test_get_experimental_sessions():
+def test_get_experimental_sessions(flm_sess):
     proj_id = PARAMETERS['project_ids']['test']
-    exp_sess = flz.get_experimental_sessions(project_id=proj_id)
+    exp_sess = flz.get_experimental_sessions(project_id=proj_id,
+                                             flexilims_session=flm_sess)
     assert all(exp_sess.type == 'session')
     assert all(exp_sess.project == proj_id)
     assert len(exp_sess.origin.unique()) > 1
-    exp_sess_mouse = flz.get_experimental_sessions(project_id=proj_id, mouse='test_mouse')
+    exp_sess_mouse = flz.get_experimental_sessions(project_id=proj_id,
+                                                   mouse='test_mouse',
+                                                   flexilims_session=flm_sess)
     assert len(exp_sess) > len(exp_sess_mouse)
     assert len(exp_sess_mouse.origin.unique()) == 1
 
 
 @pytest.mark.integtest
-def test_get_entities():
+def test_get_entities(flm_sess):
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
-                               datatype='mouse')
+                               datatype='mouse', flexilims_session=flm_sess)
     assert mice_df.shape == (5, 79)
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
-                               datatype='mouse', format_reply=False)
+                               datatype='mouse', format_reply=False,
+                               flexilims_session=flm_sess)
     assert isinstance(mice_df, list)
     assert len(mice_df) == 5
 
 
 @pytest.mark.integtest
-def test_get_entity():
+def test_get_entity(flm_sess):
     mouse = flz.get_entity(id='6094f7212597df357fa24a8c',
                            project_id=PARAMETERS['project_ids']['test'],
-                           datatype='mouse')
+                           datatype='mouse', flexilims_session=flm_sess)
     assert isinstance(mouse, pd.Series)
     assert mouse.shape == (12,)
     mouse = flz.get_entity(id='6094f7212597df357fa24a8c',
                            project_id=PARAMETERS['project_ids']['test'],
                            datatype='mouse',
-                           format_reply=False)
+                           format_reply=False,
+                           flexilims_session=flm_sess)
     assert isinstance(mouse, dict)
     assert len(mouse) == 10
 
 
 @pytest.mark.integtest
-def test_get_mouse_id():
+def test_get_mouse_id(flm_sess):
     mid = flz.get_id(name='test_mouse',
-                     project_id=PARAMETERS['project_ids']['test'])
+                     project_id=PARAMETERS['project_ids']['test'],
+                     flexilims_session=flm_sess)
     assert mid == '6094f7212597df357fa24a8c'
 
 
 @pytest.mark.integtest
-def test_generate_name():
-    flm_sess = flz.get_flexilims_session('test')
+def test_generate_name(flm_sess):
     name = flz.generate_name(datatype='dataset', name='test_iter',
                              flexilims_session=flm_sess)
     assert name.startswith('test_iter')
@@ -88,8 +93,7 @@ def test_generate_name():
 
 
 @pytest.mark.integtest
-def test_add_entity():
-    flm_sess = flz.get_flexilims_session('test')
+def test_add_entity(flm_sess):
     dataset_name = 'test_ran_on_20210524_162613_dataset'
     with pytest.raises(FlexilimsError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
@@ -97,7 +101,8 @@ def test_add_entity():
     with pytest.raises(NameNotUniqueError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
-    new_name = flz.generate_name(datatype='dataset', name='test_iter', flexilims_session=flm_sess)
+    new_name = flz.generate_name(datatype='dataset', name='test_iter',
+                                 flexilims_session=flm_sess)
     rep = flz.add_entity(datatype='dataset', name=new_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
     assert rep['name'] == new_name
@@ -105,20 +110,19 @@ def test_add_entity():
 
 
 @pytest.mark.integtest
-def test_update_entity():
-    session = flz.get_flexilims_session('test')
+def test_update_entity(flm_sess):
     with pytest.raises(FlexilimsError) as err:
         res = flz.update_entity(
             'dataset',
             name='gibberish',
-            flexilims_session=session)
+            flexilims_session=flm_sess)
     assert err.value.args[0] == 'Cannot find an entity of type `dataset` named ' \
                                 '`gibberish`'
     dataset_name = 'test_iter_0'
     res = flz.update_entity(
         'dataset',
         name=dataset_name,
-        flexilims_session=session,
+        flexilims_session=flm_sess,
         attributes={
             'path': 'old/path',
             'an_attr': 'non null',
@@ -129,7 +133,7 @@ def test_update_entity():
     res = flz.update_entity(
         'dataset',
         name=dataset_name,
-        flexilims_session=session,
+        flexilims_session=flm_sess,
         attributes={'path': 'new/path', 'test': 'test value'},
         mode='update',
     )
@@ -139,7 +143,7 @@ def test_update_entity():
     res = flz.update_entity(
         'dataset',
         name=dataset_name,
-        flexilims_session=session,
+        flexilims_session=flm_sess,
         attributes={'path': 'test/path', 'dataset_type': 'scanimage'}
     )
     assert (res['attributes']['path'] == 'test/path')
