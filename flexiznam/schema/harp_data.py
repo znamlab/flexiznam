@@ -9,8 +9,8 @@ from flexiznam.schema.datasets import Dataset
 class HarpData(Dataset):
     DATASET_TYPE = 'harp'
 
-    @staticmethod
-    def from_folder(folder, verbose=True, flm_session=None):
+    @classmethod
+    def from_folder(cls, folder, verbose=True, flm_session=None):
         """Create a harp dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
         bin_files = [f for f in fnames if f.endswith('.bin')]
@@ -21,10 +21,11 @@ class HarpData(Dataset):
         output = {}
         matched_files = set()
         for bin_file in bin_files:
-            m = re.match('(.*?)_?harpmessage_?(.*?).bin', bin_file)
+            m = re.match(r'(.*?)_?harpmessage_?(.*?).bin', bin_file)
             if not m:
                 if verbose:
-                    print('`_harpmessage_` is not in binary file name: %s.' % bin_file)
+                    print('%s is not a binary harp file: `_harpmessage_` is not in '
+                          'file name.' % bin_file)
                 continue
 
             pattern = '(.*)'.join(m.groups()) + '.csv'
@@ -52,21 +53,22 @@ class HarpData(Dataset):
                     print('    %s' % m)
         return output
 
-    def from_flexilims(project=None, name=None, data_series=None):
+    @classmethod
+    def from_flexilims(cls, project=None, name=None, data_series=None, flm_session=None):
         """Create a harp dataset from flexilims entry"""
         raise NotImplementedError
 
-    def __init__(self, name, path, binary_file, csv_files={}, extra_attributes={},
+    def __init__(self, name, path, binary_file, csv_files=None, extra_attributes=None,
                  created=None, project=None, is_raw=True, flm_session=None):
         """Create a Harp dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. Import default to the file name of the binary file without
-                  the extension
+            name: Identifier. Unique name on flexilims. Import default to the file name of
+                  the binary file without the extension
             path: Path to the folder containing all the files
             binary_file: File name of the binary file.
-            csv_files: Dictionary of csv files associated to the binary file. Keys are identifier provided for
-                       convenience, values are the full file name
+            csv_files: Dictionary of csv files associated to the binary file. Keys are
+                       identifier provided for convenience, values are the full file name
             extra_attributes: Other optional attributes (from or for flexilims)
             created: Date of creation. Default to the creation date of the binary file
             project: name of hexadecimal id of the project to which the dataset belongs
@@ -78,7 +80,7 @@ class HarpData(Dataset):
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
         self.binary_file = binary_file
-        self.csv_files = csv_files
+        self.csv_files = csv_files if csv_files is not None else {}
 
     def is_valid(self):
         """Check that video, metadata and timestamps files exist"""
