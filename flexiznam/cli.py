@@ -96,12 +96,13 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder
 @cli.command()
 @click.option('-s', '--source_yaml', required=True, help='Clean yaml without any error.')
 @click.option('-r', '--raw_data_folder', default=None, help='Path to the root folder containing raw data')
-@click.option('-m', '--mode', default=False, 
-              help='How to handle conflict? Abort by default. Valid alternatives are `append` and `overwrite`.')
-def yaml_to_flexilims(source_yaml, raw_data_folder=None, mode=None):
+@click.option('-c', '--conflicts', default='abort',
+              help='Default is `abort` to crash if there is a conflict, use `skip` to '
+                   'ignore and proceed')
+def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     """Create entries on flexilims corresponding to yaml"""
     source_yaml = pathlib.Path(source_yaml)
     try:
-        camp.sync_data.upload_yaml(source_yaml, raw_data_folder)
+        camp.sync_data.upload_yaml(source_yaml, raw_data_folder, conflicts=conflicts)
     except errors.SyncYmlError as err:
         raise click.ClickException(err.args[0])

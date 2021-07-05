@@ -11,7 +11,7 @@ from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_dictionary_recursively
 
 
-def upload_yaml(source_yaml, raw_data_folder=None, verbose=True,
+def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
                 log_func=print, flexilims_session=None, conflicts='abort'):
     """Upload data from one yaml to flexilims
 
