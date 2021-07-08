@@ -10,6 +10,7 @@ import flexiznam as flz
 from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.config import PARAMETERS
+from datetime import datetime
 
 class Dataset(object):
     """Master class. Should be inherited by all datasets
@@ -118,17 +119,17 @@ class Dataset(object):
         """Creates a dataset of a given type as a child of a parent entity
 
         Args:
-            project: Name of the project or hexadecimal project_id
-            origin_type: sample type of the origin
-            origin_id: hexadecimal ID of the origin. This or origin_name must be provided
-            origin_name: name of the origin. This or origin_id must be provided
-            dataset_type: type of dataset to create. Must be defined in the config file
-            conflicts: What to do if a dataset of this type already exists? Can be
-            `append`, `abort`=None, `skip` or `overwrite`
-            flm_session: authentication session to connect to flexilims
+            project (str): Name of the project or hexadecimal project_id
+            origin_type (str): sample type of the origin
+            origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
+            origin_name (str): name of the origin. This or origin_id must be provided
+            dataset_type (str): type of dataset to create. Must be defined in the config file
+            conflicts (str): What to do if a dataset of this type already exists? Can be
+                `append`, `abort`=None, `skip` or `overwrite`
+            flm_session (Flexilims): authentication session to connect to flexilims
 
         Returns:
-            a dataset object (WITHOUT updating flexilims)
+            Dataset: a dataset object (WITHOUT updating flexilims)
 
         """
         assert (origin_id is not None) or (origin_name is not None)
@@ -166,7 +167,7 @@ class Dataset(object):
                 is_raw='no',
                 dataset_type=dataset_type,
                 name=dataset_name,
-                created=None,
+                created=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 project=project,
                 origin_id=origin['id'],
                 flm_session=flm_session

@@ -132,6 +132,7 @@ def test_from_origin(flm_sess):
         dataset_type='suite2p_traces',
         conflicts='append',
         flm_session=flm_sess)
+    assert ds.created is not None
     assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_traces_4'
     with pytest.raises(NameNotUniqueError) as err:
         Dataset.from_origin(
