@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>flexiznam.camp package &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">flexiznam.camp package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
+<li><a class="reference internal" href="#module-flexiznam.camp">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>flexiznam.camp package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/flexiznam.camp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="flexiznam-camp-package">
+<h1>flexiznam.camp package<a class="headerlink" href="#flexiznam-camp-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-flexiznam.camp.sync_data">
+<span id="flexiznam-camp-sync-data-module"></span><h2>flexiznam.camp.sync_data module<a class="headerlink" href="#module-flexiznam.camp.sync_data" title="Permalink to this headline">¶</a></h2>
+<p>File to handle acquisition yaml file and create datasets on flexilims</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.clean_yaml">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">clean_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_yaml</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.clean_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a yaml file and check that it is correctly formatted</p>
+<p>This does not do any processing, just make sure that I can read the whole yaml and
+generate dictionary will all expected fields</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.create_dataset">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">create_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_infos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_data_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_handling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'crash'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.create_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create dictionary of datasets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_infos</strong> – extra information for reading dataset outside of raw_data_folder
+or adding optional arguments</p></li>
+<li><p><strong>parent</strong> – yaml dictionary of the parent level</p></li>
+<li><p><strong>raw_data_folder</strong> – folder where to look for data</p></li>
+<li><p><strong>verbose</strong> – (True) Print info about dataset found</p></li>
+<li><p><strong>error_handling</strong> – <cite>crash</cite> or <cite>report</cite>. When something goes wrong, raise an error if
+<cite>crash</cite> otherwise replace the dataset instance by the error
+message in the output dictionary</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: dictionary of dataset instances</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.find_xxerrorxx">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">find_xxerrorxx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yml_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yml_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'XXERRORXX'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.find_xxerrorxx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility to find where things went wrong</p>
+<p>Look through a <cite>yml_file</cite> or the corresponding <cite>yml_Data</cite> dictionary recursively.
+Returns a dictionary with all entries containing the error <cite>pattern</cite></p>
+<p>_output is used for recursive calling.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.parse_yaml">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">parse_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_yaml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_data_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.parse_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an acquisition yaml and create corresponding datasets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_yaml</strong> – path to the file to parse</p></li>
+<li><p><strong>raw_data_folder</strong> – root folder containing the mice folders</p></li>
+<li><p><strong>verbose</strong> – print info while looking for datasets</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: A yaml dictionary with dataset classes</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.read_dataset">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">read_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.read_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read YAML information corresponding to a dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – str the name of the dataset, will be composed with parent names to</p></li>
+<li><p><strong>an identifier</strong> (<em>generate</em>) – </p></li>
+<li><p><strong>data</strong> – dict data for this dataset only</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a formatted dictionary including,  ‘dataset_type’, ‘path’, ‘notes’,
+‘attributes’ and ‘name’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.read_level">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">read_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yml_level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mandatory_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('project',</span> <span class="pre">'mouse',</span> <span class="pre">'session')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('path',</span> <span class="pre">'notes',</span> <span class="pre">'attributes')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('recordings',</span> <span class="pre">'datasets')</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.read_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read one layer of the yml file (i.e. a dictionary)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yml_level</strong> – a dictionary containing the yml level to analyse (and all sublevels)</p></li>
+<li><p><strong>mandatory_args</strong> – arguments that must be in this level</p></li>
+<li><p><strong>optional_args</strong> – arguments that are expected but not mandatory, will be <cite>None</cite> if
+absent</p></li>
+<li><p><strong>nested_levels</strong> – name of any nested level that should not be parsed</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: (level, nested_levels) two dictionary</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.read_recording">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">read_recording</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.read_recording" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read YAML information corresponding to a recording</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – str the name of the recording</p></li>
+<li><p><strong>data</strong> – dict data for this dataset only</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict, the dictionary read from the yaml</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>recording</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.trim_paths">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">trim_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_data_folder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.trim_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses paths to make them relative to data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.upload_yaml">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">upload_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">source_yaml</span></em>, <em class="sig-param"><span class="pre">raw_data_folder=None</span></em>, <em class="sig-param"><span class="pre">verbose=False</span></em>, <em class="sig-param"><span class="pre">log_func=&lt;built-in</span> <span class="pre">function</span> <span class="pre">print&gt;</span></em>, <em class="sig-param"><span class="pre">flexilims_session=None</span></em>, <em class="sig-param"><span class="pre">conflicts='abort'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.upload_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload data from one yaml to flexilims</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_yaml</strong> – path to clean yaml</p></li>
+<li><p><strong>raw_data_folder</strong> – path to the folder containing the data. Default to
+data_root[‘raw’]</p></li>
+<li><p><strong>verbose</strong> – print progress information</p></li>
+<li><p><strong>log_func</strong> – function to deal with warnings and messages</p></li>
+<li><p><strong>flexilims_session</strong> – session to avoid recreating a token</p></li>
+<li><p><strong>conflicts</strong> – <cite>abort</cite> to crash if there is a conflict, <cite>skip</cite> to ignore and proceed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary or flexilims ID</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.write_session_data_as_yaml">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">write_session_data_as_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.camp.sync_data.write_session_data_as_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a session_data dictionary into a yaml</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>session_data</strong> – dictionary with Dataset instances, as returned by parse_yaml</p></li>
+<li><p><strong>target_file</strong> – path to the output file (if None, does not write to disk)</p></li>
+<li><p><strong>overwrite</strong> – replace target file if it already exists (default False)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: the pure yaml dictionary</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-flexiznam.camp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam.camp" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
