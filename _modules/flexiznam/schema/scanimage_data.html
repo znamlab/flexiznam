@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>flexiznam.schema.scanimage_data &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>flexiznam.schema.scanimage_data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for flexiznam.schema.scanimage_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">flexiznam.schema.datasets</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+
+<div class="viewcode-block" id="ScanimageData"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData">[docs]</a><span class="k">class</span> <span class="nc">ScanimageData</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="n">DATASET_TYPE</span> <span class="o">=</span> <span class="s1">&#39;scanimage&#39;</span>
+
+<div class="viewcode-block" id="ScanimageData.from_folder"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.from_folder">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mouse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recording</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a scanimage dataset by loading info from folder&quot;&quot;&quot;</span>
+        <span class="n">fnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.tiff&#39;</span><span class="p">,</span> <span class="s1">&#39;.tif&#39;</span><span class="p">))]</span>
+        <span class="n">tif_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;.tiff&#39;</span><span class="p">))]</span>
+        <span class="n">csv_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tif_files</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Cannot find any tif file&#39;</span><span class="p">)</span>
+
+        <span class="c1"># scanimage files finish with _acqnum_filenum.tif. All files with the same</span>
+        <span class="c1"># filename until acqnum are grouped together</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;(.*)_(\d*)_(\d*).tiff?&#39;</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tif_files</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">non_si_tiff</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tif_files</span><span class="p">,</span> <span class="n">matches</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">non_si_tiff</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found </span><span class="si">%d</span><span class="s1"> tif files that are NOT scanimage data.&#39;</span> <span class="o">%</span>
+                      <span class="nb">len</span><span class="p">(</span><span class="n">non_si_tiff</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">non_si_tiff</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">s</span><span class="p">)</span>
+        <span class="n">tif_df</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">f</span><span class="p">,</span>
+                       <span class="n">fname</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+                       <span class="n">acq_num</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">file_num</span><span class="o">=</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
+                  <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tif_files</span><span class="p">,</span> <span class="n">matches</span><span class="p">)</span> <span class="k">if</span> <span class="n">m</span><span class="p">]</span>
+        <span class="n">tif_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tif_df</span><span class="p">)</span>
+        <span class="n">tif_df</span><span class="p">[</span><span class="s1">&#39;acq_identifier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tif_df</span><span class="o">.</span><span class="n">fname</span> <span class="o">+</span> <span class="n">tif_df</span><span class="o">.</span><span class="n">acq_num</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">matched_csv</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">acq_id</span><span class="p">,</span> <span class="n">acq_df</span> <span class="ow">in</span> <span class="n">tif_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;acq_identifier&#39;</span><span class="p">):</span>
+            <span class="c1"># find if there is any corresponding csv</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">acq_df</span><span class="o">.</span><span class="n">fname</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">acq_num</span> <span class="o">=</span> <span class="n">acq_df</span><span class="o">.</span><span class="n">acq_num</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">associated_csv</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">csv_files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="ow">and</span>
+                              <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">acq_num</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">)}</span>
+            <span class="k">if</span> <span class="n">associated_csv</span> <span class="ow">in</span> <span class="n">matched_csv</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;A csv file matched with 2 scanimage tif datasets&#39;</span><span class="p">)</span>
+            <span class="n">matched_csv</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">associated_csv</span><span class="p">)</span>
+            <span class="n">associated_csv</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span><span class="o">-</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">acq_num</span><span class="p">)</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span> <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span>
+                              <span class="n">associated_csv</span><span class="p">}</span>
+
+            <span class="n">example_tif</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">acq_df</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">created</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">example_tif</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">acq_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScanimageData</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span>
+                                           <span class="n">tif_files</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">acq_df</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                                           <span class="n">csv_files</span><span class="o">=</span><span class="n">associated_csv</span><span class="p">,</span>
+                                           <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">),</span>
+                                           <span class="n">flm_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mouse&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;recording&#39;</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">acq_id</span><span class="p">],</span> <span class="n">field</span><span class="p">,</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">field</span><span class="p">])</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">acq_id</span><span class="p">]</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="n">acq_id</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">unmatched</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">csv_files</span><span class="p">)</span> <span class="o">-</span> <span class="n">matched_csv</span>
+            <span class="k">if</span> <span class="n">unmatched</span> <span class="ow">and</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> csv files did not match any scanimage acquisition:&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">unmatched</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">unmatched</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">m</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="ScanimageData.from_flexilims"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.from_flexilims">[docs]</a>    <span class="k">def</span> <span class="nf">from_flexilims</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_series</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a camera dataset from flexilims entry&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tif_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">csv_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">extra_attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_raw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a Scanimage dataset</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Identifier. Unique name on flexilims. When imported from folder,</span>
+<span class="sd">                  default to the acquisition name</span>
+<span class="sd">            path: Path to the folder containing all the files</span>
+<span class="sd">            tif_files: List of file names associated with this dataset</span>
+<span class="sd">            csv_files: Dictionary of csv files associated to the binary file. Keys are</span>
+<span class="sd">                       identifier provided for convenience, values are the full file name</span>
+<span class="sd">            extra_attributes: Other optional attributes (from or for flexilims)</span>
+<span class="sd">            created: Date of creation. Default to the creation date of a tif file</span>
+<span class="sd">            project: name of hexadecimal id of the project to which the dataset belongs</span>
+<span class="sd">            is_raw: default to True. Is it processed data or raw data?</span>
+<span class="sd">            flm_session: authentication session for connecting to flexilims</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">is_raw</span><span class="o">=</span><span class="n">is_raw</span><span class="p">,</span>
+                         <span class="n">dataset_type</span><span class="o">=</span><span class="n">ScanimageData</span><span class="o">.</span><span class="n">DATASET_TYPE</span><span class="p">,</span>
+                         <span class="n">extra_attributes</span><span class="o">=</span><span class="n">extra_attributes</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="p">,</span>
+                         <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">flm_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_files</span> <span class="o">=</span> <span class="n">csv_files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tif_files</span> <span class="o">=</span> <span class="n">tif_files</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tif_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of tif files, sorted alphabetically (automatically)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tif_files</span>
+
+    <span class="nd">@tif_files</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tif_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tif_files</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">tif_files</span><span class="o">=</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;One or more file do not exist. Set self._tif_files if you want&#39;</span>
+                          <span class="s1">&#39; to skip check&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tif_files</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="ScanimageData.is_valid"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.is_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tif_files</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check that associated files exist&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tif_files</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tif_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tif_files</span>
+        <span class="c1"># checking file one by one is long, compare sets</span>
+        <span class="n">tif_files</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tif_files</span><span class="p">)</span>
+        <span class="n">existing_file</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;tif&#39;</span><span class="p">,</span> <span class="s1">&#39;.tiff&#39;</span><span class="p">))}</span>
+        <span class="k">if</span> <span class="n">tif_files</span> <span class="o">-</span> <span class="n">existing_file</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="o">/</span> <span class="n">file_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Number of tif files in the dataset&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tif_files</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,9 +1,6 @@
 flexiznam.schema package
 ========================
 
-Submodules
-----------
-
 flexiznam.schema.camera\_data module
 ------------------------------------
 

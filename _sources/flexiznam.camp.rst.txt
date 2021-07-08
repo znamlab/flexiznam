@@ -1,9 +1,6 @@
 flexiznam.camp package
 ======================
 
-Submodules
-----------
-
 flexiznam.camp.sync\_data module
 --------------------------------
 

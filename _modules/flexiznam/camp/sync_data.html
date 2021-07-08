@@ -1,0 +1,638 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>flexiznam.camp.sync_data &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>flexiznam.camp.sync_data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for flexiznam.camp.sync_data</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;File to handle acquisition yaml file and create datasets on flexilims&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">import</span> <span class="nn">flexiznam</span> <span class="k">as</span> <span class="nn">flz</span>
+<span class="kn">from</span> <span class="nn">flexiznam.errors</span> <span class="kn">import</span> <span class="n">SyncYmlError</span>
+<span class="kn">from</span> <span class="nn">flexiznam.schema</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">flexiznam.config</span> <span class="kn">import</span> <span class="n">PARAMETERS</span>
+<span class="kn">from</span> <span class="nn">flexiznam.utils</span> <span class="kn">import</span> <span class="n">clean_dictionary_recursively</span>
+
+
+<div class="viewcode-block" id="upload_yaml"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.upload_yaml">[docs]</a><span class="k">def</span> <span class="nf">upload_yaml</span><span class="p">(</span><span class="n">source_yaml</span><span class="p">,</span> <span class="n">raw_data_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">log_func</span><span class="o">=</span><span class="nb">print</span><span class="p">,</span> <span class="n">flexilims_session</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conflicts</span><span class="o">=</span><span class="s1">&#39;abort&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Upload data from one yaml to flexilims</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        source_yaml (str): path to clean yaml</span>
+<span class="sd">        raw_data_folder (str): path to the folder containing the data. Default to</span>
+<span class="sd">         data_root[&#39;raw&#39;]</span>
+<span class="sd">        verbose (bool): print progress information</span>
+<span class="sd">        log_func: function to deal with warnings and messages</span>
+<span class="sd">        flexilims_session (Flexilims): session to avoid recreating a token</span>
+<span class="sd">        conflicts (str): `abort` to crash if there is a conflict, `skip` to ignore and proceed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dictionary or flexilims ID</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if there are errors, I cannot safely parse the yaml</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">find_xxerrorxx</span><span class="p">(</span><span class="n">yml_file</span><span class="o">=</span><span class="n">source_yaml</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">errors</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="s1">&#39;The yaml file still contains error. Fix it&#39;</span><span class="p">)</span>
+    <span class="n">session_data</span> <span class="o">=</span> <span class="n">parse_yaml</span><span class="p">(</span><span class="n">source_yaml</span><span class="p">,</span> <span class="n">raw_data_folder</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+    <span class="c1"># parsing can created errors, check again</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">find_xxerrorxx</span><span class="p">(</span><span class="n">yml_file</span><span class="o">=</span><span class="n">source_yaml</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">errors</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="s1">&#39;Invalid yaml. Use `parse_yaml` and fix errors manually.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># first find the mouse</span>
+    <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">flexilims_session</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_flexilims_session</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">])</span>
+    <span class="n">mouse</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="n">datatype</span><span class="o">=</span><span class="s1">&#39;mouse&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;mouse&#39;</span><span class="p">],</span>
+                           <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flexilims_session</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mouse</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="s1">&#39;Mouse not on flexilims. You must add it manually first&#39;</span><span class="p">)</span>
+
+    <span class="c1"># deal with the session</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;S(\d</span><span class="si">{4}</span><span class="s1">)(\d\d)(\d\d)&#39;</span><span class="p">,</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log_func</span><span class="p">(</span><span class="s1">&#39;Cannot parse date for session </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">])</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="s1">&#39;N/A&#39;</span>
+
+    <span class="n">session_data</span> <span class="o">=</span> <span class="n">trim_paths</span><span class="p">(</span><span class="n">session_data</span><span class="p">,</span> <span class="n">raw_data_folder</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">session_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">attributes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;notes&#39;</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">session_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">attributes</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="n">session</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">add_experimental_session</span><span class="p">(</span>
+        <span class="n">mouse_name</span><span class="o">=</span><span class="n">mouse</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+        <span class="n">session_name</span><span class="o">=</span><span class="n">mouse</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">],</span>
+        <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flexilims_session</span><span class="p">,</span>
+        <span class="n">date</span><span class="o">=</span><span class="n">date</span><span class="p">,</span>
+        <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
+        <span class="n">conflicts</span><span class="o">=</span><span class="n">conflicts</span><span class="p">)</span>
+
+    <span class="c1"># session datasets</span>
+    <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">session_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datasets&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">mouse</span> <span class="o">=</span> <span class="n">mouse</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">]</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">origin_id</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">flm_session</span> <span class="o">=</span> <span class="n">flexilims_session</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">update_flexilims</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;safe&#39;</span><span class="p">)</span>
+
+    <span class="c1"># now deal with recordings</span>
+    <span class="k">for</span> <span class="n">short_rec_name</span><span class="p">,</span> <span class="n">rec_data</span> <span class="ow">in</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">rec_name</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">short_rec_name</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">rec_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attributes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">attributes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;notes&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">rec_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">attributes</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">rec_type</span> <span class="o">=</span> <span class="n">rec_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;recording_type&#39;</span><span class="p">,</span> <span class="s1">&#39;unspecified&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rec_type</span><span class="p">:</span>
+            <span class="n">rec_type</span> <span class="o">=</span> <span class="s1">&#39;unspecified&#39;</span>
+        <span class="n">rec_rep</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">add_recording</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                                    <span class="n">recording_type</span><span class="o">=</span><span class="n">rec_type</span><span class="p">,</span>
+                                    <span class="n">protocol</span><span class="o">=</span><span class="n">rec_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;protocol&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                                    <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
+                                    <span class="n">recording_name</span><span class="o">=</span><span class="n">rec_name</span><span class="p">,</span>
+                                    <span class="n">other_relations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flexilims_session</span><span class="p">,</span>
+                                    <span class="n">conflicts</span><span class="o">=</span><span class="n">conflicts</span><span class="p">)</span>
+
+        <span class="c1"># now deal with recordings&#39; datasets</span>
+        <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">rec_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datasets&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">mouse</span> <span class="o">=</span> <span class="n">mouse</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">]</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">recording</span> <span class="o">=</span> <span class="n">short_rec_name</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">origin_id</span> <span class="o">=</span> <span class="n">rec_rep</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">flm_session</span> <span class="o">=</span> <span class="n">flexilims_session</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">update_flexilims</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;safe&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">session</span></div>
+
+
+<div class="viewcode-block" id="trim_paths"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.trim_paths">[docs]</a><span class="k">def</span> <span class="nf">trim_paths</span><span class="p">(</span><span class="n">session_data</span><span class="p">,</span> <span class="n">raw_data_folder</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parses paths to make them relative to data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session_data (dict): dictionary containing children of the session</span>
+<span class="sd">        raw_data_folder (str): part of the path to be omitted from on flexilims</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: `session_data` after trimming the paths</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">raw_data_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">raw_data_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">][</span><span class="s1">&#39;raw&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="s1">&#39;path&#39;</span> <span class="ow">in</span> <span class="n">session_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">session_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datasets&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">rec_name</span><span class="p">,</span> <span class="n">rec_data</span> <span class="ow">in</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">][</span><span class="n">rec_name</span><span class="p">][</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">][</span><span class="n">rec_name</span><span class="p">][</span><span class="s1">&#39;path&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">rec_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datasets&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">session_data</span></div>
+
+
+<div class="viewcode-block" id="parse_yaml"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.parse_yaml">[docs]</a><span class="k">def</span> <span class="nf">parse_yaml</span><span class="p">(</span><span class="n">path_to_yaml</span><span class="p">,</span> <span class="n">raw_data_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read an acquisition yaml and create corresponding datasets</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_to_yaml (str): path to the file to parse</span>
+<span class="sd">        raw_data_folder (str): root folder containing the mice folders</span>
+<span class="sd">        verbose (bool): print info while looking for datasets</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A yaml dictionary with dataset classes</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">session_data</span> <span class="o">=</span> <span class="n">clean_yaml</span><span class="p">(</span><span class="n">path_to_yaml</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">raw_data_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">raw_data_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">][</span><span class="s1">&#39;raw&#39;</span><span class="p">])</span>
+        <span class="n">raw_data_folder</span> <span class="o">/=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">home_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">home_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;mouse&#39;</span><span class="p">]</span> <span class="o">/</span> \
+                      <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">]</span>
+        <span class="c1"># first load datasets in the session level</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">home_folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;Session directory </span><span class="si">%s</span><span class="s1"> does not exist&#39;</span> <span class="o">%</span> <span class="n">home_folder</span><span class="p">)</span>
+    <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">home_folder</span>
+    <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span>
+        <span class="n">dataset_infos</span><span class="o">=</span><span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">],</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="n">parent</span><span class="o">=</span><span class="n">session_data</span><span class="p">,</span>
+        <span class="n">raw_data_folder</span><span class="o">=</span><span class="n">raw_data_folder</span><span class="p">,</span>
+        <span class="n">error_handling</span><span class="o">=</span><span class="s1">&#39;report&#39;</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">rec_name</span><span class="p">,</span> <span class="n">recording</span> <span class="ow">in</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">home_folder</span> <span class="o">/</span> <span class="n">rec_name</span>
+        <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span>
+            <span class="n">dataset_infos</span><span class="o">=</span><span class="n">recording</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">],</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">recording</span><span class="p">,</span>
+            <span class="n">raw_data_folder</span><span class="o">=</span><span class="n">raw_data_folder</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">error_handling</span><span class="o">=</span><span class="s1">&#39;report&#39;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># remove the full path that are not needed</span>
+    <span class="n">clean_dictionary_recursively</span><span class="p">(</span><span class="n">session_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">session_data</span></div>
+
+
+<div class="viewcode-block" id="write_session_data_as_yaml"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.write_session_data_as_yaml">[docs]</a><span class="k">def</span> <span class="nf">write_session_data_as_yaml</span><span class="p">(</span><span class="n">session_data</span><span class="p">,</span> <span class="n">target_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write a session_data dictionary into a yaml</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        session_data (dict): dictionary with Dataset instances, as returned by parse_yaml</span>
+<span class="sd">        target_file (str): path to the output file (if None, does not write to disk)</span>
+<span class="sd">        overwrite (bool): replace target file if it already exists (default False)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: the pure yaml dictionary</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">session_data</span><span class="p">)</span>
+    <span class="n">clean_dictionary_recursively</span><span class="p">(</span><span class="n">out_dict</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">format_dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">target_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">target_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_file</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Target file </span><span class="si">%s</span><span class="s1"> already exists&#39;</span> <span class="o">%</span> <span class="n">target_file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">out_dict</span><span class="p">,</span> <span class="n">writer</span><span class="p">)</span>
+        <span class="c1"># temp check:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">target_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">reader</span><span class="p">:</span>
+            <span class="n">writen</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out_dict</span></div>
+
+
+<div class="viewcode-block" id="create_dataset"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.create_dataset">[docs]</a><span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">dataset_infos</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">raw_data_folder</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">error_handling</span><span class="o">=</span><span class="s1">&#39;crash&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create dictionary of datasets</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset_infos: extra information for reading dataset outside of raw_data_folder</span>
+<span class="sd">          or adding optional arguments</span>
+<span class="sd">        parent (dict): yaml dictionary of the parent level</span>
+<span class="sd">        raw_data_folder (str): folder where to look for data</span>
+<span class="sd">        verbose (bool): (True) Print info about dataset found</span>
+<span class="sd">        error_handling (str) `crash` or `report`. When something goes wrong, raise an</span>
+<span class="sd">            error if `crash` otherwise replace the dataset instance by the error</span>
+<span class="sd">            message in the output dictionary</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: dictionary of dataset instances</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># autoload datasets</span>
+    <span class="n">datasets</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_folder</span><span class="p">(</span><span class="n">parent</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">error_handling</span> <span class="o">=</span> <span class="n">error_handling</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">error_handling</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;crash&#39;</span><span class="p">,</span> <span class="s1">&#39;report&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;error_handling must be `crash` or `report`&#39;</span><span class="p">)</span>
+
+    <span class="c1"># check dataset_infos for extra datasets</span>
+    <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds_data</span> <span class="ow">in</span> <span class="n">dataset_infos</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ds_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">raw_data_folder</span><span class="p">)</span> <span class="o">/</span> <span class="n">ds_data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+        <span class="c1"># first deal with dataset that are not in parent path&#39;]</span>
+        <span class="n">ds_class</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">SUBCLASSES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ds_data</span><span class="p">[</span><span class="s1">&#39;dataset_type&#39;</span><span class="p">],</span> <span class="n">Dataset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ds_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ds_path</span> <span class="o">!=</span> <span class="n">parent</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]):</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds_class</span><span class="o">.</span><span class="n">from_folder</span><span class="p">(</span><span class="n">ds_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ds_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ds_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">parent</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]):</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds_class</span><span class="o">.</span><span class="n">from_folder</span><span class="p">(</span><span class="n">ds_path</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">ds_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s1">&#39;Dataset not found. Path </span><span class="si">%s</span><span class="s1"> does not exist&#39;</span> <span class="o">%</span> <span class="n">ds_path</span>
+            <span class="k">if</span> <span class="n">error_handling</span> <span class="o">==</span> <span class="s1">&#39;crash&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+            <span class="n">datasets</span><span class="p">[</span><span class="n">ds_name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;XXERRORXX!! &#39;</span> <span class="o">+</span> <span class="n">err_msg</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if it is in the parent[&#39;path&#39;] folder, I already loaded it.</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">datasets</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ds_class</span><span class="p">)}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s1">&#39;Dataset &quot;</span><span class="si">%s</span><span class="s1">&quot; not found in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ds_name</span><span class="p">,</span> <span class="n">ds_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">error_handling</span> <span class="o">==</span> <span class="s1">&#39;crash&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+            <span class="n">datasets</span><span class="p">[</span><span class="n">ds_name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;XXERRORXX!! &#39;</span> <span class="o">+</span> <span class="n">err_msg</span>
+
+        <span class="c1"># match by name</span>
+        <span class="k">if</span> <span class="n">ds_name</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">ds_name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>      <span class="c1"># now we&#39;re in trouble.</span>
+            <span class="n">err_msg</span> <span class="o">=</span> <span class="s1">&#39;Could not find dataset &quot;</span><span class="si">%s</span><span class="s1">&quot;. Found &quot;</span><span class="si">%s</span><span class="s1">&quot; instead&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                       <span class="n">ds_name</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+            <span class="k">if</span> <span class="n">error_handling</span> <span class="o">==</span> <span class="s1">&#39;crash&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+            <span class="n">datasets</span><span class="p">[</span><span class="n">ds_name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;XXERRORXX!! &#39;</span> <span class="o">+</span> <span class="n">err_msg</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">ds_data</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ds_data</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ds_data</span><span class="p">[</span><span class="s1">&#39;notes&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">extra_attributes</span><span class="p">[</span><span class="s1">&#39;notes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds_data</span><span class="p">[</span><span class="s1">&#39;notes&#39;</span><span class="p">]</span>
+        <span class="n">datasets</span><span class="p">[</span><span class="n">ds_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+    <span class="k">return</span> <span class="n">datasets</span></div>
+
+
+<div class="viewcode-block" id="clean_yaml"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.clean_yaml">[docs]</a><span class="k">def</span> <span class="nf">clean_yaml</span><span class="p">(</span><span class="n">path_to_yaml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read a yaml file and check that it is correctly formatted</span>
+
+<span class="sd">    This does not do any processing, just make sure that I can read the whole yaml and</span>
+<span class="sd">    generate dictionary will all expected fields</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_to_yaml (str): path to the YAML file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: nested dictonary containing entries in the YAML file</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_yaml</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yml_file</span><span class="p">:</span>
+        <span class="n">yml_data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">yml_file</span><span class="p">)</span>
+
+    <span class="n">session</span><span class="p">,</span> <span class="n">nested_levels</span> <span class="o">=</span> <span class="n">read_level</span><span class="p">(</span><span class="n">yml_data</span><span class="p">)</span>
+    <span class="c1"># session[&#39;parent&#39;] = session[&#39;mouse&#39;]  # duplicate info to format as nested layers</span>
+    <span class="c1"># session[&#39;full_name&#39;] = &#39;_&#39;.join([session[&#39;mouse&#39;], session[&#39;session&#39;]])</span>
+    <span class="n">session</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset_dict</span> <span class="ow">in</span> <span class="n">nested_levels</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">read_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">dataset_dict</span><span class="p">)</span>
+        <span class="n">session</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">][</span><span class="n">dataset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+
+    <span class="n">session</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">rec_name</span><span class="p">,</span> <span class="n">rec_dict</span> <span class="ow">in</span> <span class="n">nested_levels</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">read_recording</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">rec_name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">rec_dict</span><span class="p">)</span>
+        <span class="n">session</span><span class="p">[</span><span class="s1">&#39;recordings&#39;</span><span class="p">][</span><span class="n">rec_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+    <span class="k">return</span> <span class="n">session</span></div>
+
+
+<div class="viewcode-block" id="read_recording"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.read_recording">[docs]</a><span class="k">def</span> <span class="nf">read_recording</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read YAML information corresponding to a recording</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): the name of the recording</span>
+<span class="sd">        data (dict): data for this dataset only</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: the recording read from the yaml</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">recording</span><span class="p">,</span> <span class="n">datasets</span> <span class="o">=</span> <span class="n">read_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mandatory_args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;protocol&#39;</span><span class="p">,),</span>
+                                     <span class="n">optional_args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;notes&#39;</span><span class="p">,</span> <span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span>
+                                                    <span class="s1">&#39;recording_type&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">),</span>
+                                     <span class="n">nested_levels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;datasets&#39;</span><span class="p">,))</span>
+    <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="c1"># if timestamps is None, the name must start with RHHMMSS</span>
+    <span class="k">if</span> <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;R(\d\d\d\d\d\d)&#39;</span><span class="p">,</span> <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="s1">&#39;Timestamp must be provided if recording name is not &#39;</span>
+                               <span class="s1">&#39;properly formatted&#39;</span><span class="p">)</span>
+        <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds_data</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">read_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">ds_name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">ds_data</span><span class="p">)</span>
+        <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;datasets&#39;</span><span class="p">][</span><span class="n">ds_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span>
+
+    <span class="k">return</span> <span class="n">recording</span></div>
+
+
+<div class="viewcode-block" id="read_dataset"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.read_dataset">[docs]</a><span class="k">def</span> <span class="nf">read_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read YAML information corresponding to a dataset</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): the name of the dataset, will be composed with parent names to</span>
+<span class="sd">        generate an identifier</span>
+<span class="sd">        data (dict): data for this dataset only</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: a formatted dictionary including,  &#39;dataset_type&#39;, &#39;path&#39;, &#39;notes&#39;,</span>
+<span class="sd">        &#39;attributes&#39; and &#39;name&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">level</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">read_level</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mandatory_args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;dataset_type&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">),</span>
+                          <span class="n">optional_args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;notes&#39;</span><span class="p">,</span> <span class="s1">&#39;attributes&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="s1">&#39;is_raw&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;origin_id&#39;</span><span class="p">),</span>
+                          <span class="n">nested_levels</span><span class="o">=</span><span class="p">())</span>
+    <span class="n">level</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">return</span> <span class="n">level</span></div>
+
+
+<div class="viewcode-block" id="read_level"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.read_level">[docs]</a><span class="k">def</span> <span class="nf">read_level</span><span class="p">(</span><span class="n">yml_level</span><span class="p">,</span> <span class="n">mandatory_args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">),</span>
+               <span class="n">optional_args</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;notes&#39;</span><span class="p">,</span> <span class="s1">&#39;attributes&#39;</span><span class="p">),</span>
+               <span class="n">nested_levels</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;recordings&#39;</span><span class="p">,</span> <span class="s1">&#39;datasets&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Read one layer of the yml file (i.e. a dictionary)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        yml_level (dict): a dictionary containing the yml level to analyse (and all sublevels)</span>
+<span class="sd">        mandatory_args: arguments that must be in this level</span>
+<span class="sd">        optional_args: arguments that are expected but not mandatory, will be `None` if</span>
+<span class="sd">            absent</span>
+<span class="sd">        nested_levels: name of any nested level that should not be parsed</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (tuple): a tuple containing two dictionaries:</span>
+<span class="sd">            level (dict): dictonary of top level attributes</span>
+<span class="sd">            nested_levels (dict): dictionary of nested dictonaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># make a copy to not change original version</span>
+    <span class="n">yml_level</span> <span class="o">=</span> <span class="n">yml_level</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">is_absent</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">yml_level</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mandatory_args</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">is_absent</span><span class="p">):</span>
+        <span class="n">absents</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mandatory_args</span><span class="p">,</span> <span class="n">is_absent</span><span class="p">)</span> <span class="k">if</span> <span class="n">m</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> must be provided in the YAML file.&#39;</span> <span class="o">%</span> <span class="n">absents</span><span class="p">)</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="p">{</span><span class="n">m</span><span class="p">:</span> <span class="n">yml_level</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mandatory_args</span><span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">optional_args</span><span class="p">:</span>
+        <span class="n">level</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">yml_level</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">nested_levels</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">yml_level</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">{})</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nested_levels</span><span class="p">}</span>
+
+    <span class="c1"># the rest is unexpected</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">yml_level</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">SyncYmlError</span><span class="p">(</span><span class="s1">&#39;Got unexpected attribute(s): </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                           <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">yml_level</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+    <span class="k">return</span> <span class="n">level</span><span class="p">,</span> <span class="n">nested_levels</span></div>
+
+
+<div class="viewcode-block" id="find_xxerrorxx"><a class="viewcode-back" href="../../../flexiznam.camp.html#flexiznam.camp.sync_data.find_xxerrorxx">[docs]</a><span class="k">def</span> <span class="nf">find_xxerrorxx</span><span class="p">(</span><span class="n">yml_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yml_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;XXERRORXX&#39;</span><span class="p">,</span> <span class="n">_output</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Utility to find where things went wrong</span>
+
+<span class="sd">    Look through a `yml_file` or the corresponding `yml_Data` dictionary recursively.</span>
+<span class="sd">    Returns a dictionary with all entries containing the error `pattern`</span>
+
+<span class="sd">    _output is used for recursive calling.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">yml_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">yml_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Set either yml_file OR yml_data&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yml_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">reader</span><span class="p">:</span>
+            <span class="n">yml_data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_output</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_output</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">yml_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">_output</span> <span class="o">=</span> <span class="n">find_xxerrorxx</span><span class="p">(</span><span class="n">yml_data</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">,</span> <span class="n">_output</span><span class="o">=</span><span class="n">_output</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pattern</span> <span class="ow">in</span> <span class="n">v</span><span class="p">):</span>
+            <span class="n">_output</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">_output</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

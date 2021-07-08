@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>flexiznam.mcms.main &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>flexiznam.mcms.main</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for flexiznam.mcms.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">webbot</span> <span class="kn">import</span> <span class="n">Browser</span>
+<span class="kn">from</span> <span class="nn">flexiznam.config</span> <span class="kn">import</span> <span class="n">PARAMETERS</span><span class="p">,</span> <span class="n">get_password</span>
+
+
+<span class="n">BASE_URL</span> <span class="o">=</span> <span class="s1">&#39;https://crick.colonymanagement.org/mouse/&#39;</span>
+
+
+<div class="viewcode-block" id="download_mouse_info"><a class="viewcode-back" href="../../../flexiznam.mcms.html#flexiznam.mcms.main.download_mouse_info">[docs]</a><span class="k">def</span> <span class="nf">download_mouse_info</span><span class="p">(</span><span class="n">mouse_name</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;autodownloaded&#39;</span><span class="p">,</span> <span class="n">query_time</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Log in to MCMS using webbot and download csv about all alive mice</span>
+
+<span class="sd">    The time required for mcms to execute the query can vary.</span>
+<span class="sd">    If mcms is slower than `query_time`, nothing will be downloaded&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">get_password</span><span class="p">(</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;mcms_username&#39;</span><span class="p">],</span> <span class="s1">&#39;mcms&#39;</span><span class="p">)</span>
+
+    <span class="n">web</span> <span class="o">=</span> <span class="n">Browser</span><span class="p">()</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">standard_user_home.do&#39;</span> <span class="o">%</span> <span class="n">BASE_URL</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="s1">&#39;Sign in&#39;</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s1">&#39;Username&#39;</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="s1">&#39;NEXT&#39;</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;span&#39;</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">password</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s1">&#39;Password&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;passwordFieldId&#39;</span><span class="p">)</span>  <span class="c1"># specific selection</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="s1">&#39;Sign in&#39;</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;span&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Log in Successful&quot;</span><span class="p">)</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="s1">&#39;RepAllMice&#39;</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">custom_query.do?queryUid=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">BASE_URL</span><span class="p">,</span> <span class="n">request</span><span class="p">))</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">xpath</span><span class="o">=</span><span class="s2">&quot;/html/body/div[3]/form/div[3]/div/div/div/div/button&quot;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># seconds</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="s1">&#39;Animal Name&#39;</span><span class="p">)</span>
+    <span class="c1"># web.click(xpath=&quot;/html/body/div[3]/form/div[2]/div/div/div[3]/table/tbody/tr/td[2]/span/select&quot;)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># seconds</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">mouse_name</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># seconds</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="s1">&#39;Run Live&#39;</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;span&#39;</span><span class="p">)</span>
+    <span class="c1"># long sleep timer to allow it to run</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Running query&#39;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">query_time</span><span class="p">)</span>  <span class="c1"># seconds</span>
+
+    <span class="c1"># Checks to see if required button exists</span>
+    <span class="n">exists</span> <span class="o">=</span> <span class="n">web</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">xpath</span><span class="o">=</span><span class="s2">&quot;/html/body/div[3]/div[4]/div/div/div/div[2]/div[3]/div[4]/button&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">exists</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">xpath</span><span class="o">=</span><span class="s2">&quot;/html/body/div[3]/div[4]/div/div/div/div[2]/div[3]/div[4]/button&quot;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># seconds</span>
+    <span class="c1"># Change target file name</span>
+    <span class="k">assert</span> <span class="n">web</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">xpath</span><span class="o">=</span><span class="s2">&quot;/html/body/div[8]/div[3]/div[1]/input&quot;</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">xpath</span><span class="o">=</span><span class="s2">&quot;/html/body/div[8]/div[3]/div[1]/input&quot;</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\b</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="n">mouse_name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="c1"># Checks to see if required button exists</span>
+    <span class="k">assert</span> <span class="n">web</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">xpath</span><span class="o">=</span><span class="s2">&quot;/html/body/div[8]/div[3]/div[1]/span&quot;</span><span class="p">)</span>
+    <span class="n">web</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;customQueryDt_downloadToFile&quot;</span><span class="p">)</span>
+    <span class="c1"># sleep timer to allow for download</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># seconds</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mouse info downloaded&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="get_mouse_df"><a class="viewcode-back" href="../../../flexiznam.mcms.html#flexiznam.mcms.main.get_mouse_df">[docs]</a><span class="k">def</span> <span class="nf">get_mouse_df</span><span class="p">(</span><span class="n">mouse_name</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load mouse info from mcms in a dataframe&quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">download_mouse_info</span><span class="p">(</span><span class="n">mouse_name</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;get_mouse_df_file&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ret</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Failed to download mouse info&#39;</span><span class="p">)</span>
+    <span class="n">fnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;download_folder&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">mouse_name</span> <span class="o">+</span> <span class="s1">&#39;_get_mouse_df_file&#39;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fnames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Multiple file found. Please remove old downloads with similar name &#39;</span>
+                      <span class="s1">&#39;(i.e. starting with </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mouse_name</span> <span class="o">+</span> <span class="s1">&#39;_get_mouse_df_file&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Cannot find downloaded file starting with </span><span class="si">%s</span><span class="s1"> in this download folder:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">mouse_name</span> <span class="o">+</span> <span class="s1">&#39;_get_mouse_df_file&#39;</span><span class="p">,</span> <span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;download_folder&#39;</span><span class="p">]))</span>
+    <span class="c1"># read this file and delete it</span>
+    <span class="n">mcms_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;download_folder&#39;</span><span class="p">],</span> <span class="n">fnames</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mouse_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">mcms_file</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mcms_file</span><span class="p">)</span>
+    <span class="c1"># reformat columns name to valid flexilims attribute</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">replace_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39; &#39;</span><span class="p">:</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">:</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">mouse_data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">replace_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">replace_map</span><span class="p">[</span><span class="n">char</span><span class="p">])</span>
+        <span class="n">cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="n">mouse_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">cols</span>
+    <span class="n">mouse_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;animal_name&#39;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mouse_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mouse_name</span><span class="p">]</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">get_mouse_df</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;ab8&#39;</span><span class="p">,</span> <span class="n">mouse_name</span><span class="o">=</span><span class="s1">&#39;PZAJ2.1c&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

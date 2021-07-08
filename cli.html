@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Command line interface &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="flexiznam package" href="flexiznam.html" />
+    <link rel="prev" title="Getting started with Flexiznam" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command line interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#flexiznam">flexiznam</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flexiznam-add-mouse">add-mouse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flexiznam-add-password">add-password</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flexiznam-config">config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flexiznam-process-yaml">process-yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flexiznam-yaml-to-flexilims">yaml-to-flexilims</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Command line interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="command-line-interface">
+<h1>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="flexiznam">
+<h2>flexiznam<a class="headerlink" href="#flexiznam" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>flexiznam <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<div class="section" id="flexiznam-add-mouse">
+<h3>add-mouse<a class="headerlink" href="#flexiznam-add-mouse" title="Permalink to this headline">¶</a></h3>
+<p>Add a single mouse to a project.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>flexiznam add-mouse <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-mouse-p">
+<span id="cmdoption-flexiznam-add-mouse-project_id"></span><span id="cmdoption-flexiznam-add-mouse-project-id"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--project_id</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;project_id&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-mouse-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project ID.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-mouse-m">
+<span id="cmdoption-flexiznam-add-mouse-mouse_name"></span><span id="cmdoption-flexiznam-add-mouse-mouse-name"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--mouse_name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mouse_name&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-mouse-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the mouse for flexilims.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-mouse-mcms_animal_name">
+<span id="cmdoption-flexiznam-add-mouse-mcms-animal-name"></span><span class="sig-name descname"><span class="pre">--mcms_animal_name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mcms_animal_name&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-mouse-mcms_animal_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the mouse on MCMS (if different from mouse_name).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-mouse-flexilims_username">
+<span id="cmdoption-flexiznam-add-mouse-flexilims-username"></span><span class="sig-name descname"><span class="pre">--flexilims_username</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;flexilims_username&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-mouse-flexilims_username" title="Permalink to this definition">¶</a></dt>
+<dd><p>Your username on flexilims.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-mouse-mcms_username">
+<span id="cmdoption-flexiznam-add-mouse-mcms-username"></span><span class="sig-name descname"><span class="pre">--mcms_username</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;mcms_username&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-mouse-mcms_username" title="Permalink to this definition">¶</a></dt>
+<dd><p>Your username on mcms.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="flexiznam-add-password">
+<h3>add-password<a class="headerlink" href="#flexiznam-add-password" title="Permalink to this headline">¶</a></h3>
+<p>Edit or create password file</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>flexiznam add-password <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-password-a">
+<span id="cmdoption-flexiznam-add-password-app"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--app</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;app&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-password-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the service requiring the password (flexilims or mcms for instance).</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-password-u">
+<span id="cmdoption-flexiznam-add-password-username"></span><span class="sig-name descname"><span class="pre">-u</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--username</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;username&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-password-u" title="Permalink to this definition">¶</a></dt>
+<dd><p>Username as required by the app.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-password-p">
+<span id="cmdoption-flexiznam-add-password-password"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--password</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;password&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-password-p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Password to add.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-add-password-password_file">
+<span id="cmdoption-flexiznam-add-password-password-file"></span><span class="sig-name descname"><span class="pre">--password_file</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;password_file&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-add-password-password_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>File to edit or create to add if not using the config folder</p>
+</dd></dl>
+
+</div>
+<div class="section" id="flexiznam-config">
+<h3>config<a class="headerlink" href="#flexiznam-config" title="Permalink to this headline">¶</a></h3>
+<p>Create a configuration file if none exists.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>flexiznam config <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-config-t">
+<span id="cmdoption-flexiznam-config-template"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--template</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;template&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-config-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template config file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-config-config_folder">
+<span id="cmdoption-flexiznam-config-config-folder"></span><span class="sig-name descname"><span class="pre">--config_folder</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;config_folder&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-config-config_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Folder containing the config file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-config-update">
+<span id="cmdoption-flexiznam-config-no-update"></span><span class="sig-name descname"><span class="pre">--update</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-update</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-flexiznam-config-update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the config file to include all fields present in the default config. Will not change already defined fields.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="flexiznam-process-yaml">
+<h3>process-yaml<a class="headerlink" href="#flexiznam-process-yaml" title="Permalink to this headline">¶</a></h3>
+<p>Parse source_yaml and autogenerate a full yaml containing all datasets</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>flexiznam process-yaml <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-process-yaml-s">
+<span id="cmdoption-flexiznam-process-yaml-source_yaml"></span><span id="cmdoption-flexiznam-process-yaml-source-yaml"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--source_yaml</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;source_yaml&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-process-yaml-s" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Manually generated yaml to seed automatic method.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-process-yaml-t">
+<span id="cmdoption-flexiznam-process-yaml-target_yaml"></span><span id="cmdoption-flexiznam-process-yaml-target-yaml"></span><span class="sig-name descname"><span class="pre">-t</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--target_yaml</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;target_yaml&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-process-yaml-t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to outpout YAML file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-process-yaml-r">
+<span id="cmdoption-flexiznam-process-yaml-raw_data_folder"></span><span id="cmdoption-flexiznam-process-yaml-raw-data-folder"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--raw_data_folder</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;raw_data_folder&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-process-yaml-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the root folder containing raw data</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-process-yaml-overwrite">
+<span id="cmdoption-flexiznam-process-yaml-no-overwrite"></span><span class="sig-name descname"><span class="pre">--overwrite</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-overwrite</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-flexiznam-process-yaml-overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite the output if it exists.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="flexiznam-yaml-to-flexilims">
+<h3>yaml-to-flexilims<a class="headerlink" href="#flexiznam-yaml-to-flexilims" title="Permalink to this headline">¶</a></h3>
+<p>Create entries on flexilims corresponding to yaml</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>flexiznam yaml-to-flexilims <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-yaml-to-flexilims-s">
+<span id="cmdoption-flexiznam-yaml-to-flexilims-source_yaml"></span><span id="cmdoption-flexiznam-yaml-to-flexilims-source-yaml"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--source_yaml</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;source_yaml&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-yaml-to-flexilims-s" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Clean yaml without any error.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-yaml-to-flexilims-r">
+<span id="cmdoption-flexiznam-yaml-to-flexilims-raw_data_folder"></span><span id="cmdoption-flexiznam-yaml-to-flexilims-raw-data-folder"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--raw_data_folder</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;raw_data_folder&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-yaml-to-flexilims-r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the root folder containing raw data</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-flexiznam-yaml-to-flexilims-c">
+<span id="cmdoption-flexiznam-yaml-to-flexilims-conflicts"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--conflicts</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;conflicts&gt;</span></span><a class="headerlink" href="#cmdoption-flexiznam-yaml-to-flexilims-c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default is <cite>abort</cite> to crash if there is a conflict, use <cite>skip</cite> to ignore and proceed</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="flexiznam.html" class="btn btn-neutral float-right" title="flexiznam package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Getting started with Flexiznam" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

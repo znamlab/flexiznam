@@ -1,9 +1,6 @@
 flexiznam.mcms package
 ======================
 
-Submodules
-----------
-
 flexiznam.mcms.main module
 --------------------------
 

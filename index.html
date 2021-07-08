@@ -40,7 +40,8 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -85,12 +86,17 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Welcome to flexiznam’s documentation!</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
 </ul>
-</div>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a></li>
+</ul>
+
             
           
         </div>
@@ -158,7 +164,76 @@
             
   <div class="section" id="welcome-to-flexiznam-s-documentation">
 <h1>Welcome to flexiznam’s documentation!<a class="headerlink" href="#welcome-to-flexiznam-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Flexiznam - from <em>flexi</em>, standing for flexible, and <em>znam</em>, Slavic word meaning
+“I know”. Flexiznam - know your data!</p>
 <div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#configuration">Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#password-management">Password management</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#creating-a-project">Creating a project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#adding-mice">Adding mice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#acquisition-and-file-transfer">Acquisition and file transfer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#syncing-data">Syncing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#querying-the-database">Querying the database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#adding-processed-datasets">Adding processed datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#flexiznam">flexiznam</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#flexiznam-add-mouse">add-mouse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#flexiznam-add-password">add-password</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#flexiznam-config">config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#flexiznam-process-yaml">process-yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli.html#flexiznam-yaml-to-flexilims">yaml-to-flexilims</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.main">flexiznam.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.errors">flexiznam.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.utils">flexiznam.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.camp.html">flexiznam.camp package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.config_tools">flexiznam.config.config_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.default_config">flexiznam.config.default_config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms.main">flexiznam.mcms.main module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.schema.html">flexiznam.schema package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.camera_data">flexiznam.schema.camera_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.datasets">flexiznam.schema.datasets module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.harp_data">flexiznam.schema.harp_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.scanimage_data">flexiznam.schema.scanimage_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -175,6 +250,9 @@
            
           </div>
           <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

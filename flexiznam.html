@@ -40,7 +40,9 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="flexiznam.camp package" href="flexiznam.camp.html" />
+    <link rel="prev" title="Command line interface" href="cli.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -85,20 +87,30 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">flexiznam package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-flexiznam.cli">flexiznam.cli module</a></li>
-<li><a class="reference internal" href="#module-flexiznam.errors">flexiznam.errors module</a></li>
-<li><a class="reference internal" href="#module-flexiznam.main">flexiznam.main module</a></li>
-<li><a class="reference internal" href="#module-flexiznam.utils">flexiznam.utils module</a></li>
-<li><a class="reference internal" href="#module-flexiznam">Module contents</a></li>
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">flexiznam package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-flexiznam">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-flexiznam.main">flexiznam.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-flexiznam.errors">flexiznam.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-flexiznam.utils">flexiznam.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.camp.html">flexiznam.camp package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.schema.html">flexiznam.schema package</a></li>
 </ul>
 </li>
 </ul>
-</div>
+</li>
+</ul>
+
             
           
         </div>
@@ -166,106 +178,31 @@
             
   <div class="section" id="flexiznam-package">
 <h1>flexiznam package<a class="headerlink" href="#flexiznam-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.camp.html">flexiznam.camp package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.camp.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.config_tools">flexiznam.config.config_tools module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.default_config">flexiznam.config.default_config module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.mcms.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms.main">flexiznam.mcms.main module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.schema.html">flexiznam.schema package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.camera_data">flexiznam.schema.camera_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.datasets">flexiznam.schema.datasets module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.harp_data">flexiznam.schema.harp_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.scanimage_data">flexiznam.schema.scanimage_data module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-flexiznam.cli">
-<span id="flexiznam-cli-module"></span><h2>flexiznam.cli module<a class="headerlink" href="#module-flexiznam.cli" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="module-flexiznam.errors">
-<span id="flexiznam-errors-module"></span><h2>flexiznam.errors module<a class="headerlink" href="#module-flexiznam.errors" title="Permalink to this headline">¶</a></h2>
-<dl class="py exception">
-<dt class="sig sig-object py" id="flexiznam.errors.ConfigurationError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="headerlink" href="#flexiznam.errors.ConfigurationError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>The configuration file cannot be loaded</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="flexiznam.errors.DatasetError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">DatasetError</span></span><a class="headerlink" href="#flexiznam.errors.DatasetError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>Cannot automatically deal with this dataset</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="flexiznam.errors.FlexilimsError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">FlexilimsError</span></span><a class="headerlink" href="#flexiznam.errors.FlexilimsError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>I cannot do that on flexilims</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="flexiznam.errors.NameNotUniqueError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">NameNotUniqueError</span></span><a class="headerlink" href="#flexiznam.errors.NameNotUniqueError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>Mouse name does not correspond to exactly 1 entry</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="flexiznam.errors.SyncYmlError">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">SyncYmlError</span></span><a class="headerlink" href="#flexiznam.errors.SyncYmlError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>The YAML file used for synchronisation is invalid</p>
-</dd></dl>
-
+<div class="section" id="module-flexiznam">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam" title="Permalink to this headline">¶</a></h2>
+<p>Lab specific code. Depends of on our schema</p>
 </div>
 <div class="section" id="module-flexiznam.main">
 <span id="flexiznam-main-module"></span><h2>flexiznam.main module<a class="headerlink" href="#module-flexiznam.main" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_dataset">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'append'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_dataset" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'yes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'append'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#add_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.add_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a dataset as a child of a recording or session</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>parent_id</strong> – hexadecimal ID of the parent (session or recording)</p></li>
-<li><p><strong>dataset_type</strong> – dataset_type, must be a type define in the config file</p></li>
-<li><p><strong>created</strong> – date of creation as text, usually in this format: ‘2021-05-24 14:56:41’</p></li>
-<li><p><strong>path</strong> – path to the data relative to the project folder</p></li>
-<li><p><strong>is_raw</strong> – <cite>yes</cite> or <cite>no</cite>, used to find the root directory</p></li>
-<li><p><strong>project_id</strong> – hexadecimal ID or name of the project</p></li>
-<li><p><strong>flexilims_session</strong> – authentication session for flexilims</p></li>
-<li><p><strong>dataset_name</strong> – name of the dataset, will be autogenerated if not provided</p></li>
-<li><p><strong>attributes</strong> – optional attributes</p></li>
-<li><p><strong>strict_validation</strong> – default False, if True, only attributes in lab settings are
+<li><p><strong>parent_id</strong> (<em>str</em>) – hexadecimal ID of the parent (session or recording)</p></li>
+<li><p><strong>dataset_type</strong> (<em>str</em>) – dataset_type, must be a type define in the config file</p></li>
+<li><p><strong>created</strong> (<em>str</em>) – date of creation as text, usually in this format: ‘2021-05-24 14:56:41’</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to the data relative to the project folder</p></li>
+<li><p><strong>is_raw</strong> (<em>str</em>) – <cite>yes</cite> or <cite>no</cite>, used to find the root directory</p></li>
+<li><p><strong>project_id</strong> (<em>str</em>) – hexadecimal ID or name of the project</p></li>
+<li><p><strong>flexilims_session</strong> (<em>Flexilims</em>) – authentication session for flexilims</p></li>
+<li><p><strong>dataset_name</strong> (<em>str</em>) – name of the dataset, will be autogenerated if not provided</p></li>
+<li><p><strong>attributes</strong> (<em>dict</em>) – optional attributes</p></li>
+<li><p><strong>strict_validation</strong> (<em>bool</em>) – default False, if True, only attributes in lab settings are
 allowed</p></li>
-<li><p><strong>conflicts</strong> – <cite>abort</cite>, <cite>skip</cite>, <cite>append</cite>, what to do if a dataset with this name
+<li><p><strong>conflicts</strong> (<em>str</em>) – <cite>abort</cite>, <cite>skip</cite>, <cite>append</cite>, what to do if a dataset with this name
 already exists? <cite>abort</cite> to crash, <cite>skip</cite> to ignore and return the
 online version, <cite>append</cite> to increment name and create a new dataset.</p></li>
 </ul>
@@ -278,7 +215,7 @@ online version, <cite>append</cite> to increment name and create a new dataset.<
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_entity">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_entity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#add_entity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.add_entity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new entity on flexilims. Name must be unique</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -301,59 +238,76 @@ link to the entry to update</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_experimental_session">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_experimental_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mouse_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abort'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_experimental_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_experimental_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mouse_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abort'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#add_experimental_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.add_experimental_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a new session as a child entity of a mouse</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mouse_name</strong> – str, name of the mouse. Must exist on flexilims</p></li>
-<li><p><strong>date</strong> – str, date of the session. If <cite>session_name</cite> is not provided, will be used as name</p></li>
-<li><p><strong>attributes</strong> – dict, dictionary of additional attributes (on top of date)</p></li>
-<li><p><strong>session_name</strong> – str or None, name of the session, usually in the shape <cite>S20210420</cite>.</p></li>
-<li><p><strong>conflicts</strong> – <cite>abort</cite>, <cite>append</cite>, or <cite>overwrite</cite>: how to handle conflicts</p></li>
-<li><p><strong>other_relations</strong> – ID(s) of custom entities related to the session</p></li>
-<li><p><strong>flexilims_session</strong> – flexilims session</p></li>
-<li><p><strong>project_id</strong> – name of the project or hexadecimal project id (needed if session is not provided)</p></li>
-<li><p><strong>conflicts</strong> – What to do if a session with that name already exists? Can be <cite>skip</cite>
+<li><p><strong>mouse_name</strong> (<em>str</em>) – name of the mouse. Must exist on flexilims</p></li>
+<li><p><strong>date</strong> (<em>str</em>) – date of the session. If <cite>session_name</cite> is not provided, will be used as name</p></li>
+<li><p><strong>attributes</strong> (<em>dict</em>) – dictionary of additional attributes (on top of date)</p></li>
+<li><p><strong>session_name</strong> (<em>str</em><em> or </em><em>None</em>) – name of the session, usually in the shape <cite>S20210420</cite>.</p></li>
+<li><p><strong>conflicts</strong> (<em>str</em>) – What to do if a session with that name already exists? Can be <cite>skip</cite>
 for skiping creation and returning the session from flexilims or
 <cite>abort</cite> to crash</p></li>
+<li><p><strong>other_relations</strong> – ID(s) of custom entities related to the session</p></li>
+<li><p><strong>flexilims_session</strong> (<em>Flexilims</em>) – flexilims session</p></li>
+<li><p><strong>project_id</strong> (<em>str</em>) – name of the project or hexadecimal project id (needed if session is not provided)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>flexilims reply</p>
+</dd>
 </dl>
-<p>Returns: flexilims reply</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_mouse">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_mouse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mouse_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcms_animal_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcms_username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_mouse" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_mouse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mouse_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcms_animal_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcms_username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#add_mouse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.add_mouse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if a mouse is already in the database and add it if it isn’t</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mouse_name</strong> – </p></li>
+<li><p><strong>project_id</strong> – </p></li>
+<li><p><strong>flexilims_session</strong> – </p></li>
+<li><p><strong>mcms_animal_name</strong> – </p></li>
+<li><p><strong>mcms_username</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>flexilims reply</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_recording">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_recording</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protocol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abort'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_recording" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_recording</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protocol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abort'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#add_recording"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.add_recording" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a recording as a child of an experimental session</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>session_id</strong> – str, hexadecimal ID of the session. Must exist on flexilims</p></li>
-<li><p><strong>recording_type</strong> – str, one of [two_photon, widefield, intrinsic, ephys, behaviour]</p></li>
-<li><p><strong>protocol</strong> – str, experimental protocol (<cite>retinotopy</cite> for instance)</p></li>
-<li><p><strong>attributes</strong> – dict, dictionary of additional attributes (on top of protocol and recording_type)</p></li>
-<li><p><strong>recording_name</strong> – str or None, name of the recording, usually in the shape <cite>R152356</cite>.</p></li>
-<li><p><strong>conflicts</strong> – <cite>skip</cite> or <cite>abort</cite>: how to handle conflicts</p></li>
+<li><p><strong>session_id</strong> (<em>str</em>) – hexadecimal ID of the session. Must exist on flexilims</p></li>
+<li><p><strong>recording_type</strong> (<em>str</em>) – one of [two_photon, widefield, intrinsic, ephys, behaviour]</p></li>
+<li><p><strong>protocol</strong> (<em>str</em>) – experimental protocol (<cite>retinotopy</cite> for instance)</p></li>
+<li><p><strong>attributes</strong> (<em>dict</em>) – dictionary of additional attributes (on top of protocol and recording_type)</p></li>
+<li><p><strong>recording_name</strong> (<em>str</em><em> or </em><em>None</em>) – name of the recording, usually in the shape <cite>R152356</cite>.</p></li>
+<li><p><strong>conflicts</strong> (<em>str</em>) – <cite>skip</cite> or <cite>abort</cite>: how to handle conflicts</p></li>
 <li><p><strong>other_relations</strong> – ID(s) of custom entities related to the session</p></li>
-<li><p><strong>flexilims_session</strong> – flexilims session</p></li>
-<li><p><strong>project_id</strong> – name of the project or hexadecimal project id (needed if session is not provided)</p></li>
+<li><p><strong>flexilims_session</strong> (<em>Flexilims</em>) – flexilims session</p></li>
+<li><p><strong>project_id</strong> (<em>str</em>) – name of the project or hexadecimal project id (needed if session is not provided)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>flexilims reply</p>
+</dd>
 </dl>
-<p>Returns: flexilims reply</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.format_results">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">format_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.format_results" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">format_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#format_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.format_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>make request output a nice df</p>
 <p>This will crash if any attribute is also present in the flexilims reply,
 i.e. if an attribute is named:
@@ -363,13 +317,13 @@ i.e. if an attribute is named:
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.generate_name">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">generate_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.generate_name" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">generate_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#generate_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.generate_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a number for incrementally increasing the numeric suffix</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_children">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children_datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_children" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children_datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_children" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all entries belonging to a particular parent entity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -391,19 +345,19 @@ i.e. if an attribute is named:
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_datasets">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_datasets" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_datasets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recurse into recordings and get paths to child datasets of a given type</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_datatype">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_datatype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_datatype" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_datatype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_datatype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_datatype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loop through possible datatypes and return the first with a matching name</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_entities">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_entities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_reply</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_entities" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_entities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_reply</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_entities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_entities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get entities of a given type and format results.</p>
 <p>If an open Flexylims session is provided, the other authentication arguments
 aree not needed (or used)</p>
@@ -433,7 +387,7 @@ aree not needed (or used)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_entity">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_reply</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_entity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_reply</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_entity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_entity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get one entity and format result.</p>
 <p>If multiple entities on the database match the query, raise a NameNotUniqueError,
 if nothing match, return None</p>
@@ -465,30 +419,30 @@ aree not needed (or used)</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_experimental_sessions">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_experimental_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mouse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_experimental_sessions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_experimental_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mouse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_experimental_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_experimental_sessions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all sessions from a given mouse</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_flexilims_session">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_flexilims_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_flexilims_session" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_flexilims_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_flexilims_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_flexilims_session" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_id">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_id" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get database ID for entity by name</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.get_path">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.get_path" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#get_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.get_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get database ID for entity by name</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.update_entity">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">update_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'overwrite'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.update_entity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">update_entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'overwrite'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/main.html#update_entity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.main.update_entity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update one entity identified with its datatype and name or id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -516,11 +470,49 @@ are set to ‘null’.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-flexiznam.errors">
+<span id="flexiznam-errors-module"></span><h2>flexiznam.errors module<a class="headerlink" href="#module-flexiznam.errors" title="Permalink to this headline">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="flexiznam.errors.ConfigurationError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="reference internal" href="_modules/flexiznam/errors.html#ConfigurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.errors.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>The configuration file cannot be loaded</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="flexiznam.errors.DatasetError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">DatasetError</span></span><a class="reference internal" href="_modules/flexiznam/errors.html#DatasetError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.errors.DatasetError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Cannot automatically deal with this dataset</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="flexiznam.errors.FlexilimsError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">FlexilimsError</span></span><a class="reference internal" href="_modules/flexiznam/errors.html#FlexilimsError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.errors.FlexilimsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>I cannot do that on flexilims</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="flexiznam.errors.NameNotUniqueError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">NameNotUniqueError</span></span><a class="reference internal" href="_modules/flexiznam/errors.html#NameNotUniqueError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.errors.NameNotUniqueError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Mouse name does not correspond to exactly 1 entry</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="flexiznam.errors.SyncYmlError">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.errors.</span></span><span class="sig-name descname"><span class="pre">SyncYmlError</span></span><a class="reference internal" href="_modules/flexiznam/errors.html#SyncYmlError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.errors.SyncYmlError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>The YAML file used for synchronisation is invalid</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-flexiznam.utils">
 <span id="flexiznam-utils-module"></span><h2>flexiznam.utils module<a class="headerlink" href="#module-flexiznam.utils" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.utils.clean_dictionary_recursively">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.utils.</span></span><span class="sig-name descname"><span class="pre">clean_dictionary_recursively</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path2string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.utils.clean_dictionary_recursively" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.utils.</span></span><span class="sig-name descname"><span class="pre">clean_dictionary_recursively</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path2string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/utils.html#clean_dictionary_recursively"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.utils.clean_dictionary_recursively" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively clean a dictionary inplace</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -538,7 +530,7 @@ are set to ‘null’.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.utils.compare_series">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.utils.</span></span><span class="sig-name descname"><span class="pre">compare_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('first',</span> <span class="pre">'second')</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.utils.compare_series" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.utils.</span></span><span class="sig-name descname"><span class="pre">compare_series</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">series_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('first',</span> <span class="pre">'second')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/utils.html#compare_series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.utils.compare_series" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare two series and return a dataframe of differences</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -555,9 +547,36 @@ are set to ‘null’.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-flexiznam">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam" title="Permalink to this headline">¶</a></h2>
-<p>Lab specific code. Depends of on our schema</p>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.camp.html">flexiznam.camp package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.config_tools">flexiznam.config.config_tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.default_config">flexiznam.config.default_config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms.main">flexiznam.mcms.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.schema.html">flexiznam.schema package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.camera_data">flexiznam.schema.camera_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.datasets">flexiznam.schema.datasets module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.harp_data">flexiznam.schema.harp_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.scanimage_data">flexiznam.schema.scanimage_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -566,6 +585,10 @@ are set to ‘null’.</p>
            
           </div>
           <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="flexiznam.camp.html" class="btn btn-neutral float-right" title="flexiznam.camp package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cli.html" class="btn btn-neutral float-left" title="Command line interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
 
   <hr/>
 

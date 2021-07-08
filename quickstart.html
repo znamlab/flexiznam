@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Getting started with Flexiznam &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line interface" href="cli.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started with Flexiznam</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-project">Creating a project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-mice">Adding mice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acquisition-and-file-transfer">Acquisition and file transfer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#syncing-data">Syncing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#querying-the-database">Querying the database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-processed-datasets">Adding processed datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Getting started with Flexiznam</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="getting-started-with-flexiznam">
+<h1>Getting started with Flexiznam<a class="headerlink" href="#getting-started-with-flexiznam" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="creating-a-project">
+<h2>Creating a project<a class="headerlink" href="#creating-a-project" title="Permalink to this headline">¶</a></h2>
+<p>To create a new project, log into <a class="reference external" href="https://flexylims.thecrick.org/flexilims/">Flexilims</a>
+and click <strong>Add New Stuff</strong> &gt; <strong>New Project</strong>. Once created, add the hexadecimal
+project ID to the config file in <code class="docutils literal notranslate"><span class="pre">~/.flexiznam/config.yml</span></code>.</p>
+</div>
+<div class="section" id="adding-mice">
+<h2>Adding mice<a class="headerlink" href="#adding-mice" title="Permalink to this headline">¶</a></h2>
+<p>The best way to add a new mouse to flexilims is to import the data directly from
+MCMS. This can also be from the command line using <code class="docutils literal notranslate"><span class="pre">flexiznam</span> <span class="pre">add-mouse</span></code>. See
+<code class="docutils literal notranslate"><span class="pre">flexiznam</span> <span class="pre">add-mouse</span> <span class="pre">--help</span></code> for documentation.</p>
+<p>It will log in to MCMS, look for a mouse based on it’s name and download a
+one-line csv with the info about that mouse. It will then read the downloaded
+file, load it in a pandas Dataframe and delete the file (to make sure it can be
+re-downloaded without naming issue).</p>
+<p>Mice can also be added manually through the Python API using <a class="reference internal" href="flexiznam.html#flexiznam.main.add_mouse" title="flexiznam.main.add_mouse"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.add_mouse()</span></code></a>.</p>
+</div>
+<div class="section" id="acquisition-and-file-transfer">
+<h2>Acquisition and file transfer<a class="headerlink" href="#acquisition-and-file-transfer" title="Permalink to this headline">¶</a></h2>
+<p>This will work only if the acquisition pipeline works as predicted, that means
+that at acquisition:</p>
+<ul class="simple">
+<li><p>files are named automatically</p></li>
+<li><p>scanimage creates a directory for each recording</p></li>
+<li><p>file names are: <code class="docutils literal notranslate"><span class="pre">MOUSE_SESSION_RECORDING_PROTOCOL</span></code></p></li>
+<li><p>all path are relative to <code class="docutils literal notranslate"><span class="pre">DATAROOT</span></code>: <code class="docutils literal notranslate"><span class="pre">&lt;DATAROOT&gt;/&lt;MOUSE&gt;/&lt;SESSION&gt;/&lt;RECORDING_PROTOCOL&gt;/...</span></code></p></li>
+</ul>
+<p>File transfer is not handled by flexiznam. You should transfer all the data to
+CAMP first. We will just check that it is available. The path to the camp folder
+containing the projects must be set in the config file.</p>
+<p>The best way to transfer files from a windows computer might be to use
+<a class="reference external" href="https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy">robocopy</a>.
+Mount the CAMP drive and just do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">robocopy</span> <span class="o">&lt;</span><span class="n">SOURCE_FOLDER</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">DESTINATION</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">e</span> <span class="o">/</span><span class="n">z</span>
+</pre></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">/e</span></code> to copy recursively, including empty directory and <code class="docutils literal notranslate"><span class="pre">/z</span></code> to use
+restartable mode (in case connection is lost).</p>
+<p>You can also consider:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/j</span></code> to copy using unbuffered I/O (recommended for large files).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/copy:DAT</span></code> to copy data, attributes and timestamps but not ownership or ACL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/move</span></code> to move instead of copying (delete after successful upload)</p></li>
+</ul>
+</div>
+<div class="section" id="syncing-data">
+<h2>Syncing data<a class="headerlink" href="#syncing-data" title="Permalink to this headline">¶</a></h2>
+<p>The most efficient way to upload data to Flexilims is using a YAML file.
+Briefly, the YAML file format is:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+
+<span class="nt">project</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;PROJECT&gt;</span>
+<span class="nt">mouse</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;MOUSE&gt;</span>
+<span class="nt">session</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;SESSION&gt;</span>
+<span class="nt">notes</span><span class="p">:</span> <span class="s">&quot;optional</span><span class="nv"> </span><span class="s">notes&quot;</span>
+<span class="nt">recordings</span><span class="p">:</span>
+  <span class="nt">&lt;RECORDING&gt;</span><span class="p">:</span>
+    <span class="nt">protocol</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">protocol_name</span>
+    <span class="nt">timestamp</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">optional</span><span class="p p-Indicator">,</span> <span class="nv">in HHMMSS</span><span class="p p-Indicator">]</span>
+    <span class="nt">notes</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">optional</span><span class="p p-Indicator">]</span>
+    <span class="nt">datasets</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">optional</span><span class="p p-Indicator">]</span>
+      <span class="nt">&lt;DATASET&gt;</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">optional</span><span class="p p-Indicator">]</span>
+        <span class="nt">type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dataset type (scanimage for instance)</span>
+        <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">path to the folder containing the dataset</span>
+</pre></div>
+</div>
+<p>Fortunately, you do not need to type out all the datasets and paths by hand.
+Instead, you can create a minimal YAML file and then use Flexiznam to fill in
+the details. See example below:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+
+<span class="c1"># the name of the project. Must exist in flexiznam configuration</span>
+<span class="nt">project</span><span class="p">:</span> <span class="s">&quot;test&quot;</span>
+<span class="c1"># name of the mouse as on flexilims (if different than mcms)</span>
+<span class="nt">mouse</span><span class="p">:</span> <span class="s">&quot;PZAH4.1c&quot;</span>
+<span class="c1"># session name for flexilims. Is usually SYYYYMMDD but no actual requirement</span>
+<span class="nt">session</span><span class="p">:</span> <span class="s">&quot;S20210513&quot;</span>
+<span class="c1"># list of recordings</span>
+<span class="nt">recordings</span><span class="p">:</span>
+  <span class="c1"># name of the recording. Must be unique for this session but can be anything.</span>
+  <span class="nt">R182758_SphereCylinder</span><span class="p">:</span>
+    <span class="nt">protocol</span><span class="p">:</span> <span class="s">&quot;SphereCylinder&quot;</span> <span class="c1"># protocol type - mandatory</span>
+  <span class="c1"># another recording in the same session</span>
+  <span class="nt">R193432_Retinotopy</span><span class="p">:</span>
+    <span class="nt">protocol</span><span class="p">:</span> <span class="s">&quot;Retinotopy&quot;</span> <span class="c1"># protocol type</span>
+</pre></div>
+</div>
+<p>You can also include notes or other optional attributes. This YAML file must be
+saved in the session folder. The mouse folder must be named like the mouse, the
+session folder like the session and the recording folder like the recording.</p>
+<p>Once all the data are on CAMP, the first step is to validate and autopopulate
+the YAML:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flexiznam</span> <span class="n">process</span><span class="o">-</span><span class="n">yaml</span> <span class="o">--</span><span class="n">source_yaml</span> <span class="s2">&quot;path/to/acq_yaml.yml&quot;</span> <span class="o">--</span><span class="n">target_yaml</span> <span class="s2">&quot;path/to/target_yaml.yml&quot;</span>
+</pre></div>
+</div>
+<p>This will call the <a class="reference internal" href="flexiznam.camp.html#flexiznam.camp.sync_data.parse_yaml" title="flexiznam.camp.sync_data.parse_yaml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.camp.sync_data.parse_yaml()</span></code></a> method
+and create a local copy of the yml called <code class="docutils literal notranslate"><span class="pre">acq_yaml_autogenerated_full_file.yml</span></code>.
+If a dataset cannot be located or loaded, the yaml file with contain a warning
+starting with <code class="docutils literal notranslate"><span class="pre">XXERRORXX</span></code>. A list of such errors will also be printed on the
+console. Here is for instance an example output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Reading example_acquisition_yaml.yml
+
+Found some issues with the yaml:
+    - Dataset: `ref_for_motion`
+              Could not find dataset &quot;ref_for_motion&quot;. Found &quot;PZAH4.1c_S20210513_R181858_SphereCylinder00001, PZAH4.1c_S20210513_R182025_SphereCylinder00001, PZAH4.1c_S20210513_R182758_SphereCylinder00001&quot; instead
+    - Dataset: `overview_picture_02`
+              Could not find dataset &quot;overview_picture_02&quot;. Found &quot;overview00001, overview00002&quot; instead
+    - Dataset: `harp_data_csv`
+              Dataset not found. Path /Volumes/lab-znamenskiyp/home/shared/projects/3d_vision/Data/ParamLog/R193432_Retinotopy does not exist
+Fix manually these errors before uploading to flexilims
+Processed yaml saved to example_acquisition_yaml_autogenerated_full_file.yml
+</pre></div>
+</div>
+<p>Before uploading, one must then manually edit the yaml to fix it. You can call
+<code class="docutils literal notranslate"><span class="pre">process-yaml</span></code> on the fixed yaml until there is no error. Finally, you can add
+the entries to flexilims:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flexiznam</span> <span class="n">yaml</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">flexilims</span> <span class="o">--</span><span class="n">source_yaml</span> <span class="s2">&quot;path/to/processed_yaml.yml&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="querying-the-database">
+<h2>Querying the database<a class="headerlink" href="#querying-the-database" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="flexiznam.html#flexiznam.main.get_entities" title="flexiznam.main.get_entities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_entities()</span></code></a></p>
+<p><a class="reference internal" href="flexiznam.html#flexiznam.main.get_entity" title="flexiznam.main.get_entity"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_entity()</span></code></a></p>
+</div>
+<div class="section" id="adding-processed-datasets">
+<h2>Adding processed datasets<a class="headerlink" href="#adding-processed-datasets" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_origin" title="flexiznam.schema.datasets.Dataset.from_origin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_origin()</span></code></a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="cli.html" class="btn btn-neutral float-right" title="Command line interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

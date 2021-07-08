@@ -1,0 +1,282 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>flexiznam.utils &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>flexiznam.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for flexiznam.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pathlib</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">flexiznam.schema</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+
+<div class="viewcode-block" id="compare_series"><a class="viewcode-back" href="../../flexiznam.html#flexiznam.utils.compare_series">[docs]</a><span class="k">def</span> <span class="nf">compare_series</span><span class="p">(</span><span class="n">first_series</span><span class="p">,</span> <span class="n">second_series</span><span class="p">,</span> <span class="n">series_name</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;first&#39;</span><span class="p">,</span> <span class="s1">&#39;second&#39;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Compare two series and return a dataframe of differences</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        first_series: first pandas series</span>
+<span class="sd">        second_series: second pandas series</span>
+<span class="sd">        series_name: tuple of name for the two series.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe of differences</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">second_index</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">second_series</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">first_index</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">first_series</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">intersection</span> <span class="o">=</span> <span class="n">second_index</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">first_index</span><span class="p">)</span>
+    <span class="n">differences</span> <span class="o">=</span> <span class="n">first_series</span><span class="p">[</span><span class="n">intersection</span><span class="p">]</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">second_series</span><span class="p">[</span><span class="n">intersection</span><span class="p">])</span>
+    <span class="n">differences</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">series_name</span>
+    <span class="n">only_in_first</span> <span class="o">=</span> <span class="n">first_index</span> <span class="o">-</span> <span class="n">second_index</span>
+    <span class="n">first_s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="s1">&#39;NA&#39;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">only_in_first</span><span class="p">},</span>
+                                      <span class="n">name</span><span class="o">=</span><span class="n">series_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                           <span class="n">first_series</span><span class="p">[</span><span class="n">only_in_first</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">series_name</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)])</span>
+    <span class="n">differences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">differences</span><span class="p">,</span> <span class="n">first_s</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="n">only_in_second</span> <span class="o">=</span> <span class="n">second_index</span> <span class="o">-</span> <span class="n">first_index</span>
+    <span class="n">second_s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">second_series</span><span class="p">[</span><span class="n">only_in_second</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">series_name</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                             <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="s1">&#39;NA&#39;</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">only_in_second</span><span class="p">},</span>
+                                       <span class="n">name</span><span class="o">=</span><span class="n">series_name</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+    <span class="n">differences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">differences</span><span class="p">,</span> <span class="n">second_s</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">differences</span></div>
+
+
+<div class="viewcode-block" id="clean_dictionary_recursively"><a class="viewcode-back" href="../../flexiznam.html#flexiznam.utils.clean_dictionary_recursively">[docs]</a><span class="k">def</span> <span class="nf">clean_dictionary_recursively</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="p">(),</span> <span class="n">path2string</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                 <span class="n">format_dataset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Recursively clean a dictionary inplace</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dictionary: dict (of dict)</span>
+<span class="sd">        keys (list): list of keys to pop from the dictionary</span>
+<span class="sd">        path2string (str): replace Path object by their string representation</span>
+<span class="sd">                           (default True)</span>
+<span class="sd">        format_dataset (bool): replace Dataset instances by their yaml representation</span>
+<span class="sd">                               (default False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">keys</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">dictionary</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">format_dataset</span><span class="p">:</span>
+        <span class="n">ds_classes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">Dataset</span><span class="o">.</span><span class="n">SUBCLASSES</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">ds_classes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dataset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">clean_dictionary_recursively</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">path2string</span><span class="p">,</span> <span class="n">format_dataset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path2string</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">):</span>
+            <span class="n">dictionary</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">format_dataset</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">ds_classes</span><span class="p">]):</span>
+                <span class="n">ds_dict</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;yaml&#39;</span><span class="p">)</span>
+                <span class="c1"># we have now a dictionary with a flat structure. Reshape it to match</span>
+                <span class="c1"># what acquisition yaml are supposed to look like</span>
+                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]:</span>
+                    <span class="n">ds_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+                <span class="c1"># rename extra_attributes to match acquisition yaml.</span>
+                <span class="c1"># Making a copy with dict is required to write yaml later on. If I keep</span>
+                <span class="c1"># the reference the output file has `*id001` instead of `{}`</span>
+                <span class="n">ds_dict</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ds_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;extra_attributes&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+                <span class="n">dictionary</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds_dict</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

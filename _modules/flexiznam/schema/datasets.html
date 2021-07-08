@@ -1,0 +1,745 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>flexiznam.schema.datasets &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Basics:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Command line interface</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flexiznam.html">flexiznam package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>flexiznam.schema.datasets</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for flexiznam.schema.datasets</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Class to handle dataset identification and validation</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">flexiznam</span> <span class="k">as</span> <span class="nn">flz</span>
+<span class="kn">from</span> <span class="nn">flexiznam</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">flexiznam.errors</span> <span class="kn">import</span> <span class="n">FlexilimsError</span><span class="p">,</span> <span class="n">DatasetError</span>
+<span class="kn">from</span> <span class="nn">flexiznam.config</span> <span class="kn">import</span> <span class="n">PARAMETERS</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<div class="viewcode-block" id="Dataset"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset">[docs]</a><span class="k">class</span> <span class="nc">Dataset</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Master class. Should be inherited by all datasets</span>
+
+<span class="sd">    SUBCLASSES are held in different files and added to the Dataset class by</span>
+<span class="sd">    schema.__init__.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">SUBCLASSES</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Dataset.parse_dataset_name"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.parse_dataset_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_dataset_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse a name into mouse, session, recording, dataset_name</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): name of the Dataset</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None if parsing fails, a dictionary otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;mouse&gt;.*?)_(?P&lt;session&gt;S\d</span><span class="si">{8}</span><span class="s1">)_?(?P&lt;session_num&gt;\d+)?&#39;</span>
+                   <span class="sa">r</span><span class="s1">&#39;_?(?P&lt;recording&gt;R\d</span><span class="si">{6}</span><span class="s1">)?_?(?P&lt;recording_num&gt;\d+)?&#39;</span>
+                   <span class="sa">r</span><span class="s1">&#39;_(?P&lt;dataset&gt;.*)&#39;</span><span class="p">)</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DatasetError</span><span class="p">(</span><span class="s1">&#39;No match in: `</span><span class="si">%s</span><span class="s1">`. Must be &#39;</span>
+                               <span class="s1">&#39;`&lt;MOUSE&gt;_SXXXXXX[...]_&lt;DATASET&gt;`.&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="c1"># group session num and recording num together</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+        <span class="n">sess_num</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;session_num&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sess_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DatasetError</span><span class="p">(</span><span class="s1">&#39;Found session number but not session name in `</span><span class="si">%s</span><span class="s1">`&#39;</span>
+                                   <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">output</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">sess_num</span>
+        <span class="n">rec_num</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;recording_num&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rec_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;recording&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">DatasetError</span><span class="p">(</span><span class="s1">&#39;Found recording number but not recording name in `</span><span class="si">%s</span><span class="s1">`&#39;</span>
+                                   <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">output</span><span class="p">[</span><span class="s1">&#39;recording&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">rec_num</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="Dataset.from_folder"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_folder">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_folder</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Try to load all datasets found in the folder.</span>
+
+<span class="sd">        Will try all defined subclasses of datasets and keep everything that does not</span>
+<span class="sd">        crash. If you know which dataset to expect, use the subclass directly</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">SUBCLASSES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Dataset subclasses not assigned&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ds_type</span><span class="p">,</span> <span class="n">ds_class</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">SUBCLASSES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Looking for </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">ds_type</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="n">ds_class</span><span class="o">.</span><span class="n">from_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                           <span class="n">flm_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">res</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">DatasetError</span><span class="p">(</span><span class="s1">&#39;Found two datasets with the same name&#39;</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Dataset.from_flexilims"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_flexilims">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_flexilims</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_series</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads a dataset from flexilims.</span>
+
+<span class="sd">        If the dataset_type attribute of the flexilims entry defined in</span>
+<span class="sd">        Dataset.SUBCLASSES,this subclass will be used. Otherwise a generic Dataset is</span>
+<span class="sd">        returned</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project: Name of the project or hexadecimal project_id</span>
+<span class="sd">            name: Unique name of the dataset on flexilims</span>
+<span class="sd">            data_series: default to None. pd.Series as returned by flz.get_entities.</span>
+<span class="sd">                         If provided, superseeds project and name</span>
+<span class="sd">            flm_session: authentication session to access flexilims</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">data_series</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">project</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Specify either data_series OR project + name&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_series</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="n">project_id</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">datatype</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">,</span>
+                                         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data_series</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FlexilimsError</span><span class="p">(</span><span class="s1">&#39;No dataset named </span><span class="si">{}</span><span class="s1"> in project </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span>
+                                                                                <span class="n">project</span><span class="p">))</span>
+        <span class="n">dataset_type</span> <span class="o">=</span> <span class="n">data_series</span><span class="o">.</span><span class="n">dataset_type</span>
+        <span class="k">if</span> <span class="n">dataset_type</span> <span class="ow">in</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">SUBCLASSES</span><span class="p">:</span>
+            <span class="n">ds_cls</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">SUBCLASSES</span><span class="p">[</span><span class="n">dataset_type</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">ds_cls</span><span class="o">.</span><span class="n">from_flexilims</span><span class="p">(</span><span class="n">data_series</span><span class="o">=</span><span class="n">data_series</span><span class="p">,</span> <span class="n">flm_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">)</span>
+        <span class="c1"># No subclass, let&#39;s do it myself</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">_format_series_to_kwargs</span><span class="p">(</span><span class="n">data_series</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;flm_session&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flm_session</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">except</span> <span class="n">DatasetError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">!!! Cannot parse the name !!!</span><span class="se">\n</span><span class="s1">Will not set mouse, session &#39;</span>
+                  <span class="s1">&#39;or recording&#39;</span><span class="p">)</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+<div class="viewcode-block" id="Dataset.from_origin"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_origin">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_origin</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">dataset_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conflicts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a dataset of a given type as a child of a parent entity</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project (str): Name of the project or hexadecimal project_id</span>
+<span class="sd">            origin_type (str): sample type of the origin</span>
+<span class="sd">            origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided</span>
+<span class="sd">            origin_name (str): name of the origin. This or origin_id must be provided</span>
+<span class="sd">            dataset_type (str): type of dataset to create. Must be defined in the config file</span>
+<span class="sd">            conflicts (str): What to do if a dataset of this type already exists? Can be</span>
+<span class="sd">                `append`, `abort`=None, `skip` or `overwrite`</span>
+<span class="sd">            flm_session (Flexilims): authentication session to connect to flexilims</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataset: a dataset object (WITHOUT updating flexilims)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">origin_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">origin_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span>
+            <span class="n">datatype</span><span class="o">=</span><span class="n">origin_type</span><span class="p">,</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">origin_id</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">origin_name</span><span class="p">,</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FlexilimsError</span><span class="p">(</span><span class="s1">&#39;Origin not found&#39;</span><span class="p">)</span>
+        <span class="n">processed</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_entities</span><span class="p">(</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="n">datatype</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">,</span>
+            <span class="n">origin_id</span><span class="o">=</span><span class="n">origin</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+            <span class="n">query_key</span><span class="o">=</span><span class="s1">&#39;dataset_type&#39;</span><span class="p">,</span>
+            <span class="n">query_value</span><span class="o">=</span><span class="n">dataset_type</span><span class="p">,</span>
+            <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flm_session</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">already_processed</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">already_processed</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">conflicts</span> <span class="o">==</span> <span class="s1">&#39;append&#39;</span><span class="p">):</span>
+            <span class="n">dataset_root</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">origin</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">dataset_type</span><span class="p">)</span>
+            <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">generate_name</span><span class="p">(</span>
+                <span class="s1">&#39;dataset&#39;</span><span class="p">,</span>
+                <span class="n">dataset_root</span><span class="p">,</span>
+                <span class="n">project_id</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flm_session</span>
+            <span class="p">)</span>
+            <span class="n">dataset_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">parse_dataset_name</span><span class="p">(</span><span class="n">dataset_name</span>
+                                                                  <span class="p">)[</span><span class="s1">&#39;dataset&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">Dataset</span><span class="p">(</span>
+                <span class="n">path</span><span class="o">=</span><span class="n">dataset_path</span><span class="p">,</span>
+                <span class="n">is_raw</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">,</span>
+                <span class="n">dataset_type</span><span class="o">=</span><span class="n">dataset_type</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">dataset_name</span><span class="p">,</span>
+                <span class="n">created</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1"> %H:%M:%S&#39;</span><span class="p">),</span>
+                <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                <span class="n">origin_id</span><span class="o">=</span><span class="n">origin</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="n">flm_session</span><span class="o">=</span><span class="n">flm_session</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">conflicts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">conflicts</span> <span class="o">==</span> <span class="s1">&#39;abort&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">flz</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">NameNotUniqueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Dataset </span><span class="si">{}</span><span class="s1"> already processed&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">processed</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">conflicts</span> <span class="o">==</span> <span class="s1">&#39;skip&#39;</span> <span class="ow">or</span> <span class="n">conflicts</span> <span class="o">==</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_flexilims</span><span class="p">(</span><span class="n">data_series</span><span class="o">=</span><span class="n">processed</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">flz</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">NameNotUniqueError</span><span class="p">(</span>
+                        <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> datasets exists for </span><span class="si">{}</span><span class="s1">, which one to return?&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="nb">len</span><span class="p">(</span><span class="n">processed</span><span class="p">),</span>
+                            <span class="n">dataset_type</span><span class="p">,</span>
+                            <span class="n">origin</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                        <span class="p">))</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_format_series_to_kwargs</span><span class="p">(</span><span class="n">flm_series</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format a flm get reply into kwargs valid for Dataset constructor&quot;&quot;&quot;</span>
+        <span class="n">flm_attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;incrementalId&#39;</span><span class="p">,</span> <span class="s1">&#39;createdBy&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;dateCreated&#39;</span><span class="p">,</span> <span class="s1">&#39;origin_id&#39;</span><span class="p">,</span> <span class="s1">&#39;objects&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;customEntities&#39;</span><span class="p">,</span> <span class="s1">&#39;project&#39;</span><span class="p">}</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">flm_series</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">flm_series</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">flm_attributes</span><span class="p">}</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">),</span>
+                      <span class="n">is_raw</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;is_raw&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                      <span class="n">dataset_type</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;dataset_type&#39;</span><span class="p">),</span>
+                      <span class="n">created</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                      <span class="n">origin_id</span><span class="o">=</span><span class="n">flm_series</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;origin_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                      <span class="n">extra_attributes</span><span class="o">=</span><span class="n">attr</span><span class="p">,</span>
+                      <span class="n">project_id</span><span class="o">=</span><span class="n">flm_series</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                      <span class="n">name</span><span class="o">=</span><span class="n">flm_series</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">is_raw</span><span class="p">,</span> <span class="n">dataset_type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">created</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">flm_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a dataset manually. Is usually called through static methods</span>
+<span class="sd">        &#39;from_folder&#39;, &#39;from_flexilims&#39;, or &#39;from_origin&#39;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: folder containing the dataset or path to file (valid only for single</span>
+<span class="sd">                  file datasets)</span>
+<span class="sd">            is_raw: bool, used to sort in raw and processed subfolders</span>
+<span class="sd">            dataset_type: type of the dataset, must be in PARAMETERS[&#39;dataset_types&#39;]</span>
+<span class="sd">            name: name of the dataset as on flexilims. Is expected to include mouse,</span>
+<span class="sd">                  session etc...</span>
+<span class="sd">            extra_attributes: dict, optional attributes.</span>
+<span class="sd">            created: Creation date, in &quot;YYYY-MM-DD HH:mm:SS&quot;</span>
+<span class="sd">            project: name of the project. Must be in config, can be guessed from</span>
+<span class="sd">                     project_id</span>
+<span class="sd">            project_id: hexadecimal code for the project. Must be in config, can be</span>
+<span class="sd">                        guessed from project</span>
+<span class="sd">            flm_session: authentication session to connect to flexilims</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mouse</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recording</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_raw</span> <span class="o">=</span> <span class="n">is_raw</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dataset_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span> <span class="o">=</span> <span class="n">extra_attributes</span> <span class="k">if</span> <span class="n">extra_attributes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin_id</span> <span class="o">=</span> <span class="n">origin_id</span>
+        <span class="k">if</span> <span class="n">project</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
+            <span class="k">if</span> <span class="n">project_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">==</span> <span class="n">project_id</span>
+        <span class="k">elif</span> <span class="n">project_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">project_id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_project</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flm_session</span> <span class="o">=</span> <span class="n">flm_session</span>
+
+<div class="viewcode-block" id="Dataset.is_valid"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.is_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dummy method definition. Should be reimplemented in children classes</span>
+
+<span class="sd">        Should return True if the dataset is found a valid, false otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;`is_valid` is not defined for generic datasets&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Dataset.associated_files"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.associated_files">[docs]</a>    <span class="k">def</span> <span class="nf">associated_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Give a list of all files associated with this dataset</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder: Where to look for files? default to self.path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;`associated_files` is not defined for generic &#39;</span>
+                                  <span class="s1">&#39;datasets&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Dataset.get_flexilims_entry"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.get_flexilims_entry">[docs]</a>    <span class="k">def</span> <span class="nf">get_flexilims_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the flexilims entry for this dataset</span>
+
+<span class="sd">        return a dictionary or [] if the entry is not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;You must specify the project to get flexilims status&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;You must specify the dataset name to get flexilims status&#39;</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span><span class="n">datatype</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">,</span>
+                                <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                <span class="n">flexilims_session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flm_session</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">series</span></div>
+
+<div class="viewcode-block" id="Dataset.update_flexilims"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.update_flexilims">[docs]</a>    <span class="k">def</span> <span class="nf">update_flexilims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;safe&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create or update flexilims entry for this dataset</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode (str): One of: &#39;update&#39;, &#39;overwrite&#39;, &#39;safe&#39; (default).</span>
+<span class="sd">                If &#39;safe&#39;, will only create entry if it does not exist online.</span>
+<span class="sd">                If &#39;update&#39; will update existing entry but keep any existing</span>
+<span class="sd">                attributes that are not specified. If &#39;overwrite&#39; will update</span>
+<span class="sd">                existing entry and clear any attributes that are not specified.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Flexilims reply</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flexilims_status</span><span class="p">()</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># the following lines are necessary because pandas converts python types to numpy</span>
+        <span class="c1"># types, which JSON does not understand</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">):</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;different&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;safe&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">FlexilimsError</span><span class="p">(</span><span class="s1">&#39;Cannot change existing flexilims entry with &#39;</span>
+                                     <span class="s1">&#39;mode=`safe`&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;update&#39;</span><span class="p">):</span>
+                <span class="c1"># I need to pack the dataset field in attributes</span>
+                <span class="n">fmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="s1">&#39;is_raw&#39;</span><span class="p">,</span> <span class="s1">&#39;dataset_type&#39;</span><span class="p">]:</span>
+                    <span class="n">attributes</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">fmt</span><span class="p">[</span><span class="n">field</span><span class="p">]</span>
+
+                <span class="c1"># reseting origin_id to null is not implemented. Specifically check</span>
+                <span class="c1"># that it is not attempted and crash if it is</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flexilims_entry</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;origin_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">FlexilimsError</span><span class="p">(</span><span class="s1">&#39;Cannot set origin_id to null&#39;</span><span class="p">)</span>
+
+                <span class="n">resp</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">update_entity</span><span class="p">(</span>
+                    <span class="n">datatype</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">origin_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin_id</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+                    <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
+                    <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                    <span class="n">flexilims_session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flm_session</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;`mode` must be `safe`, `overwrite` or `update`&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">resp</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;up-to-date&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Already up to date, nothing to do&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># we are in &#39;not online&#39; case</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">clean_dictionary_recursively</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">add_dataset</span><span class="p">(</span>
+            <span class="n">parent_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin_id</span><span class="p">,</span>
+            <span class="n">dataset_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span><span class="p">,</span>
+            <span class="n">created</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+            <span class="n">is_raw</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_raw</span> <span class="k">else</span> <span class="s1">&#39;no&#39;</span><span class="p">,</span>
+            <span class="n">project_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+            <span class="n">dataset_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
+            <span class="n">flexilims_session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">flm_session</span><span class="p">,</span>
+            <span class="n">conflicts</span><span class="o">=</span><span class="s1">&#39;abort&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># update the dataset name to reflex the potential new index due to append</span>
+        <span class="n">online_name</span> <span class="o">=</span> <span class="n">resp</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">root_name</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mouse</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">recording</span><span class="p">]</span> <span class="k">if</span> <span class="n">e</span>
+                             <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">online_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">root_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="n">online_name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">root_name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">resp</span></div>
+
+<div class="viewcode-block" id="Dataset.flexilims_status"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.flexilims_status">[docs]</a>    <span class="k">def</span> <span class="nf">flexilims_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Status of the dataset on flexilims</span>
+
+<span class="sd">        Status can be &#39;up-to-date&#39;, &#39;different&#39; or &#39;not online&#39;</span>
+
+<span class="sd">        This function does not check flexilims these only value:</span>
+<span class="sd">        &#39;createdBy&#39;, &#39;objects&#39;, &#39;dateCreated&#39;, &#39;customEntities&#39;,</span>
+<span class="sd">        &#39;incrementalId&#39;, &#39;id&#39;, &#39;origin_id&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flexilims_entry</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">series</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;not online&#39;</span>
+        <span class="n">differences</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flexilims_report</span><span class="p">(</span><span class="n">flm_data</span><span class="o">=</span><span class="n">series</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">differences</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;different&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;up-to-date&#39;</span></div>
+
+<div class="viewcode-block" id="Dataset.flexilims_report"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.flexilims_report">[docs]</a>    <span class="k">def</span> <span class="nf">flexilims_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flm_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Describe the difference between the dataset and what is on flexilims</span>
+
+<span class="sd">        Differences are returned in a dictionary:</span>
+<span class="sd">        property: (value in dataset, value in flexilims)</span>
+
+<span class="sd">        Attributes not present in either dataset or on flexilims are labelled as &#39;N/A&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">flm_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">flm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flexilims_entry</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">flm_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;No flexilims entry for dataset </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># remove the flexilims keywords that are not used by Dataset if they are present</span>
+        <span class="n">flm_data</span> <span class="o">=</span> <span class="n">flm_data</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;createdBy&#39;</span><span class="p">,</span> <span class="s1">&#39;objects&#39;</span><span class="p">,</span> <span class="s1">&#39;dateCreated&#39;</span><span class="p">,</span> <span class="s1">&#39;customEntities&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;incrementalId&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+        <span class="c1"># add the fields that are always present in Dataset but returned by flexilims</span>
+        <span class="c1"># only when they are non null</span>
+        <span class="k">for</span> <span class="n">na_field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;origin_id&#39;</span><span class="p">,</span> <span class="s1">&#39;is_raw&#39;</span><span class="p">,</span> <span class="s1">&#39;dataset_type&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">na_field</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">flm_data</span><span class="p">:</span>
+                <span class="n">flm_data</span><span class="p">[</span><span class="n">na_field</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">()</span>
+
+        <span class="n">differences</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">compare_series</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">flm_data</span><span class="p">,</span> <span class="n">series_name</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;offline&#39;</span><span class="p">,</span> <span class="s1">&#39;flexilims&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">differences</span></div>
+
+<div class="viewcode-block" id="Dataset.format"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.format">[docs]</a>    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;flexilims&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format a dataset</span>
+
+<span class="sd">        This can generate either a &#39;flexilims&#39; type of output (a series similar to</span>
+<span class="sd">        get_entities output) or a &#39;yaml&#39; type as that used by flexiznam.camp</span>
+
+<span class="sd">        The flexilims series will not include elements that are not used by the Dataset</span>
+<span class="sd">        class such as created_by</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode: &#39;flexilims&#39; or &#39;yaml&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+                    <span class="n">created</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+                    <span class="n">dataset_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span><span class="p">,</span>
+                    <span class="n">is_raw</span><span class="o">=</span><span class="s1">&#39;yes&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_raw</span> <span class="k">else</span> <span class="s1">&#39;no&#39;</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">project</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                    <span class="n">origin_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin_id</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;dataset&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;flexilims&#39;</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span><span class="p">)</span>
+            <span class="n">series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">series</span>
+        <span class="k">elif</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;yaml&#39;</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra_attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_attributes</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Unknown mode &quot;</span><span class="si">%s</span><span class="s1">&quot;. Must be `flexilims` or `yaml`&#39;</span> <span class="o">%</span> <span class="n">mode</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">project_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hexadecimal ID of the parent project. Must be defined in config project list&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span>
+
+    <span class="nd">@project_id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">project_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">project</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">_lookup_project</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">flz</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">project</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Unknown project ID. Please update config file&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parent project. Must be defined in config project list&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project</span>
+
+    <span class="nd">@project</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">flz</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;project_ids&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;Unknown project name. Please update config file&#39;</span><span class="p">)</span>
+
+        <span class="n">proj_id</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;project_ids&#39;</span><span class="p">][</span><span class="n">value</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="o">=</span> <span class="n">proj_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Full name of the dataset, including mouse, session etc ...&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mouse&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;recording&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;dataset_name&#39;</span><span class="p">)]</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">elements</span> <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">name</span>
+
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the name if it is correctly formatted&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mouse&#39;</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;recording&#39;</span><span class="p">,</span> <span class="s1">&#39;dataset_name&#39;</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">parse_dataset_name</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">DatasetError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DatasetError</span><span class="p">(</span><span class="s1">&#39;Cannot parse dataset name. &#39;</span> <span class="o">+</span> <span class="n">err</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+                               <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Set self.mouse, self.session, self.recording, and &#39;</span>
+                               <span class="s1">&#39;self.dataset_name individually&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mouse</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s1">&#39;mouse&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s1">&#39;dataset&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s1">&#39;session&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recording</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s1">&#39;recording&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dataset_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Type of the dataset. Must be in PARAMETERS[&#39;dataset_types&#39;]&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_type</span>
+
+    <span class="nd">@dataset_type</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dataset_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;dataset_types&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;dataset_type &quot;</span><span class="si">%s</span><span class="s1">&quot; not valid. Valid types are: &#39;</span>
+                          <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;dataset_types&#39;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_type</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Is that dataset containing raw or processed data?&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_raw</span>
+
+    <span class="nd">@is_raw</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">is_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;yes&#39;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;no&#39;</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;is_raw must be `yes` or `no`&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_raw</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path_root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get CAMP root path that should apply to this dataset&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_raw</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">flz</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">][</span><span class="s1">&#39;raw&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">flz</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">][</span><span class="s1">&#39;processed&#39;</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path_full</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get full path including the CAMP root&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_root</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
