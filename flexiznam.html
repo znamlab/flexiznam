@@ -302,36 +302,31 @@ link to the entry to update</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_experimental_session">
 <span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_experimental_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mouse_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflicts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abort'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_experimental_session" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a new session as a child entity of a mouse.</p>
+<dd><p>Add a new session as a child entity of a mouse</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mouse_name</strong> – str, name of the mouse. Must exist on flexilims.</p></li>
-<li><p><strong>date</strong> – str, date of the session. If <cite>session_name</cite> is not provided, will
-be used as name.</p></li>
-<li><p><strong>attributes</strong> – dict, dictionary of additional attributes (on top of date).</p></li>
-<li><p><strong>session_name</strong> – str or None, name of the session, usually in the shape
-<cite>S20210420</cite>.</p></li>
-<li><p><strong>conflicts</strong> – <cite>abort</cite>, <cite>append</cite>, or <cite>overwrite</cite>: how to handle conflicts.</p></li>
-<li><p><strong>other_relations</strong> – ID(s) of custom entities related to the session.</p></li>
-<li><p><strong>flexilims_session</strong> – flexilims session.</p></li>
-<li><p><strong>project_id</strong> – name of the project or hexadecimal project id (needed if
-session is not provided).</p></li>
-<li><p><strong>conflicts</strong> – What to do if a session with that name already exists? Can be
-<cite>skip</cite> for skiping creation and returning the session from flexilims
-or <cite>abort</cite> to crash.</p></li>
+<li><p><strong>mouse_name</strong> – str, name of the mouse. Must exist on flexilims</p></li>
+<li><p><strong>date</strong> – str, date of the session. If <cite>session_name</cite> is not provided, will be used as name</p></li>
+<li><p><strong>attributes</strong> – dict, dictionary of additional attributes (on top of date)</p></li>
+<li><p><strong>session_name</strong> – str or None, name of the session, usually in the shape <cite>S20210420</cite>.</p></li>
+<li><p><strong>conflicts</strong> – <cite>abort</cite>, <cite>append</cite>, or <cite>overwrite</cite>: how to handle conflicts</p></li>
+<li><p><strong>other_relations</strong> – ID(s) of custom entities related to the session</p></li>
+<li><p><strong>flexilims_session</strong> – flexilims session</p></li>
+<li><p><strong>project_id</strong> – name of the project or hexadecimal project id (needed if session is not provided)</p></li>
+<li><p><strong>conflicts</strong> – What to do if a session with that name already exists? Can be <cite>skip</cite>
+for skiping creation and returning the session from flexilims or
+<cite>abort</cite> to crash</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Flexilims reply</p>
-</dd>
 </dl>
+<p>Returns: flexilims reply</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.main.add_mouse">
 <span class="sig-prename descclassname"><span class="pre">flexiznam.main.</span></span><span class="sig-name descname"><span class="pre">add_mouse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mouse_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcms_animal_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mcms_username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexilims_password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flexiznam.main.add_mouse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if a mouse is already in the database and add it if it isn’t.</p>
+<dd><p>Check if a mouse is already in the database and add it if it isn’t</p>
 </dd></dl>
 
 <dl class="py function">
