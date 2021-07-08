@@ -6,15 +6,16 @@
 Welcome to flexiznam's documentation!
 =====================================
 
-Flexiznam - from *flexi*, standing for flexible, and *znam*, Croatian and Polish
-for "I know". Flexiznam - know your data!
+Flexiznam - from *flexi*, standing for flexible, and *znam*, Slavic word meaning
+"I know". Flexiznam - know your data!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Basics:
 
    installation
    quickstart
+   cli
 
 .. toctree::
    :maxdepth: 4

@@ -17,14 +17,6 @@ flexiznam.main module
    :undoc-members:
    :show-inheritance:
 
-flexiznam.cli module
---------------------
-
-.. automodule:: flexiznam.cli
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 flexiznam.errors module
 -----------------------
 

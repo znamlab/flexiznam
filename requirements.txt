@@ -7,3 +7,4 @@ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims
 pyyaml
 sphinx
 sphinx-rtd-theme
+sphinx-click
