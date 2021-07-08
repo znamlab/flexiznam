@@ -1,9 +1,6 @@
 flexiznam.config package
 ========================
 
-Submodules
-----------
-
 flexiznam.config.config\_tools module
 -------------------------------------
 

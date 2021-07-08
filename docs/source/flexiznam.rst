@@ -1,19 +1,21 @@
 flexiznam package
 =================
 
-Subpackages
------------
+Module contents
+---------------
 
-.. toctree::
-   :maxdepth: 4
+.. automodule:: flexiznam
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-   flexiznam.camp
-   flexiznam.config
-   flexiznam.mcms
-   flexiznam.schema
+flexiznam.main module
+---------------------
 
-Submodules
-----------
+.. automodule:: flexiznam.main
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 flexiznam.cli module
 --------------------
@@ -31,14 +33,6 @@ flexiznam.errors module
    :undoc-members:
    :show-inheritance:
 
-flexiznam.main module
----------------------
-
-.. automodule:: flexiznam.main
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 flexiznam.utils module
 ----------------------
 
@@ -47,10 +41,14 @@ flexiznam.utils module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
 
-.. automodule:: flexiznam
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Subpackages
+-----------
+
+.. toctree::
+  :maxdepth: 4
+
+  flexiznam.camp
+  flexiznam.config
+  flexiznam.mcms
+  flexiznam.schema
