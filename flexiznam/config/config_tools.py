@@ -4,7 +4,7 @@ import sys
 import yaml
 from flexiznam.errors import ConfigurationError
 from flexiznam.config.default_config import DEFAULT_CONFIG
-
+from getpass import getpass
 
 def _find_file(file_name, config_folder=None):
     """Find a file by looking at various places
@@ -54,12 +54,15 @@ def get_password(username, app, password_file=None):
         password_file = _find_file('secret_password.yml')
     with open(password_file, 'r') as yml_file:
         pwd = yaml.safe_load(yml_file) or {}
-    if app not in pwd:
-        raise IOError('No password for %s' % app)
-    pwd = pwd[app]
-    if username not in pwd:
-        raise IOError('No %s password for user %s' % (app, username))
-    return pwd[username]
+    try:
+        if app not in pwd:
+            raise IOError('No password for %s' % app)
+        pwd = pwd[app]
+        if username not in pwd:
+            raise IOError('No %s password for user %s' % (app, username))
+        return pwd[username]
+    except IOError:
+        return getpass(prompt=f'Enter {app} password: ')
 
 
 def add_password(app, username, password, password_file=None):
@@ -106,11 +109,11 @@ def update_config(param_file=None, config_folder=None, skip_checks=False, **kwar
                   template=full_param_path, skip_checks=skip_checks, **kwargs)
 
 
-def create_config(overwrite=False, config_folder=None, template=None, skip_checks=False, 
+def create_config(overwrite=False, config_folder=None, template=None, skip_checks=False,
                   config_file='config.yml', **kwargs):
     """Create a config file based on a template
 
-    If no template is provided, use ./config/default_config.py to generate a new config 
+    If no template is provided, use ./config/default_config.py to generate a new config
     file
 
     **kwargs elements are used to update/supplement info found in the template
