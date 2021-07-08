@@ -37,7 +37,18 @@ def get_flexilims_session(project_id, username=None, password=None):
 
 def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=None,
               flexilims_username=None, mcms_username=None, flexilims_password=None):
-    """Check if a mouse is already in the database and add it if it isn't"""
+    """Check if a mouse is already in the database and add it if it isn't
+
+    Args:
+        mouse_name:
+        project_id:
+        flexilims_session:
+        mcms_animal_name:
+        mcms_username:
+
+    Returns:
+        flexilims reply
+    """
 
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id, flexilims_username, flexilims_password)
@@ -73,19 +84,19 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     """Add a new session as a child entity of a mouse
 
     Args:
-        mouse_name: str, name of the mouse. Must exist on flexilims
-        date: str, date of the session. If `session_name` is not provided, will be used as name
-        attributes: dict, dictionary of additional attributes (on top of date)
-        session_name: str or None, name of the session, usually in the shape `S20210420`.
-        conflicts: `abort`, `append`, or `overwrite`: how to handle conflicts
+        mouse_name (str): name of the mouse. Must exist on flexilims
+        date (str): date of the session. If `session_name` is not provided, will be used as name
+        attributes (dict): dictionary of additional attributes (on top of date)
+        session_name (str or None): name of the session, usually in the shape `S20210420`.
+        conflicts (str): What to do if a session with that name already exists? Can be `skip`
+            for skiping creation and returning the session from flexilims or
+            `abort` to crash
         other_relations: ID(s) of custom entities related to the session
-        flexilims_session: flexilims session
-        project_id: name of the project or hexadecimal project id (needed if session is not provided)
-        conflicts: What to do if a session with that name already exists? Can be `skip`
-                   for skiping creation and returning the session from flexilims or
-                   `abort` to crash
+        flexilims_session (Flexilims): flexilims session
+        project_id (str): name of the project or hexadecimal project id (needed if session is not provided)
 
-    Returns: flexilims reply
+    Returns:
+        flexilims reply
     """
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
@@ -130,17 +141,18 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     """Add a recording as a child of an experimental session
 
     Args:
-        session_id: str, hexadecimal ID of the session. Must exist on flexilims
-        recording_type: str, one of [two_photon, widefield, intrinsic, ephys, behaviour]
-        protocol: str, experimental protocol (`retinotopy` for instance)
-        attributes: dict, dictionary of additional attributes (on top of protocol and recording_type)
-        recording_name: str or None, name of the recording, usually in the shape `R152356`.
-        conflicts: `skip` or `abort`: how to handle conflicts
+        session_id (str): hexadecimal ID of the session. Must exist on flexilims
+        recording_type (str): one of [two_photon, widefield, intrinsic, ephys, behaviour]
+        protocol (str): experimental protocol (`retinotopy` for instance)
+        attributes (dict):  dictionary of additional attributes (on top of protocol and recording_type)
+        recording_name (str or None): name of the recording, usually in the shape `R152356`.
+        conflicts (str): `skip` or `abort`: how to handle conflicts
         other_relations: ID(s) of custom entities related to the session
-        flexilims_session: flexilims session
-        project_id: name of the project or hexadecimal project id (needed if session is not provided)
+        flexilims_session (Flexilims): flexilims session
+        project_id (str): name of the project or hexadecimal project id (needed if session is not provided)
 
-    Returns: flexilims reply
+    Returns:
+        flexilims reply
     """
 
     if flexilims_session is None:
@@ -195,20 +207,20 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
     """Add a dataset as a child of a recording or session
 
     Args:
-        parent_id: hexadecimal ID of the parent (session or recording)
-        dataset_type: dataset_type, must be a type define in the config file
-        created: date of creation as text, usually in this format: '2021-05-24 14:56:41'
-        path: path to the data relative to the project folder
-        is_raw: `yes` or `no`, used to find the root directory
-        project_id: hexadecimal ID or name of the project
-        flexilims_session: authentication session for flexilims
-        dataset_name: name of the dataset, will be autogenerated if not provided
-        attributes: optional attributes
-        strict_validation: default False, if True, only attributes in lab settings are
-                           allowed
-        conflicts: `abort`, `skip`, `append`, what to do if a dataset with this name
-                   already exists? `abort` to crash, `skip` to ignore and return the
-                   online version, `append` to increment name and create a new dataset.
+        parent_id (str): hexadecimal ID of the parent (session or recording)
+        dataset_type (str): dataset_type, must be a type define in the config file
+        created (str): date of creation as text, usually in this format: '2021-05-24 14:56:41'
+        path (str): path to the data relative to the project folder
+        is_raw (str): `yes` or `no`, used to find the root directory
+        project_id (str): hexadecimal ID or name of the project
+        flexilims_session (Flexilims): authentication session for flexilims
+        dataset_name (str): name of the dataset, will be autogenerated if not provided
+        attributes (dict): optional attributes
+        strict_validation (bool): default False, if True, only attributes in lab settings are
+            allowed
+        conflicts (str): `abort`, `skip`, `append`, what to do if a dataset with this name
+            already exists? `abort` to crash, `skip` to ignore and return the
+            online version, `append` to increment name and create a new dataset.
 
     Returns:
         the flexilims response

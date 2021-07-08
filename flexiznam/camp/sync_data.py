@@ -16,15 +16,17 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     """Upload data from one yaml to flexilims
 
     Args:
-        source_yaml: path to clean yaml
-        raw_data_folder: path to the folder containing the data. Default to
-                         data_root['raw']
-        verbose: print progress information
+        source_yaml (str): path to clean yaml
+        raw_data_folder (str): path to the folder containing the data. Default to
+         data_root['raw']
+        verbose (bool): print progress information
         log_func: function to deal with warnings and messages
-        flexilims_session: session to avoid recreating a token
-        conflicts: `abort` to crash if there is a conflict, `skip` to ignore and proceed
+        flexilims_session (Flexilims): session to avoid recreating a token
+        conflicts (str): `abort` to crash if there is a conflict, `skip` to ignore and proceed
 
-    Returns: dictionary or flexilims ID
+    Returns:
+        dictionary or flexilims ID
+
     """
     # if there are errors, I cannot safely parse the yaml
     errors = find_xxerrorxx(yml_file=source_yaml)
@@ -115,6 +117,13 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
 def trim_paths(session_data, raw_data_folder):
     """Parses paths to make them relative to data
 
+    Args:
+        session_data (dict): dictionary containing children of the session
+        raw_data_folder (str): part of the path to be omitted from on flexilims
+
+    Returns:
+        dict: `session_data` after trimming the paths
+
     """
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
@@ -136,11 +145,13 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     """Read an acquisition yaml and create corresponding datasets
 
     Args:
-        path_to_yaml: path to the file to parse
-        raw_data_folder: root folder containing the mice folders
-        verbose: print info while looking for datasets
+        path_to_yaml (str): path to the file to parse
+        raw_data_folder (str): root folder containing the mice folders
+        verbose (bool): print info while looking for datasets
 
-    Returns: A yaml dictionary with dataset classes
+    Returns:
+        dict: A yaml dictionary with dataset classes
+
     """
 
     session_data = clean_yaml(path_to_yaml)
@@ -185,11 +196,13 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
 
     Args:
-        session_data: dictionary with Dataset instances, as returned by parse_yaml
-        target_file: path to the output file (if None, does not write to disk)
-        overwrite: replace target file if it already exists (default False)
+        session_data (dict): dictionary with Dataset instances, as returned by parse_yaml
+        target_file (str): path to the output file (if None, does not write to disk)
+        overwrite (bool): replace target file if it already exists (default False)
 
-    Returns: the pure yaml dictionary
+    Returns:
+        dict: the pure yaml dictionary
+
     """
     out_dict = copy.deepcopy(session_data)
     clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
@@ -211,15 +224,16 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
 
     Args:
         dataset_infos: extra information for reading dataset outside of raw_data_folder
-                       or adding optional arguments
-        parent: yaml dictionary of the parent level
-        raw_data_folder: folder where to look for data
-        verbose: (True) Print info about dataset found
-        error_handling: `crash` or `report`. When something goes wrong, raise an error if
-                        `crash` otherwise replace the dataset instance by the error
-                        message in the output dictionary
+          or adding optional arguments
+        parent (dict): yaml dictionary of the parent level
+        raw_data_folder (str): folder where to look for data
+        verbose (bool): (True) Print info about dataset found
+        error_handling (str) `crash` or `report`. When something goes wrong, raise an
+            error if `crash` otherwise replace the dataset instance by the error
+            message in the output dictionary
 
-    Returns: dictionary of dataset instances
+    Returns:
+        dict: dictionary of dataset instances
 
     """
 
@@ -276,6 +290,13 @@ def clean_yaml(path_to_yaml):
 
     This does not do any processing, just make sure that I can read the whole yaml and
     generate dictionary will all expected fields
+
+    Args:
+        path_to_yaml (str): path to the YAML file
+
+    Returns:
+        dict: nested dictonary containing entries in the YAML file
+
     """
     with open(path_to_yaml, 'r') as yml_file:
         yml_data = yaml.safe_load(yml_file)
@@ -299,11 +320,12 @@ def read_recording(name, data):
     """Read YAML information corresponding to a recording
 
     Args:
-        name: str the name of the recording
-        data: dict data for this dataset only
+        name (str): the name of the recording
+        data (dict): data for this dataset only
 
     Returns:
-        recording: dict, the dictionary read from the yaml
+        dict: the recording read from the yaml
+
     """
     recording, datasets = read_level(data, mandatory_args=('protocol',),
                                      optional_args=('notes', 'attributes', 'path',
@@ -330,13 +352,14 @@ def read_dataset(name, data):
     """Read YAML information corresponding to a dataset
 
     Args:
-        name: str the name of the dataset, will be composed with parent names to
+        name (str): the name of the dataset, will be composed with parent names to
         generate an identifier
-        data: dict data for this dataset only
+        data (dict): data for this dataset only
 
     Returns:
-        a formatted dictionary including,  'dataset_type', 'path', 'notes',
+        dict: a formatted dictionary including,  'dataset_type', 'path', 'notes',
         'attributes' and 'name'
+
     """
     level, _ = read_level(data, mandatory_args=('dataset_type', 'path'),
                           optional_args=('notes', 'attributes', 'created', 'is_raw',
@@ -352,13 +375,16 @@ def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
     """Read one layer of the yml file (i.e. a dictionary)
 
     Args:
-        yml_level: a dictionary containing the yml level to analyse (and all sublevels)
+        yml_level (dict): a dictionary containing the yml level to analyse (and all sublevels)
         mandatory_args: arguments that must be in this level
         optional_args: arguments that are expected but not mandatory, will be `None` if
-                       absent
+            absent
         nested_levels: name of any nested level that should not be parsed
 
-    Returns: (level, nested_levels) two dictionary
+    Returns:
+        (tuple): a tuple containing two dictionaries:
+            level (dict): dictonary of top level attributes
+            nested_levels (dict): dictionary of nested dictonaries
     """
     # make a copy to not change original version
     yml_level = yml_level.copy()

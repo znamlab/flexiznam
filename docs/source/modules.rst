@@ -5,5 +5,3 @@ flexiznam
    :maxdepth: 4
 
    flexiznam
-   setup
-   tests

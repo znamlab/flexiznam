@@ -24,7 +24,11 @@ class Dataset(object):
     def parse_dataset_name(name):
         """Parse a name into mouse, session, recording, dataset_name
 
-        Returns None if parsing fails, a dictionary otherwise
+        Args:
+            name (str): name of the Dataset
+
+        Returns:
+            None if parsing fails, a dictionary otherwise
         """
         pattern = (r'(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
                    r'_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
@@ -288,14 +292,14 @@ class Dataset(object):
         """Create or update flexilims entry for this dataset
 
         Args:
-            mode: One of: 'update', 'overwrite', 'safe' (default).
-                  If 'safe', will only create entry if it does not exist online.
-                  If 'update' will update existing entry but keep any existing attributes
-                     that are not specified.
-                  If 'overwrite' will update existing entry and clear any attributes that
-                     are not specified.
+            mode (str): One of: 'update', 'overwrite', 'safe' (default).
+                If 'safe', will only create entry if it does not exist online.
+                If 'update' will update existing entry but keep any existing
+                attributes that are not specified. If 'overwrite' will update
+                existing entry and clear any attributes that are not specified.
 
-        Returns: Flexilims reply
+        Returns:
+            Flexilims reply
         """
         status = self.flexilims_status()
         attributes = self.extra_attributes.copy()
