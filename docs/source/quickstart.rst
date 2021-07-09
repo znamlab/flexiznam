@@ -148,6 +148,7 @@ entity, such as an experimental session or recording, it is best to use the
 static :py:meth:`flexiznam.schema.datasets.Dataset.from_origin` method of the
 :py:class:`flexiznam.schema.datasets.Dataset` class::
 
+  from flexiznam.schema import Dataset
   suite2p_dataset = Dataset.from_origin(
       project=project,
       origin_type='session',
@@ -157,7 +158,7 @@ static :py:meth:`flexiznam.schema.datasets.Dataset.from_origin` method of the
   )
 
 This method will automatically set the flexilims name and path attribute of the
-new datasets, based on the path attribute of the parent passed by `origin_id`
+new dataset, based on the path attribute of the parent passed by `origin_id`
 and return an instance of :py:class:`flexiznam.schema.datasets.Dataset`. It will
 also automatically handle conflicts, providing options to `append`, `overwrite`,
 `abort` or `skip` if a dataset of a given type is already associated with parent

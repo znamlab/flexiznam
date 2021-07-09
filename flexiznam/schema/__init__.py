@@ -1,16 +1,24 @@
 """
-Dealing with data saving on CAMP
+This module handles all the different types of dataset we can have.
+The main functions common to all datasets are implemented in the main
+:py:class:`flexiznam.schema.datasets.Dataset` class.
 
-We want to transfer data from experimental setup to camp in an automatic and
-organised fashion. We will most likely do that in steps:
+Each type of dataset will have a subclass, such as
+:py:class:`flexiznam.schema.datasets.camera_data.CameraData` that
+inherits the main `Dataset` class and can re-implement any methods if needed.
 
-- step 1: transfer data from acquisition computers:
-    We have different computers and we want to be sure to be able to clean up
-    space. So step one is to find the data and transfer it in the relevant
-    folder. We will also add the data pieces to flexilims
+For convenience, all these dataset classes are imported in the
+`__init__.py`. You can therefore just use `schema.Camera`. The init also
+populate the `Dataset` class property `Dataset.SUBCLASSES` which lists all
+the existing subclasses. It is a dictionary with flexilims datatype name as
+keys and the corresponding class object as reference.
 
-- step 2: link things together:
-    Once everything is on CAMP we need to make sure that we have all the data we need and update flexilims wherever needed
+Usage
+-----
+
+The simpler entry points are the class methods:
+:py:class:`flexiznam.schema.datasets.Dataset.from_folder` and
+:py:class:`flexiznam.schema.datasets.Dataset.from_flexilims`.
 
 """
 

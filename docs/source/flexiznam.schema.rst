@@ -1,10 +1,10 @@
 flexiznam.schema package
 ========================
 
-flexiznam.schema.camera\_data module
-------------------------------------
+Module contents
+---------------
 
-.. automodule:: flexiznam.schema.camera_data
+.. automodule:: flexiznam.schema
    :members:
    :undoc-members:
    :show-inheritance:
@@ -13,6 +13,14 @@ flexiznam.schema.datasets module
 --------------------------------
 
 .. automodule:: flexiznam.schema.datasets
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+flexiznam.schema.camera\_data module
+------------------------------------
+
+.. automodule:: flexiznam.schema.camera_data
    :members:
    :undoc-members:
    :show-inheritance:
@@ -29,14 +37,6 @@ flexiznam.schema.scanimage\_data module
 ---------------------------------------
 
 .. automodule:: flexiznam.schema.scanimage_data
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: flexiznam.schema
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,6 +1,3 @@
-"""
-Class to handle dataset identification and validation
-"""
 import pathlib
 from pathlib import Path
 import re
@@ -14,6 +11,8 @@ from datetime import datetime
 
 class Dataset(object):
     """Master class. Should be inherited by all datasets
+
+    Class to handle dataset identification and validation
 
     SUBCLASSES are held in different files and added to the Dataset class by
     schema.__init__.py
@@ -130,7 +129,7 @@ class Dataset(object):
             dataset_type (str): type of dataset to create. Must be defined in the config file
             conflicts (str): What to do if a dataset of this type already exists
                 as a child of the parent entity?
-                
+
                 `append`
                     Create a new dataset with a new name and path
                 `abort` or None
