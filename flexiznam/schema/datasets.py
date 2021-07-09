@@ -28,7 +28,7 @@ class Dataset(object):
             name (str): name of the Dataset
 
         Returns:
-            None if parsing fails, a dictionary otherwise
+            dict or None: None if parsing fails, a dictionary otherwise
         """
         pattern = (r'(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
                    r'_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
@@ -128,12 +128,22 @@ class Dataset(object):
             origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
             origin_name (str): name of the origin. This or origin_id must be provided
             dataset_type (str): type of dataset to create. Must be defined in the config file
-            conflicts (str): What to do if a dataset of this type already exists? Can be
-                `append`, `abort`=None, `skip` or `overwrite`
-            flm_session (Flexilims): authentication session to connect to flexilims
+            conflicts (str): What to do if a dataset of this type already exists
+                as a child of the parent entity?
+                
+                `append`
+                    Create a new dataset with a new name and path
+                `abort` or None
+                    Through a :py:class:`flexiznam.errors.NameNotUniqueError` and
+                    exit
+                `skip` or `overwrite`
+                    Return a Dataset corresponding to the existing entry if there
+                    is exactly one existing entry, otherwise through a
+                    :py:class:`flexiznam.errors.NameNotUniqueError`
+            flm_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims
 
         Returns:
-            Dataset: a dataset object (WITHOUT updating flexilims)
+            :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
 
         """
         assert (origin_id is not None) or (origin_name is not None)
@@ -276,7 +286,8 @@ class Dataset(object):
     def get_flexilims_entry(self):
         """Get the flexilims entry for this dataset
 
-        return a dictionary or [] if the entry is not found
+        Returns:
+            dict: a dictionary or [] if the entry is not found
         """
         if self.project_id is None:
             raise IOError('You must specify the project to get flexilims status')

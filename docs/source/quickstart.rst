@@ -44,11 +44,12 @@ Mount the CAMP drive and just do::
 With ``/e`` to copy recursively, including empty directory and ``/z`` to use
 restartable mode (in case connection is lost).
 
-You can also consider:
+.. note::
+  You can also consider:
 
-* ``/j`` to copy using unbuffered I/O (recommended for large files).
-* ``/copy:DAT`` to copy data, attributes and timestamps but not ownership or ACL.
-* ``/move`` to move instead of copying (delete after successful upload)
+  * ``/j`` to copy using unbuffered I/O (recommended for large files).
+  * ``/copy:DAT`` to copy data, attributes and timestamps but not ownership or ACL.
+  * ``/move`` to move instead of copying (delete after successful upload)
 
 Syncing data
 ------------
@@ -100,13 +101,85 @@ the entries to flexilims::
 
 Querying the database
 ---------------------
+:py:mod:`flexiznam.main` provides high-level functions to retrieve and update
+entries on the database. Methods of :py:mod:`flexiznam.main` are directly available
+in the :py:mod:`flexiznam` namespace.
 
-:py:meth:`flexiznam.main.get_entities`
+First, create a Flexilims session by calling
+:py:meth:`flexiznam.main.get_flexilims_session`. This returns a :py:class:`flexilims.Flexilims`
+object with your authentication credential that you can pass to other methods.
+The simplest way is to just provide the project name and use the authentication
+details stored in the config files::
 
-:py:meth:`flexiznam.main.get_entity`
+  import flexiznam as flz
+  flz_session = flz.get_flexilims_session(project)
 
+:py:meth:`flexiznam.main.get_entities` is the most generic method and will retrieve
+any data type, filtered by name, id, origin, or arbitrary attribute. It returns
+a :py:class:`pandas.DataFrame` by default.
+
+:py:meth:`flexiznam.main.get_entity` has the same functionality but expects only
+a single result and returns a :py:class:`pandas.Series`::
+
+  exp_session = flz.get_entity(
+      datatype='session',
+      name=session_name,
+      flexilims_session=flz_session
+  )
+
+Other useful methods include :py:meth:`flexiznam.main.get_children`, which returns
+all children of a given entity, and :py:meth:`flexiznam.main.get_datasets`, which
+returns a dictionary containing paths to all datasets of a given type in a given
+session, for example::
+
+  si_datasets = flz.get_datasets(
+      exp_session['id'],
+      recording_type='two_photon',
+      dataset_type='scanimage',
+      flexilims_session=flz_session
+  )
 
 Adding processed datasets
 -------------------------
+New entries for pre-processed datasets can be added by calling the
+:py:meth:`flexiznam.main.add_dataset` method. However, this is not recommended.
+Instead, when the new processed dataset is created as a child on an existing
+entity, such as an experimental session or recording, it is best to use the
+static :py:meth:`flexiznam.schema.datasets.Dataset.from_origin` method of the
+:py:class:`flexiznam.schema.datasets.Dataset` class::
 
-:py:meth:`flexiznam.schema.datasets.Dataset.from_origin`
+  suite2p_dataset = Dataset.from_origin(
+      project=project,
+      origin_type='session',
+      origin_id=exp_session['id'],
+      dataset_type='suite2p_rois',
+      conflicts=conflicts
+  )
+
+This method will automatically set the flexilims name and path attribute of the
+new datasets, based on the path attribute of the parent passed by `origin_id`
+and return an instance of :py:class:`flexiznam.schema.datasets.Dataset`. It will
+also automatically handle conflicts, providing options to `append`, `overwrite`,
+`abort` or `skip` if a dataset of a given type is already associated with parent
+entity.
+
+.. note::
+  If using the `skip` mode of :py:meth:`flexiznam.schema.datasets.Dataset.from_origin`,
+  will either return a :py:class:`flexiznam.schema.datasets.Dataset`
+  object corresponding to the existing entry, if it exists, or to a new entry.
+  You can use :py:meth:`flexiznam.schema.datasets.Dataset.get_flexilims_entry`
+  to check if the entry already exists - it will return `None` if it does not.
+
+.. warning::
+  The output of :py:meth:`flexiznam.schema.datasets.Dataset.from_origin` is an abstraction
+  of the dataset you *would like to create*. The method itself does not update
+  the database. It's a good idea to do this only after the pre-processing step
+  is completed in case of a crash.
+
+You can set any additional attributes using the `extra_attributes` property of
+the `Dataset` object. When ready (i.e. once preprocessing is completed and the
+output files have been saved), you can push the changes to flexilims by invoking the
+:py:meth:`flexiznam.schema.datasets.Dataset.update_flexilims` method of the
+`Dataset` object::
+
+  suite2p_dataset.update_flexilims(mode='overwrite')

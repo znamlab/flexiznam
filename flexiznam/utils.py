@@ -9,12 +9,12 @@ def compare_series(first_series, second_series, series_name=('first', 'second'))
     """Compare two series and return a dataframe of differences
 
     Args:
-        first_series: first pandas series
-        second_series: second pandas series
+        first_series: first :py:class:`pandas.Series`
+        second_series: second :py:class:`pandas.Series`
         series_name: tuple of name for the two series.
 
     Returns:
-        Dataframe of differences
+        :py:class:`pandas.DataFrame`: DataFrame of differences
     """
     second_index = set(second_series.index)
     first_index = set(first_series.index)
@@ -41,10 +41,10 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
     Args:
         dictionary: dict (of dict)
         keys (list): list of keys to pop from the dictionary
-        path2string (str): replace Path object by their string representation
-                           (default True)
-        format_dataset (bool): replace Dataset instances by their yaml representation
-                               (default False)
+        path2string (bool): replace :py:class:`pathlib.Path` object by their
+            string representation (default True)
+        format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`
+            instances by their yaml representation (default False)
     """
 
     if isinstance(keys, str):

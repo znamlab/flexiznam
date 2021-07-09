@@ -35,8 +35,14 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx_click'  
+    'sphinx_click'
 ]
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None)
+}
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
