@@ -190,7 +190,7 @@
 <span class="sd">            name (str): name of the Dataset</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            None if parsing fails, a dictionary otherwise</span>
+<span class="sd">            dict or None: None if parsing fails, a dictionary otherwise</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pattern</span> <span class="o">=</span> <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(?P&lt;mouse&gt;.*?)_(?P&lt;session&gt;S\d</span><span class="si">{8}</span><span class="s1">)_?(?P&lt;session_num&gt;\d+)?&#39;</span>
                    <span class="sa">r</span><span class="s1">&#39;_?(?P&lt;recording&gt;R\d</span><span class="si">{6}</span><span class="s1">)?_?(?P&lt;recording_num&gt;\d+)?&#39;</span>
@@ -290,12 +290,22 @@
 <span class="sd">            origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided</span>
 <span class="sd">            origin_name (str): name of the origin. This or origin_id must be provided</span>
 <span class="sd">            dataset_type (str): type of dataset to create. Must be defined in the config file</span>
-<span class="sd">            conflicts (str): What to do if a dataset of this type already exists? Can be</span>
-<span class="sd">                `append`, `abort`=None, `skip` or `overwrite`</span>
-<span class="sd">            flm_session (Flexilims): authentication session to connect to flexilims</span>
+<span class="sd">            conflicts (str): What to do if a dataset of this type already exists</span>
+<span class="sd">                as a child of the parent entity?</span>
+<span class="sd">                </span>
+<span class="sd">                `append`</span>
+<span class="sd">                    Create a new dataset with a new name and path</span>
+<span class="sd">                `abort` or None</span>
+<span class="sd">                    Through a :py:class:`flexiznam.errors.NameNotUniqueError` and</span>
+<span class="sd">                    exit</span>
+<span class="sd">                `skip` or `overwrite`</span>
+<span class="sd">                    Return a Dataset corresponding to the existing entry if there</span>
+<span class="sd">                    is exactly one existing entry, otherwise through a</span>
+<span class="sd">                    :py:class:`flexiznam.errors.NameNotUniqueError`</span>
+<span class="sd">            flm_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dataset: a dataset object (WITHOUT updating flexilims)</span>
+<span class="sd">            :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="p">(</span><span class="n">origin_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">origin_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
@@ -438,7 +448,8 @@
 <div class="viewcode-block" id="Dataset.get_flexilims_entry"><a class="viewcode-back" href="../../../flexiznam.schema.html#flexiznam.schema.datasets.Dataset.get_flexilims_entry">[docs]</a>    <span class="k">def</span> <span class="nf">get_flexilims_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the flexilims entry for this dataset</span>
 
-<span class="sd">        return a dictionary or [] if the entry is not found</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: a dictionary or [] if the entry is not found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;You must specify the project to get flexilims status&#39;</span><span class="p">)</span>

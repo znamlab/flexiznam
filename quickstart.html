@@ -211,12 +211,15 @@ Mount the CAMP drive and just do:</p>
 </div>
 <p>With <code class="docutils literal notranslate"><span class="pre">/e</span></code> to copy recursively, including empty directory and <code class="docutils literal notranslate"><span class="pre">/z</span></code> to use
 restartable mode (in case connection is lost).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>You can also consider:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">/j</span></code> to copy using unbuffered I/O (recommended for large files).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/copy:DAT</span></code> to copy data, attributes and timestamps but not ownership or ACL.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/move</span></code> to move instead of copying (delete after successful upload)</p></li>
 </ul>
+</div>
 </div>
 <div class="section" id="syncing-data">
 <h2>Syncing data<a class="headerlink" href="#syncing-data" title="Permalink to this headline">¶</a></h2>
@@ -295,12 +298,89 @@ the entries to flexilims:</p>
 </div>
 <div class="section" id="querying-the-database">
 <h2>Querying the database<a class="headerlink" href="#querying-the-database" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="flexiznam.html#flexiznam.main.get_entities" title="flexiznam.main.get_entities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_entities()</span></code></a></p>
-<p><a class="reference internal" href="flexiznam.html#flexiznam.main.get_entity" title="flexiznam.main.get_entity"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_entity()</span></code></a></p>
+<p><a class="reference internal" href="flexiznam.html#module-flexiznam.main" title="flexiznam.main"><code class="xref py py-mod docutils literal notranslate"><span class="pre">flexiznam.main</span></code></a> provides high-level functions to retrieve and update
+entries on the database. Methods of <a class="reference internal" href="flexiznam.html#module-flexiznam.main" title="flexiznam.main"><code class="xref py py-mod docutils literal notranslate"><span class="pre">flexiznam.main</span></code></a> are directly available
+in the <a class="reference internal" href="flexiznam.html#module-flexiznam" title="flexiznam"><code class="xref py py-mod docutils literal notranslate"><span class="pre">flexiznam</span></code></a> namespace.</p>
+<p>First, create a Flexilims session by calling
+<a class="reference internal" href="flexiznam.html#flexiznam.main.get_flexilims_session" title="flexiznam.main.get_flexilims_session"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_flexilims_session()</span></code></a>. This returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">flexilims.Flexilims</span></code>
+object with your authentication credential that you can pass to other methods.
+The simplest way is to just provide the project name and use the authentication
+details stored in the config files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">flexiznam</span> <span class="k">as</span> <span class="nn">flz</span>
+<span class="n">flz_session</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_flexilims_session</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="flexiznam.html#flexiznam.main.get_entities" title="flexiznam.main.get_entities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_entities()</span></code></a> is the most generic method and will retrieve
+any data type, filtered by name, id, origin, or arbitrary attribute. It returns
+a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> by default.</p>
+<p><a class="reference internal" href="flexiznam.html#flexiznam.main.get_entity" title="flexiznam.main.get_entity"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_entity()</span></code></a> has the same functionality but expects only
+a single result and returns a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v1.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Series</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp_session</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_entity</span><span class="p">(</span>
+    <span class="n">datatype</span><span class="o">=</span><span class="s1">&#39;session&#39;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="n">session_name</span><span class="p">,</span>
+    <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flz_session</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Other useful methods include <a class="reference internal" href="flexiznam.html#flexiznam.main.get_children" title="flexiznam.main.get_children"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_children()</span></code></a>, which returns
+all children of a given entity, and <a class="reference internal" href="flexiznam.html#flexiznam.main.get_datasets" title="flexiznam.main.get_datasets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_datasets()</span></code></a>, which
+returns a dictionary containing paths to all datasets of a given type in a given
+session, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">si_datasets</span> <span class="o">=</span> <span class="n">flz</span><span class="o">.</span><span class="n">get_datasets</span><span class="p">(</span>
+    <span class="n">exp_session</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+    <span class="n">recording_type</span><span class="o">=</span><span class="s1">&#39;two_photon&#39;</span><span class="p">,</span>
+    <span class="n">dataset_type</span><span class="o">=</span><span class="s1">&#39;scanimage&#39;</span><span class="p">,</span>
+    <span class="n">flexilims_session</span><span class="o">=</span><span class="n">flz_session</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="adding-processed-datasets">
 <h2>Adding processed datasets<a class="headerlink" href="#adding-processed-datasets" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_origin" title="flexiznam.schema.datasets.Dataset.from_origin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_origin()</span></code></a></p>
+<p>New entries for pre-processed datasets can be added by calling the
+<a class="reference internal" href="flexiznam.html#flexiznam.main.add_dataset" title="flexiznam.main.add_dataset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.add_dataset()</span></code></a> method. However, this is not recommended.
+Instead, when the new processed dataset is created as a child on an existing
+entity, such as an experimental session or recording, it is best to use the
+static <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_origin" title="flexiznam.schema.datasets.Dataset.from_origin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_origin()</span></code></a> method of the
+<a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a> class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">suite2p_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_origin</span><span class="p">(</span>
+    <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+    <span class="n">origin_type</span><span class="o">=</span><span class="s1">&#39;session&#39;</span><span class="p">,</span>
+    <span class="n">origin_id</span><span class="o">=</span><span class="n">exp_session</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+    <span class="n">dataset_type</span><span class="o">=</span><span class="s1">&#39;suite2p_rois&#39;</span><span class="p">,</span>
+    <span class="n">conflicts</span><span class="o">=</span><span class="n">conflicts</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This method will automatically set the flexilims name and path attribute of the
+new datasets, based on the path attribute of the parent passed by <cite>origin_id</cite>
+and return an instance of <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a>. It will
+also automatically handle conflicts, providing options to <cite>append</cite>, <cite>overwrite</cite>,
+<cite>abort</cite> or <cite>skip</cite> if a dataset of a given type is already associated with parent
+entity.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If using the <cite>skip</cite> mode of <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_origin" title="flexiznam.schema.datasets.Dataset.from_origin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_origin()</span></code></a>,
+will either return a <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a>
+object corresponding to the existing entry, if it exists, or to a new entry.
+You can use <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.get_flexilims_entry" title="flexiznam.schema.datasets.Dataset.get_flexilims_entry"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.get_flexilims_entry()</span></code></a>
+to check if the entry already exists - it will return <cite>None</cite> if it does not.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The output of <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_origin" title="flexiznam.schema.datasets.Dataset.from_origin"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_origin()</span></code></a> is an abstraction
+of the dataset you <em>would like to create</em>. The method itself does not update
+the database. It’s a good idea to do this only after the pre-processing step
+is completed in case of a crash.</p>
+</div>
+<p>You can set any additional attributes using the <cite>extra_attributes</cite> property of
+the <cite>Dataset</cite> object. When ready (i.e. once preprocessing is completed and the
+output files have been saved), you can push the changes to flexilims by invoking the
+<a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.update_flexilims" title="flexiznam.schema.datasets.Dataset.update_flexilims"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.update_flexilims()</span></code></a> method of the
+<cite>Dataset</cite> object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">suite2p_dataset</span><span class="o">.</span><span class="n">update_flexilims</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;overwrite&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 

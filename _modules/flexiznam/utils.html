@@ -171,12 +171,12 @@
     <span class="sd">&quot;&quot;&quot;Compare two series and return a dataframe of differences</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        first_series: first pandas series</span>
-<span class="sd">        second_series: second pandas series</span>
+<span class="sd">        first_series: first :py:class:`pandas.Series`</span>
+<span class="sd">        second_series: second :py:class:`pandas.Series`</span>
 <span class="sd">        series_name: tuple of name for the two series.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dataframe of differences</span>
+<span class="sd">        :py:class:`pandas.DataFrame`: DataFrame of differences</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">second_index</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">second_series</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="n">first_index</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">first_series</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
@@ -203,10 +203,10 @@
 <span class="sd">    Args:</span>
 <span class="sd">        dictionary: dict (of dict)</span>
 <span class="sd">        keys (list): list of keys to pop from the dictionary</span>
-<span class="sd">        path2string (str): replace Path object by their string representation</span>
-<span class="sd">                           (default True)</span>
-<span class="sd">        format_dataset (bool): replace Dataset instances by their yaml representation</span>
-<span class="sd">                               (default False)</span>
+<span class="sd">        path2string (bool): replace :py:class:`pathlib.Path` object by their</span>
+<span class="sd">            string representation (default True)</span>
+<span class="sd">        format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`</span>
+<span class="sd">            instances by their yaml representation (default False)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>

@@ -188,6 +188,19 @@
 
 
 <div class="viewcode-block" id="get_flexilims_session"><a class="viewcode-back" href="../../flexiznam.html#flexiznam.main.get_flexilims_session">[docs]</a><span class="k">def</span> <span class="nf">get_flexilims_session</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Open a new flexilims session by creating a new authentication token.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        project_id (str): name of the project. Automatically converted to the</span>
+<span class="sd">            corresponding hexadecimal ID by looking up the config file.</span>
+<span class="sd">        username (str): (optional) flexilims username. If not provided, it is</span>
+<span class="sd">            read from the config file.</span>
+<span class="sd">        password (str): (optional) flexilims password. If not provided, it is</span>
+<span class="sd">            read from the secrets file, or failing that triggers an input prompt.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :py:class:`flexilims.Flexilims`: Flexilims session object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">project_id</span> <span class="o">=</span> <span class="n">_format_project</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">PARAMETERS</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">username</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">username</span> <span class="o">=</span> <span class="n">PARAMETERS</span><span class="p">[</span><span class="s1">&#39;flexilims_username&#39;</span><span class="p">]</span>
@@ -204,12 +217,13 @@
 <span class="sd">    Args:</span>
 <span class="sd">        mouse_name:</span>
 <span class="sd">        project_id:</span>
-<span class="sd">        flexilims_session:</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`):</span>
 <span class="sd">        mcms_animal_name:</span>
 <span class="sd">        mcms_username:</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        flexilims reply</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -254,11 +268,12 @@
 <span class="sd">            for skiping creation and returning the session from flexilims or</span>
 <span class="sd">            `abort` to crash</span>
 <span class="sd">        other_relations: ID(s) of custom entities related to the session</span>
-<span class="sd">        flexilims_session (Flexilims): flexilims session</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session</span>
 <span class="sd">        project_id (str): name of the project or hexadecimal project id (needed if session is not provided)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        flexilims reply</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">flexilims_session</span> <span class="o">=</span> <span class="n">get_flexilims_session</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
@@ -310,11 +325,12 @@
 <span class="sd">        recording_name (str or None): name of the recording, usually in the shape `R152356`.</span>
 <span class="sd">        conflicts (str): `skip` or `abort`: how to handle conflicts</span>
 <span class="sd">        other_relations: ID(s) of custom entities related to the session</span>
-<span class="sd">        flexilims_session (Flexilims): flexilims session</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session</span>
 <span class="sd">        project_id (str): name of the project or hexadecimal project id (needed if session is not provided)</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        flexilims reply</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -375,7 +391,8 @@
 <span class="sd">        path (str): path to the data relative to the project folder</span>
 <span class="sd">        is_raw (str): `yes` or `no`, used to find the root directory</span>
 <span class="sd">        project_id (str): hexadecimal ID or name of the project</span>
-<span class="sd">        flexilims_session (Flexilims): authentication session for flexilims</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): authentication</span>
+<span class="sd">            session for flexilims</span>
 <span class="sd">        dataset_name (str): name of the dataset, will be autogenerated if not provided</span>
 <span class="sd">        attributes (dict): optional attributes</span>
 <span class="sd">        strict_validation (bool): default False, if True, only attributes in lab settings are</span>
@@ -386,6 +403,7 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        the flexilims response</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">flexilims_session</span> <span class="o">=</span> <span class="n">get_flexilims_session</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
@@ -443,23 +461,29 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get entities of a given type and format results.</span>
 
-<span class="sd">    If an open Flexylims session is provided, the other authentication arguments</span>
-<span class="sd">    aree not needed (or used)</span>
+<span class="sd">    Entities can be filtered by name, id, origin, or attribute (using the</span>
+<span class="sd">    `query_key` / `query_value` arguments).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        datatype (str): type of Flexylims entity to fetch, e.g. &#39;mouse&#39;, &#39;session&#39;,</span>
-<span class="sd">            &#39;recording&#39;, or &#39;dataset&#39;</span>
-<span class="sd">        query_key (str): attribute to filter by</span>
+<span class="sd">            &#39;recording&#39;, or &#39;dataset&#39;. This is the only mandatory argument.</span>
+<span class="sd">        query_key (str): attribute to filter by.</span>
 <span class="sd">        query_value (str): attribute value to select</span>
-<span class="sd">        project_id (str): text name of the project</span>
-<span class="sd">        flexilims_session (Flexilims): Flexylims session object</span>
+<span class="sd">        project_id (str): text name of the project. Either `project_id` or</span>
+<span class="sd">            `flexilims_session` must be provided.</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session</span>
+<span class="sd">            object. This is preferred to providing `project_id` as it avoids</span>
+<span class="sd">            creating new authentication tokens.</span>
 <span class="sd">        name (str): filter by name</span>
 <span class="sd">        origin_id (str): filter by origin / parent</span>
 <span class="sd">        id (str): filter by hexadecimal id</span>
-<span class="sd">        format_reply (bool, default True): format the reply into a dataframe</span>
+<span class="sd">        format_reply (bool): (default True) whether to format the reply into a</span>
+<span class="sd">            `Dataframe`. If this is set to false, a list of dictionaries will be</span>
+<span class="sd">            returned instead.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        DataFrame: containing all matching entities</span>
+<span class="sd">        :py:class:`pandas.DataFrame`: containing all matching entities</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">project_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">flexilims_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -485,26 +509,32 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get one entity and format result.</span>
 
-<span class="sd">    If multiple entities on the database match the query, raise a NameNotUniqueError,</span>
-<span class="sd">    if nothing match, return None</span>
-
-<span class="sd">    If an open Flexylims session is provided, the other authentication arguments</span>
-<span class="sd">    aree not needed (or used)</span>
+<span class="sd">    Calls :py:meth:`flexiznam.main.get_entities` but expects only one result and</span>
+<span class="sd">    returns a :py:class:`pandas.Series` instead of a :py:class:`pandas.DataFrame`.</span>
+<span class="sd">    If multiple entities on the database match the query, raise a</span>
+<span class="sd">    :py:class:`flexiznam.errors.NameNotUniqueError`, if nothing matches returns `None`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        datatype (str): type of Flexylims entity to fetch, e.g. &#39;mouse&#39;, &#39;session&#39;,</span>
-<span class="sd">            &#39;recording&#39;, or &#39;dataset&#39;</span>
-<span class="sd">        query_key (str): attribute to filter by</span>
+<span class="sd">            &#39;recording&#39;, or &#39;dataset&#39;. This is the only mandatory argument.</span>
+<span class="sd">        query_key (str): attribute to filter by.</span>
 <span class="sd">        query_value (str): attribute value to select</span>
-<span class="sd">        project_id (str): text name of the project</span>
-<span class="sd">        flexilims_session (Flexilims): Flexylims session object</span>
+<span class="sd">        project_id (str): text name of the project. Either `project_id` or</span>
+<span class="sd">            `flexilims_session` must be provided.</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session</span>
+<span class="sd">            object. This is preferred to providing `project_id` as it avoids</span>
+<span class="sd">            creating new authentication tokens.</span>
 <span class="sd">        name (str): filter by name</span>
 <span class="sd">        origin_id (str): filter by origin / parent</span>
 <span class="sd">        id (str): filter by hexadecimal id</span>
-<span class="sd">        format_reply (bool, default True): format the reply into a dataframe</span>
+<span class="sd">        format_reply (bool): (default True) whether to format the reply into a</span>
+<span class="sd">            `Dataframe`. If this is set to false, a list of dictionaries will be</span>
+<span class="sd">            returned instead.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Series: containing the entity or dictionary if format_reply is False</span>
+<span class="sd">        :py:class:`pandas.Series`: containing the entity or dictionary if</span>
+<span class="sd">        format_reply is False</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">entity</span> <span class="o">=</span> <span class="n">get_entities</span><span class="p">(</span>
         <span class="n">datatype</span><span class="o">=</span><span class="n">datatype</span><span class="p">,</span>
@@ -560,13 +590,14 @@
 <span class="sd">        name (str): name on flexilims</span>
 <span class="sd">        origin_id (str or None): hexadecimal id of the origin</span>
 <span class="sd">        attributes (dict or None): attributes to update</span>
-<span class="sd">        other_relations (str or list of str): hexadecimal ID(s) of custom entities</span>
-<span class="sd">            link to the entry to update</span>
+<span class="sd">        other_relations (str or :obj:`list` of :obj:`str`): hexadecimal ID(s)</span>
+<span class="sd">            of custom entities link to the entry to update</span>
 <span class="sd">        project_id (str): text name of the project</span>
-<span class="sd">        flexilims_session (Flexilims): Flexylims session object</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        flexilims reply</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">project_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">flexilims_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -597,17 +628,22 @@
 <span class="sd">        datatype (str): flexilims type</span>
 <span class="sd">        name (str): name on flexilims</span>
 <span class="sd">        origin_id (str or None): hexadecimal id of the origin</span>
-<span class="sd">        mode (str): If `overwrite`, (default) all attributes that already existed on</span>
-<span class="sd">                                    flexilims but are not specified in the function call</span>
-<span class="sd">                                    are set to &#39;null&#39;.</span>
-<span class="sd">                    If `update`, update the attributes given in this call and do not</span>
-<span class="sd">                                 change the other</span>
+<span class="sd">        mode (str): what to do with attributes that are not explicitly specified.</span>
+
+<span class="sd">            `overwrite`</span>
+<span class="sd">                (default) all attributes that already exist on</span>
+<span class="sd">                flexilims but are not specified in the function call are set to &#39;null&#39;.</span>
+<span class="sd">            `update`</span>
+<span class="sd">                update the attributes given in this call and do not change the</span>
+<span class="sd">                others.</span>
+
 <span class="sd">        attributes (dict or None): attributes to update</span>
 <span class="sd">        project_id (str): text name of the project</span>
-<span class="sd">        flexilims_session (Flexilims): Flexylims session object</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        flexilims reply</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">project_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">flexilims_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
@@ -648,12 +684,19 @@
 
 
 <div class="viewcode-block" id="format_results"><a class="viewcode-back" href="../../flexiznam.html#flexiznam.main.format_results">[docs]</a><span class="k">def</span> <span class="nf">format_results</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;make request output a nice df</span>
+    <span class="sd">&quot;&quot;&quot;Make request output a nice DataFrame</span>
 
 <span class="sd">    This will crash if any attribute is also present in the flexilims reply,</span>
 <span class="sd">    i.e. if an attribute is named:</span>
 <span class="sd">    &#39;id&#39;, &#39;type&#39;, &#39;name&#39;, &#39;incrementalId&#39;, &#39;createdBy&#39;, &#39;dateCreated&#39;,</span>
 <span class="sd">    &#39;origin_id&#39;, &#39;objects&#39;, &#39;customEntities&#39;, or &#39;project&#39;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        results (:obj:`list` of :obj:`dict`): Flexilims reply</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :py:class:`pandas.DataFrame`: Reply formatted as a DataFrame</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
@@ -739,7 +782,7 @@
 <span class="sd">        parent_id (str): hexadecimal id of the parent entity</span>
 <span class="sd">        children_datatype (str): type of child entities to fetch</span>
 <span class="sd">        project_id (str): text name of the project</span>
-<span class="sd">        flexilims_session (Flexilims): Flexylims session object</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        DataFrame: containing all the relevant child entitites</span>
@@ -757,7 +800,24 @@
 <div class="viewcode-block" id="get_datasets"><a class="viewcode-back" href="../../flexiznam.html#flexiznam.main.get_datasets">[docs]</a><span class="k">def</span> <span class="nf">get_datasets</span><span class="p">(</span><span class="n">origin_id</span><span class="p">,</span> <span class="n">recording_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dataset_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">flexilims_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Recurse into recordings and get paths to child datasets of a given type</span>
+<span class="sd">    Recurse into recordings and get paths to child datasets of a given type.</span>
+
+<span class="sd">    For example, this is useful if you want to retrieve paths to all *scanimage*</span>
+<span class="sd">    datasets associated with a given session.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        origin_id (str): hexadecimal ID of the origin session.</span>
+<span class="sd">        recording_type (str): type of the recording to filter by. If `None`,</span>
+<span class="sd">            will return datasets for all recordings.</span>
+<span class="sd">        dataset_type (str): type of the dataseet to filter by. If `None`,</span>
+<span class="sd">            will return all datasets.</span>
+<span class="sd">        project_id (str): text name of the project. Not required if</span>
+<span class="sd">            `flexilims_session` is provided.</span>
+<span class="sd">        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Dictionary with recording names as keys containing lists of associated dataset paths.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">project_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">flexilims_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">flexilims_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
