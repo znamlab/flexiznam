@@ -187,14 +187,17 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
             error_handling='report'
         )
 
-    session_data['samples'] = create_samples(session_data)
+    session_data['samples'] = create_sample_datasets(
+        session_data,
+        raw_data_folder
+    )
 
     # remove the full path that are not needed
     clean_dictionary_recursively(session_data)
     return session_data
 
 
-def create_samples(parent):
+def create_sample_datasets(parent, raw_data_folder):
     """Recursively index samples creating a nested dictionary and generate
     corresponding datasets
 
@@ -203,19 +206,21 @@ def create_samples(parent):
 
     Return:
         dict: dictonary of child samples
+
     """
+    if 'samples' not in parent:
+        return dict()
     for sample_name, sample in parent['samples'].items():
         sample['path'] = parent['path'] / sample_name
         sample['datasets'] = create_dataset(
             dataset_infos=sample['datasets'],
             parent=sample,
             raw_data_folder=raw_data_folder,
-            verbose=verbose,
             error_handling='report'
         )
 
         # recurse into child samples
-        sample['samples'] = create_samples(sample)
+        sample['samples'] = create_sample_datasets(sample, raw_data_folder)
     # we update in place but we also return the dictionary of samples to make
     # for more readable code
     return parent['samples']
@@ -334,14 +339,44 @@ def clean_yaml(path_to_yaml):
     # session['full_name'] = '_'.join([session['mouse'], session['session']])
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
-        ds = read_dataset(name=dataset_name, data=dataset_dict)
-        session['datasets'][dataset_name] = ds
+        session['datasets'][dataset_name] = read_dataset(name=dataset_name, data=dataset_dict)
 
     session['recordings'] = {}
     for rec_name, rec_dict in nested_levels['recordings'].items():
-        ds = read_recording(name=rec_name, data=rec_dict)
-        session['recordings'][rec_name] = ds
+        session['recordings'][rec_name] = read_recording(name=rec_name, data=rec_dict)
+
+    session['samples'] = {}
+    for sample_name, sample_dict in nested_levels['samples'].items():
+        session['samples'][sample_name] = read_sample(name=sample_name, data=sample_dict)
+
     return session
+
+
+def read_sample(name, data):
+    """Read YAML information corresponding to a sample
+
+    Args:
+        name (str): the name of the sample
+        data (dict): data for this sample only
+
+    Returns:
+        dict: the sample read from the yaml
+
+    """
+    sample, nested_levels = read_level(
+        data,
+        mandatory_args=(),
+        optional_args=('notes', 'attributes', 'path'),
+        nested_levels=('datasets','samples')
+    )
+    sample['name'] = name
+
+    sample['datasets'] = dict()
+    for ds_name, ds_data in nested_levels['datasets'].items():
+        sample['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+    for sample_name, sample_data in nested_levels['samples'].items():
+        sample['samples'][samplee_name] = read_sample(name=sample_name, data=sample_data)
+    return sample
 
 
 def read_recording(name, data):
@@ -355,10 +390,12 @@ def read_recording(name, data):
         dict: the recording read from the yaml
 
     """
-    recording, datasets = read_level(data, mandatory_args=('protocol',),
-                                     optional_args=('notes', 'attributes', 'path',
-                                                    'recording_type', 'timestamp'),
-                                     nested_levels=('datasets',))
+    recording, datasets = read_level(
+        data,
+        mandatory_args=('protocol',),
+        optional_args=('notes', 'attributes', 'path', 'recording_type', 'timestamp'),
+        nested_levels=('datasets',)
+    )
     recording['name'] = name
 
     # if timestamps is None, the name must start with RHHMMSS
@@ -370,8 +407,7 @@ def read_recording(name, data):
         recording['timestamp'] = m.groups()[0]
     recording['datasets'] = dict()
     for ds_name, ds_data in datasets['datasets'].items():
-        ds = read_dataset(name=ds_name, data=ds_data)
-        recording['datasets'][ds_name] = ds
+        recording['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
 
     return recording
 
@@ -389,10 +425,12 @@ def read_dataset(name, data):
         'attributes' and 'name'
 
     """
-    level, _ = read_level(data, mandatory_args=('dataset_type', 'path'),
-                          optional_args=('notes', 'attributes', 'created', 'is_raw',
-                                         'origin_id'),
-                          nested_levels=())
+    level, _ = read_level(
+        data,
+        mandatory_args=('dataset_type', 'path'),
+        optional_args=('notes', 'attributes', 'created', 'is_raw', 'origin_id'),
+        nested_levels=()
+    )
     level['name'] = name
     return level
 
