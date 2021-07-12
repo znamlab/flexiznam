@@ -187,10 +187,38 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
             error_handling='report'
         )
 
+    session_data['samples'] = create_samples(session_data)
+
     # remove the full path that are not needed
     clean_dictionary_recursively(session_data)
     return session_data
 
+
+def create_samples(parent):
+    """Recursively index samples creating a nested dictionary and generate
+    corresponding datasets
+
+    Args:
+        parent (dict): Dictonary corresponding to the parent entity
+
+    Return:
+        dict: dictonary of child samples
+    """
+    for sample_name, sample in parent['samples'].items():
+        sample['path'] = parent['path'] / sample_name
+        sample['datasets'] = create_dataset(
+            dataset_infos=sample['datasets'],
+            parent=sample,
+            raw_data_folder=raw_data_folder,
+            verbose=verbose,
+            error_handling='report'
+        )
+
+        # recurse into child samples
+        sample['samples'] = create_samples(sample)
+    # we update in place but we also return the dictionary of samples to make
+    # for more readable code
+    return parent['samples']
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
@@ -371,7 +399,7 @@ def read_dataset(name, data):
 
 def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
                optional_args=('path', 'notes', 'attributes'),
-               nested_levels=('recordings', 'datasets')):
+               nested_levels=('recordings', 'datasets', 'samples')):
     """Read one layer of the yml file (i.e. a dictionary)
 
     Args:
