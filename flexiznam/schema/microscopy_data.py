@@ -15,8 +15,8 @@ class MicroscopyData(Dataset):
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, flm_session=None):
         """Create Microscopy datasets by loading info from folder"""
-        fnames = [f for f in os.listdir(folder) if f.endswith(tuple(CameraData.VALID_EXTENSIONS))]
-        
+        fnames = [f for f in os.listdir(folder) if f.endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
+
         output = dict()
         for fname in fnames:
             dataset_path = pathlib.Path(folder) / fname
@@ -49,7 +49,7 @@ class MicroscopyData(Dataset):
             flm_session: authentication session for connecting to flexilims
         """
         super().__init__(name=name, path=path, is_raw=is_raw,
-                         dataset_type=CameraData.DATASET_TYPE,
+                         dataset_type=MicroscopyData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
 
