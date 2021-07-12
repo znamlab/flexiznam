@@ -22,5 +22,5 @@ DEFAULT_CONFIG = dict(
     datatypes=['mouse', 'session', 'recording', 'dataset'],
     # list of valid dataset type
     dataset_types = ['scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces',
-                     'harp']
+                     'harp', 'microscopy']
 )
