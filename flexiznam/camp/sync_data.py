@@ -153,7 +153,6 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         dict: A yaml dictionary with dataset classes
 
     """
-
     session_data = clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
@@ -335,8 +334,7 @@ def clean_yaml(path_to_yaml):
         yml_data = yaml.safe_load(yml_file)
 
     session, nested_levels = read_level(yml_data)
-    # session['parent'] = session['mouse']  # duplicate info to format as nested layers
-    # session['full_name'] = '_'.join([session['mouse'], session['session']])
+
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
         session['datasets'][dataset_name] = read_dataset(name=dataset_name, data=dataset_dict)
@@ -363,6 +361,8 @@ def read_sample(name, data):
         dict: the sample read from the yaml
 
     """
+    if data is None:
+        data = {}
     sample, nested_levels = read_level(
         data,
         mandatory_args=(),
@@ -374,8 +374,9 @@ def read_sample(name, data):
     sample['datasets'] = dict()
     for ds_name, ds_data in nested_levels['datasets'].items():
         sample['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+    sample['samples'] = dict()
     for sample_name, sample_data in nested_levels['samples'].items():
-        sample['samples'][samplee_name] = read_sample(name=sample_name, data=sample_data)
+        sample['samples'][sample_name] = read_sample(name=sample_name, data=sample_data)
     return sample
 
 
