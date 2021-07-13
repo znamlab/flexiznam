@@ -120,10 +120,12 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.flm_session = flexilims_session
             ds.update_flexilims(mode='safe')
     # now deal with samples
-    def add_samples(samples, parent):
+    def add_samples(samples, parent, short_parent_name=None):
         # we'll need a utility function to deal with recursion
-        for sample_name, sample_data in samples.items():
-            sample_name = parent['name'] + '_' + sample_name
+        for short_sample_name, sample_data in samples.items():
+            sample_name = parent['name'] + '_' + short_sample_name
+            if short_parent_name is not None:
+                short_sample_name = short_parent_name + '_' + short_sample_name
             attributes = sample_data.get('attributes', None)
             if attributes is None:
                 attributes = {}
@@ -139,12 +141,13 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             for ds_name, ds in sample_data.get('datasets', {}).items():
                 ds.mouse = mouse.name
                 ds.project = session_data['project']
+                ds.sample = short_sample_name
                 ds.session = session_data['session']
                 ds.origin_id = sample_rep['id']
                 ds.flm_session = flexilims_session
                 ds.update_flexilims(mode='safe')
             # now add child samples
-            add_samples(sample_data['samples'], sample_rep)
+            add_samples(sample_data['samples'], sample_rep, short_sample_name)
     # samples are attached to mice, not sessions
     add_samples(session_data['samples'], mouse)
 
