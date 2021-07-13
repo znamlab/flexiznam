@@ -217,10 +217,76 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     return resp
 
 
+def add_sample(parent_id, attributes=None, sample_name=None,
+               conflicts='skip', other_relations=None, flexilims_session=None,
+               project_id=None):
+    """Add a sample as a child of a mouse or another sample
+
+    Default conflict behaviour for samples is `skip`, as we will often add from
+    the same sample multiple occasions.
+
+    Args:
+        parent_id (str): hexadecimal ID of the parent entity. Must exist on flexilims.
+        attributes (dict): dictionary of additional attributes.
+        sample_name (str or None): name of the sample.
+        conflicts (str): `skip` or `abort`: how to handle conflicts.
+        other_relations: ID(s) of custom entities related to the sample.
+        flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session.
+        project_id (str): name of the project or hexadecimal project id
+            (required if session is not provided).
+
+    Returns:
+        flexilims reply
+
+    """
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+
+    if conflicts.lower() not in ('skip', 'abort'):
+        raise AttributeError('conflicts must be `skip` or `abort`')
+
+    if sample_name is None:
+        parent_name = pd.concat([
+            get_entities(flexilims_session=flexilims_session,
+                         datatype='mouse',
+                         id=parent_id),
+            get_entities(flexilims_session=flexilims_session,
+                         datatype='sample',
+                         id=parent_id)
+        ])['name'][0]
+        sample_name = parent_name + '_sample_0'
+        sample_name = generate_name('sample', sample_name,
+                                    flexilims_session=flexilims_session)
+    online_sample = get_entity(
+        datatype='sample',
+        name=sample_name,
+        flexilims_session=flexilims_session
+    )
+    if online_sample is not None:
+        if conflicts.lower() == 'skip':
+            print('A sample named %s already exists' % (sample_name))
+            return online_sample
+        else:
+            raise FlexilimsError('A sample named %s already exists' %
+                                 recording_name)
+
+    if attributes is None:
+        attributes = {}
+    resp = flexilims_session.post(
+        datatype='sample',
+        name=sample_name,
+        attributes=attributes,
+        origin_id=parent_id,
+        other_relations=other_relations,
+        strict_validation=False
+    )
+    return resp
+
+
 def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id=None,
                 flexilims_session=None, dataset_name=None, attributes=None,
                 strict_validation=False, conflicts='append'):
-    """Add a dataset as a child of a recording or session
+    """Add a dataset as a child of a recording, session, or sample
 
     Args:
         parent_id (str): hexadecimal ID of the parent (session or recording)
@@ -256,6 +322,9 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
                          id=parent_id),
             get_entities(flexilims_session=flexilims_session,
                          datatype='session',
+                         id=parent_id),
+            get_entities(flexilims_session=flexilims_session,
+                         datatype='sample',
                          id=parent_id)
         ])['name'][0]
         dataset_name = parent_name + '_' + dataset_type + '_0'
@@ -397,6 +466,7 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
 def generate_name(datatype, name, flexilims_session=None, project_id=None):
     """
     Generate a number for incrementally increasing the numeric suffix
+
     """
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
@@ -536,7 +606,6 @@ def format_results(results):
         :py:class:`pandas.DataFrame`: Reply formatted as a DataFrame
 
     """
-
     for result in results:
         for attr_name, attr_value in result['attributes'].items():
             if attr_name in result:
@@ -549,7 +618,22 @@ def format_results(results):
 
 def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
     """
-    Loop through possible datatypes and return the first with a matching name
+    Loop through possible datatypes and return the first with a matching name.
+
+    .. warning::
+      If there are multiple matches, will return only the first one found!
+
+    Args:
+        name (str): (optional, if `id` is provided) name of the entity
+        id (str): (optional, if `name` is provided) hexadecimal id of the entity
+        project_id (str): (optional, if `flexilims_session` is provided)
+            text name of the project
+        flexilims_session (:py:class:`flexilims.Flexilims`): (optional, if
+            `project_id` is provided) Flexylims session object
+
+    Returns:
+        str: datatype of the matching entity.
+
     """
     assert (project_id is not None) or (flexilims_session is not None)
     assert (name is not None) or (id is not None)
@@ -624,6 +708,7 @@ def get_children(parent_id, children_datatype, project_id=None, flexilims_sessio
 
     Returns:
         DataFrame: containing all the relevant child entitites
+
     """
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:

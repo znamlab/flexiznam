@@ -18,7 +18,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     Args:
         source_yaml (str): path to clean yaml
         raw_data_folder (str): path to the folder containing the data. Default to
-         data_root['raw']
+            data_root['raw']
         verbose (bool): print progress information
         log_func: function to deal with warnings and messages
         flexilims_session (Flexilims): session to avoid recreating a token
@@ -47,12 +47,13 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
     # deal with the session
-    m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
-    if m:
-        date = '-'.join(m.groups())
-    else:
-        log_func('Cannot parse date for session %s.' % session_data['session'])
-        date = 'N/A'
+    if session_data['session'] is not None:
+        m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
+        if m:
+            date = '-'.join(m.groups())
+        else:
+            log_func('Cannot parse date for session %s.' % session_data['session'])
+            date = 'N/A'
 
     session_data = trim_paths(session_data, raw_data_folder)
 
@@ -63,26 +64,31 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         value = session_data.get(field, None)
         if value is not None:
             attributes[field] = value
-
-    session = flz.add_experimental_session(
-        mouse_name=mouse['name'],
-        session_name=mouse['name'] + '_' + session_data['session'],
-        flexilims_session=flexilims_session,
-        date=date,
-        attributes=attributes,
-        conflicts=conflicts)
+    # if session is not specified, then entries will be added directly as
+    # children of the mouse
+    if session_data['session'] is not None:
+        session = flz.add_experimental_session(
+            mouse_name=mouse['name'],
+            session_name=mouse['name'] + '_' + session_data['session'],
+            flexilims_session=flexilims_session,
+            date=date,
+            attributes=attributes,
+            conflicts=conflicts)
+        root_id = session['id']
+    else:
+        root_id = mouse.id
 
     # session datasets
     for ds_name, ds in session_data.get('datasets', {}).items():
         ds.mouse = mouse.name
         ds.project = session_data['project']
         ds.session = session_data['session']
-        ds.origin_id = session['id']
+        ds.origin_id = root_id
         ds.flm_session = flexilims_session
         ds.update_flexilims(mode='safe')
 
     # now deal with recordings
-    for short_rec_name, rec_data in session_data['recordings'].items():
+    for short_rec_name, rec_data in session_data.get('recordings', {}).items():
         rec_name = session['name'] + '_' + short_rec_name
         attributes = rec_data.get('attributes', None)
         if attributes is None:
@@ -93,14 +99,16 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         rec_type = rec_data.get('recording_type', 'unspecified')
         if not rec_type:
             rec_type = 'unspecified'
-        rec_rep = flz.add_recording(session_id=session['id'],
-                                    recording_type=rec_type,
-                                    protocol=rec_data.get('protocol', ''),
-                                    attributes=attributes,
-                                    recording_name=rec_name,
-                                    other_relations=None,
-                                    flexilims_session=flexilims_session,
-                                    conflicts=conflicts)
+        rec_rep = flz.add_recording(
+            session_id=root_id,
+            recording_type=rec_type,
+            protocol=rec_data.get('protocol', ''),
+            attributes=attributes,
+            recording_name=rec_name,
+            other_relations=None,
+            flexilims_session=flexilims_session,
+            conflicts=conflicts
+        )
 
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
@@ -111,11 +119,38 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.origin_id = rec_rep['id']
             ds.flm_session = flexilims_session
             ds.update_flexilims(mode='safe')
-    return session
+    # now deal with samples
+    def add_samples(samples, parent):
+        # we'll need a utility function to deal with recursion
+        for sample_name, sample_data in samples.items():
+            sample_name = parent['name'] + '_' + sample_name
+            attributes = sample_data.get('attributes', None)
+            if attributes is None:
+                attributes = {}
+            # we always use `skip` to add samples
+            sample_rep = flz.add_sample(
+                parent['id'],
+                attributes=attributes,
+                sample_name=sample_name,
+                conflicts='skip',
+                flexilims_session=flexilims_session
+            )
+            # deal with datasets attached to this sample
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.mouse = mouse.name
+                ds.project = session_data['project']
+                ds.session = session_data['session']
+                ds.origin_id = sample_rep['id']
+                ds.flm_session = flexilims_session
+                ds.update_flexilims(mode='safe')
+            # now add child samples
+            add_samples(sample_data['samples'], sample_rep)
+    # samples are attached to mice, not sessions
+    add_samples(session_data['samples'], mouse)
 
 
 def trim_paths(session_data, raw_data_folder):
-    """Parses paths to make them relative to data
+    """Parses paths to make them relative to `raw_data_folder`
 
     Args:
         session_data (dict): dictionary containing children of the session
@@ -125,6 +160,17 @@ def trim_paths(session_data, raw_data_folder):
         dict: `session_data` after trimming the paths
 
     """
+
+    def trim_sample_paths(samples):
+        # utility function to recurse into samples
+        for sample_name, sample_data in samples.items():
+            samples[sample_name]['path'] = \
+                str(Path(samples[sample_name]['path'])
+                    .relative_to(raw_data_folder))
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.path = ds.path.relative_to(raw_data_folder)
+            trim_sample_paths(sample_data['samples'])
+
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
     if 'path' in session_data.keys():
@@ -138,6 +184,7 @@ def trim_paths(session_data, raw_data_folder):
                 .relative_to(raw_data_folder))
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.path = ds.path.relative_to(raw_data_folder)
+    trim_sample_paths(session_data['samples'])
     return session_data
 
 
@@ -161,9 +208,11 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
 
     if session_data['path'] is not None:
         home_folder = Path(raw_data_folder) / session_data['path']
-    else:
+    elif session_data['session'] is not None:
         home_folder = Path(raw_data_folder) / session_data['mouse'] / \
                       session_data['session']
+    else:
+        home_folder = Path(raw_data_folder) / session_data['mouse']
         # first load datasets in the session level
     if not home_folder.is_dir():
         raise FileNotFoundError('Session directory %s does not exist' % home_folder)
