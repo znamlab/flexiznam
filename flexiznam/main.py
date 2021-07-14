@@ -268,7 +268,7 @@ def add_sample(parent_id, attributes=None, sample_name=None,
             return online_sample
         else:
             raise FlexilimsError('A sample named %s already exists' %
-                                 recording_name)
+                                 sample_name)
 
     if attributes is None:
         attributes = {}
