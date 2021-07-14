@@ -243,6 +243,7 @@ class Dataset(object):
         """
         self.mouse = None
         self.session = None
+        self.sample = None
         self.recording = None
         self.dataset_name = None
         self.name = name
@@ -477,10 +478,13 @@ class Dataset(object):
 
     @property
     def name(self):
-        """Full name of the dataset, including mouse, session etc ..."""
+        """Full name of the dataset as it would appear on Flexilims.
+
+        Including mouse, sample, session and recording, whichever apply.
+        """
         if self.dataset_name is None:
             return
-        elements = [getattr(self, w) for w in ('mouse', 'session', 'recording',
+        elements = [getattr(self, w) for w in ('mouse', 'sample', 'session', 'recording',
                                                'dataset_name')]
         name = '_'.join([e for e in elements if e is not None])
         return name

@@ -62,7 +62,7 @@ class CameraData(Dataset):
         raise NotImplementedError
 
     def __init__(self, path, timestamp_file, metadata_file, video_file, name=None,
-                 extra_attributes={}, created=None, project=None, is_raw=True,
+                 extra_attributes=None, created=None, project=None, is_raw=True,
                  flm_session=None):
         """Create a Camera dataset
 

@@ -18,7 +18,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     Args:
         source_yaml (str): path to clean yaml
         raw_data_folder (str): path to the folder containing the data. Default to
-         data_root['raw']
+            data_root['raw']
         verbose (bool): print progress information
         log_func: function to deal with warnings and messages
         flexilims_session (Flexilims): session to avoid recreating a token
@@ -47,12 +47,13 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
     # deal with the session
-    m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
-    if m:
-        date = '-'.join(m.groups())
-    else:
-        log_func('Cannot parse date for session %s.' % session_data['session'])
-        date = 'N/A'
+    if session_data['session'] is not None:
+        m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
+        if m:
+            date = '-'.join(m.groups())
+        else:
+            log_func('Cannot parse date for session %s.' % session_data['session'])
+            date = 'N/A'
 
     session_data = trim_paths(session_data, raw_data_folder)
 
@@ -63,26 +64,31 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         value = session_data.get(field, None)
         if value is not None:
             attributes[field] = value
-
-    session = flz.add_experimental_session(
-        mouse_name=mouse['name'],
-        session_name=mouse['name'] + '_' + session_data['session'],
-        flexilims_session=flexilims_session,
-        date=date,
-        attributes=attributes,
-        conflicts=conflicts)
+    # if session is not specified, then entries will be added directly as
+    # children of the mouse
+    if session_data['session'] is not None:
+        session = flz.add_experimental_session(
+            mouse_name=mouse['name'],
+            session_name=mouse['name'] + '_' + session_data['session'],
+            flexilims_session=flexilims_session,
+            date=date,
+            attributes=attributes,
+            conflicts=conflicts)
+        root_id = session['id']
+    else:
+        root_id = mouse.id
 
     # session datasets
     for ds_name, ds in session_data.get('datasets', {}).items():
         ds.mouse = mouse.name
         ds.project = session_data['project']
         ds.session = session_data['session']
-        ds.origin_id = session['id']
+        ds.origin_id = root_id
         ds.flm_session = flexilims_session
         ds.update_flexilims(mode='safe')
 
     # now deal with recordings
-    for short_rec_name, rec_data in session_data['recordings'].items():
+    for short_rec_name, rec_data in session_data.get('recordings', {}).items():
         rec_name = session['name'] + '_' + short_rec_name
         attributes = rec_data.get('attributes', None)
         if attributes is None:
@@ -93,14 +99,16 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         rec_type = rec_data.get('recording_type', 'unspecified')
         if not rec_type:
             rec_type = 'unspecified'
-        rec_rep = flz.add_recording(session_id=session['id'],
-                                    recording_type=rec_type,
-                                    protocol=rec_data.get('protocol', ''),
-                                    attributes=attributes,
-                                    recording_name=rec_name,
-                                    other_relations=None,
-                                    flexilims_session=flexilims_session,
-                                    conflicts=conflicts)
+        rec_rep = flz.add_recording(
+            session_id=root_id,
+            recording_type=rec_type,
+            protocol=rec_data.get('protocol', ''),
+            attributes=attributes,
+            recording_name=rec_name,
+            other_relations=None,
+            flexilims_session=flexilims_session,
+            conflicts=conflicts
+        )
 
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
@@ -111,11 +119,41 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.origin_id = rec_rep['id']
             ds.flm_session = flexilims_session
             ds.update_flexilims(mode='safe')
-    return session
+    # now deal with samples
+    def add_samples(samples, parent, short_parent_name=None):
+        # we'll need a utility function to deal with recursion
+        for short_sample_name, sample_data in samples.items():
+            sample_name = parent['name'] + '_' + short_sample_name
+            if short_parent_name is not None:
+                short_sample_name = short_parent_name + '_' + short_sample_name
+            attributes = sample_data.get('attributes', None)
+            if attributes is None:
+                attributes = {}
+            # we always use `skip` to add samples
+            sample_rep = flz.add_sample(
+                parent['id'],
+                attributes=attributes,
+                sample_name=sample_name,
+                conflicts='skip',
+                flexilims_session=flexilims_session
+            )
+            # deal with datasets attached to this sample
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.mouse = mouse.name
+                ds.project = session_data['project']
+                ds.sample = short_sample_name
+                ds.session = session_data['session']
+                ds.origin_id = sample_rep['id']
+                ds.flm_session = flexilims_session
+                ds.update_flexilims(mode='safe')
+            # now add child samples
+            add_samples(sample_data['samples'], sample_rep, short_sample_name)
+    # samples are attached to mice, not sessions
+    add_samples(session_data['samples'], mouse)
 
 
 def trim_paths(session_data, raw_data_folder):
-    """Parses paths to make them relative to data
+    """Parses paths to make them relative to `raw_data_folder`
 
     Args:
         session_data (dict): dictionary containing children of the session
@@ -125,6 +163,17 @@ def trim_paths(session_data, raw_data_folder):
         dict: `session_data` after trimming the paths
 
     """
+
+    def trim_sample_paths(samples):
+        # utility function to recurse into samples
+        for sample_name, sample_data in samples.items():
+            samples[sample_name]['path'] = \
+                str(Path(samples[sample_name]['path'])
+                    .relative_to(raw_data_folder))
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.path = ds.path.relative_to(raw_data_folder)
+            trim_sample_paths(sample_data['samples'])
+
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
     if 'path' in session_data.keys():
@@ -138,6 +187,7 @@ def trim_paths(session_data, raw_data_folder):
                 .relative_to(raw_data_folder))
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.path = ds.path.relative_to(raw_data_folder)
+    trim_sample_paths(session_data['samples'])
     return session_data
 
 
@@ -153,7 +203,6 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         dict: A yaml dictionary with dataset classes
 
     """
-
     session_data = clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
@@ -162,9 +211,11 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
 
     if session_data['path'] is not None:
         home_folder = Path(raw_data_folder) / session_data['path']
-    else:
+    elif session_data['session'] is not None:
         home_folder = Path(raw_data_folder) / session_data['mouse'] / \
                       session_data['session']
+    else:
+        home_folder = Path(raw_data_folder) / session_data['mouse']
         # first load datasets in the session level
     if not home_folder.is_dir():
         raise FileNotFoundError('Session directory %s does not exist' % home_folder)
@@ -187,10 +238,43 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
             error_handling='report'
         )
 
+    session_data['samples'] = create_sample_datasets(
+        session_data,
+        raw_data_folder
+    )
+
     # remove the full path that are not needed
     clean_dictionary_recursively(session_data)
     return session_data
 
+
+def create_sample_datasets(parent, raw_data_folder):
+    """Recursively index samples creating a nested dictionary and generate
+    corresponding datasets
+
+    Args:
+        parent (dict): Dictonary corresponding to the parent entity
+
+    Return:
+        dict: dictonary of child samples
+
+    """
+    if 'samples' not in parent:
+        return dict()
+    for sample_name, sample in parent['samples'].items():
+        sample['path'] = parent['path'] / sample_name
+        sample['datasets'] = create_dataset(
+            dataset_infos=sample['datasets'],
+            parent=sample,
+            raw_data_folder=raw_data_folder,
+            error_handling='report'
+        )
+
+        # recurse into child samples
+        sample['samples'] = create_sample_datasets(sample, raw_data_folder)
+    # we update in place but we also return the dictionary of samples to make
+    # for more readable code
+    return parent['samples']
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
@@ -302,18 +386,50 @@ def clean_yaml(path_to_yaml):
         yml_data = yaml.safe_load(yml_file)
 
     session, nested_levels = read_level(yml_data)
-    # session['parent'] = session['mouse']  # duplicate info to format as nested layers
-    # session['full_name'] = '_'.join([session['mouse'], session['session']])
+
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
-        ds = read_dataset(name=dataset_name, data=dataset_dict)
-        session['datasets'][dataset_name] = ds
+        session['datasets'][dataset_name] = read_dataset(name=dataset_name, data=dataset_dict)
 
     session['recordings'] = {}
     for rec_name, rec_dict in nested_levels['recordings'].items():
-        ds = read_recording(name=rec_name, data=rec_dict)
-        session['recordings'][rec_name] = ds
+        session['recordings'][rec_name] = read_recording(name=rec_name, data=rec_dict)
+
+    session['samples'] = {}
+    for sample_name, sample_dict in nested_levels['samples'].items():
+        session['samples'][sample_name] = read_sample(name=sample_name, data=sample_dict)
+
     return session
+
+
+def read_sample(name, data):
+    """Read YAML information corresponding to a sample
+
+    Args:
+        name (str): the name of the sample
+        data (dict): data for this sample only
+
+    Returns:
+        dict: the sample read from the yaml
+
+    """
+    if data is None:
+        data = {}
+    sample, nested_levels = read_level(
+        data,
+        mandatory_args=(),
+        optional_args=('notes', 'attributes', 'path'),
+        nested_levels=('datasets','samples')
+    )
+    sample['name'] = name
+
+    sample['datasets'] = dict()
+    for ds_name, ds_data in nested_levels['datasets'].items():
+        sample['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+    sample['samples'] = dict()
+    for sample_name, sample_data in nested_levels['samples'].items():
+        sample['samples'][sample_name] = read_sample(name=sample_name, data=sample_data)
+    return sample
 
 
 def read_recording(name, data):
@@ -327,10 +443,12 @@ def read_recording(name, data):
         dict: the recording read from the yaml
 
     """
-    recording, datasets = read_level(data, mandatory_args=('protocol',),
-                                     optional_args=('notes', 'attributes', 'path',
-                                                    'recording_type', 'timestamp'),
-                                     nested_levels=('datasets',))
+    recording, datasets = read_level(
+        data,
+        mandatory_args=('protocol',),
+        optional_args=('notes', 'attributes', 'path', 'recording_type', 'timestamp'),
+        nested_levels=('datasets',)
+    )
     recording['name'] = name
 
     # if timestamps is None, the name must start with RHHMMSS
@@ -342,8 +460,7 @@ def read_recording(name, data):
         recording['timestamp'] = m.groups()[0]
     recording['datasets'] = dict()
     for ds_name, ds_data in datasets['datasets'].items():
-        ds = read_dataset(name=ds_name, data=ds_data)
-        recording['datasets'][ds_name] = ds
+        recording['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
 
     return recording
 
@@ -361,17 +478,19 @@ def read_dataset(name, data):
         'attributes' and 'name'
 
     """
-    level, _ = read_level(data, mandatory_args=('dataset_type', 'path'),
-                          optional_args=('notes', 'attributes', 'created', 'is_raw',
-                                         'origin_id'),
-                          nested_levels=())
+    level, _ = read_level(
+        data,
+        mandatory_args=('dataset_type', 'path'),
+        optional_args=('notes', 'attributes', 'created', 'is_raw', 'origin_id'),
+        nested_levels=()
+    )
     level['name'] = name
     return level
 
 
 def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
                optional_args=('path', 'notes', 'attributes'),
-               nested_levels=('recordings', 'datasets')):
+               nested_levels=('recordings', 'datasets', 'samples')):
     """Read one layer of the yml file (i.e. a dictionary)
 
     Args:
