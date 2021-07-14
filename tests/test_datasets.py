@@ -175,26 +175,25 @@ def test_update_flexilims(flm_sess):
 
 
 
-def test_camera(tmp_path, flm_sess):
+def test_camera(tmp_path):
     miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / acq_yaml_and_files.MOUSE / miniaml['session'] / next(
         iter(miniaml['recordings'].keys()))
-    ds = CameraData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
+    ds = CameraData.from_folder(data_dir, verbose=False)
     assert len(ds) == 4
     d = ds['butt_camera']
     assert d.name == 'butt_camera'
     d.project = 'test'
     assert d.is_valid()
     ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession',
-                                recording='testrecording', flm_session=flm_sess,
-                                verbose=False)
+                                recording='testrecording')
     assert ds['face_camera'].name == 'testmouse_testsession_testrecording_face_camera'
 
 
-def test_harp(tmp_path, flm_sess):
+def test_harp(tmp_path):
     miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
-    ds = HarpData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
+    ds = HarpData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == next(iter(ds.keys()))
@@ -202,11 +201,10 @@ def test_harp(tmp_path, flm_sess):
     assert len(d.csv_files) == 5
 
 
-@pytest.mark.integtest
-def test_scanimage(tmp_path, flm_sess):
+def test_scanimage(tmp_path):
     miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/R193432_Retinotopy'
-    ds = ScanimageData.from_folder(data_dir, verbose=False, flm_session=flm_sess)
+    ds = ScanimageData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.name == 'PZAH4.1c_S20210513_R193432_Retinotopy00001'
