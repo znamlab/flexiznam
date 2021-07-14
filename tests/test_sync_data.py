@@ -28,7 +28,7 @@ def test_parse_yaml(tmp_path):
         yaml.dump(faml, fullfile)
 
     m = sync_data.parse_yaml(path_to_mini_yaml, raw_data_folder=tmp_path, verbose=False)
-    assert len(m) == 8
+    assert len(m) == 9
     # there should not be any error
     errs = sync_data.find_xxerrorxx(yml_data=m)
     assert not errs

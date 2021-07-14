@@ -41,12 +41,12 @@ def test_get_experimental_sessions(flm_sess):
 def test_get_entities(flm_sess):
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
                                datatype='mouse', flexilims_session=flm_sess)
-    assert mice_df.shape == (5, 79)
+    assert mice_df.shape == (7, 79)
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
                                datatype='mouse', format_reply=False,
                                flexilims_session=flm_sess)
     assert isinstance(mice_df, list)
-    assert len(mice_df) == 5
+    assert len(mice_df) == 7
 
 
 @pytest.mark.integtest
