@@ -25,10 +25,16 @@ If you want to install flexiznam to use it in another repository, then run the f
 pip install git+ssh://git@github.com/znamlab/flexiznam.git
 ```
 
-Once flexiznam is install, you can also use pip to keep the package updated:
+You can also install the develop branch:
 ```
-pip install --upgrade git+ssh://git@github.com/znamlab/flexiznam.git
+pip install git+ssh://git@github.com/znamlab/flexiznam.git@dev
 ```
+
+Once flexiznam is installed, you can also use pip to keep the package updated:
+```
+pip install --no-deps --force-reinstall git+ssh://git@github.com/znamlab/flexiznam.git
+```
+`no-deps` flag is recommended unless the requirements of `flexiznam` have changed. Otherwise, pip will reinstall all the requirements as well (e.g. numpy), which may result in version conflicts.
 
 ## Configuration
 

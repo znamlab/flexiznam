@@ -1,0 +1,15 @@
+---
+
+project: <PROJECT>
+mouse: <MOUSE>
+session: <SESSION>
+notes: "optional notes"
+recordings:
+  <RECORDING>:
+    protocol: protocol_name
+    timestamp: [optional, in HHMMSS]
+    notes: [optional]
+    datasets: [optional]
+      <DATASET>: [optional]
+        type: dataset type (scanimage for instance)
+        path: path to the folder containing the dataset

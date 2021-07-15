@@ -27,11 +27,20 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 @cli.command()
 @click.option('-t', '--template', default=None, help='Template config file.')
 @click.option('--config_folder', default=None, help='Folder containing the config file.')
-def config(template=None, config_folder=None):
+@click.option('--update/--no-update', default=False,
+              help='Update the config file to include all fields present in the default '
+                   'config. Will not change already defined fields.')
+def config(template=None, config_folder=None, update=False):
     """Create a configuration file if none exists."""
     try:
         fname = config_tools._find_file('config.yml', config_folder=config_folder)
         click.echo('Configuration file currently used is:\n%s' % fname)
+        if update:
+            click.echo('Updating file')
+            prm = config_tools.load_param(param_folder=config_folder)
+            config_tools.create_config(overwrite=True, template=template,
+                                       config_folder=config_folder,
+                                       **prm)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
         config_tools.create_config(template=template, config_folder=config_folder)
@@ -87,12 +96,13 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder
 @cli.command()
 @click.option('-s', '--source_yaml', required=True, help='Clean yaml without any error.')
 @click.option('-r', '--raw_data_folder', default=None, help='Path to the root folder containing raw data')
-@click.option('-m', '--mode', default=False, 
-              help='How to handle conflict? Abort by default. Valid alternatives are `append` and `overwrite`.')
-def yaml_to_flexilims(source_yaml, raw_data_folder=None, mode=None):
+@click.option('-c', '--conflicts', default='abort',
+              help='Default is `abort` to crash if there is a conflict, use `skip` to '
+                   'ignore and proceed')
+def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     """Create entries on flexilims corresponding to yaml"""
     source_yaml = pathlib.Path(source_yaml)
     try:
-        camp.sync_data.upload_yaml(source_yaml, raw_data_folder)
+        camp.sync_data.upload_yaml(source_yaml, raw_data_folder, conflicts=conflicts)
     except errors.SyncYmlError as err:
         raise click.ClickException(err.args[0])

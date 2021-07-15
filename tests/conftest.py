@@ -1,4 +1,10 @@
 import pytest
+import flexiznam
+
+
+@pytest.fixture
+def flm_sess():
+    return flexiznam.get_flexilims_session(project_id='test')
 
 
 def pytest_addoption(parser):
