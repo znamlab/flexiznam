@@ -58,7 +58,7 @@ def test_dataset():
 
 @pytest.mark.integtest
 def test_dataset_flexilims_integration(flm_sess):
-    flm_session = flexiznam.get_flexilims_session(project_id='test', username='blota')
+    flm_session = flexiznam.get_flexilims_session(project_id='test')
     ds = Dataset(project='test', path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='',
                  flm_session=flm_sess)
