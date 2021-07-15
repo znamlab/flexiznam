@@ -40,3 +40,11 @@ flexiznam.schema.scanimage\_data module
    :members:
    :undoc-members:
    :show-inheritance:
+
+flexiznam.schema.microscopy\_data module
+----------------------------------------
+
+.. automodule:: flexiznam.schema.microscopy_data
+  :members:
+  :undoc-members:
+  :show-inheritance:
