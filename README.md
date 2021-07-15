@@ -1,5 +1,5 @@
 # flexiznam
-Znam lab tool to interact with flexilims. Detailed documentation at https://automatic-spork-cd453ffb.pages.github.io/
+Znam lab tool to interact with flexilims. Detailed documentation at https://flexiznam.znamlab.org/
 
 # Getting started
 
