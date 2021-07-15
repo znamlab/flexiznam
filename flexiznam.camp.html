@@ -42,7 +42,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="flexiznam.config package" href="flexiznam.config.html" />
-    <link rel="prev" title="flexiznam package" href="flexiznam.html" /> 
+    <link rel="prev" title="Python API" href="flexiznam.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,23 +87,21 @@
               
             
             
-              <p class="caption"><span class="caption-text">Basics:</span></p>
-<ul>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Data organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
-</ul>
-<p class="caption"><span class="caption-text">API</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="flexiznam.html">flexiznam package</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="flexiznam.html">Python API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.main">flexiznam.main module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.errors">flexiznam.errors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.utils">flexiznam.utils module</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="flexiznam.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">flexiznam.camp package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.camp">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a></li>
@@ -161,7 +159,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="flexiznam.html">flexiznam package</a> &raquo;</li>
+          <li><a href="flexiznam.html">Python API</a> &raquo;</li>
         
       <li>flexiznam.camp package</li>
     
@@ -184,6 +182,9 @@
             
   <div class="section" id="flexiznam-camp-package">
 <h1>flexiznam.camp package<a class="headerlink" href="#flexiznam-camp-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-flexiznam.camp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam.camp" title="Permalink to this headline">¶</a></h2>
+</div>
 <div class="section" id="module-flexiznam.camp.sync_data">
 <span id="flexiznam-camp-sync-data-module"></span><h2>flexiznam.camp.sync_data module<a class="headerlink" href="#module-flexiznam.camp.sync_data" title="Permalink to this headline">¶</a></h2>
 <p>File to handle acquisition yaml file and create datasets on flexilims</p>
@@ -224,6 +225,24 @@ message in the output dictionary</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>dictionary of dataset instances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.create_sample_datasets">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">create_sample_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_data_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/camp/sync_data.html#create_sample_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.camp.sync_data.create_sample_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively index samples creating a nested dictionary and generate
+corresponding datasets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Dictonary corresponding to the parent entity</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictonary of child samples</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
@@ -285,7 +304,7 @@ Returns a dictionary with all entries containing the error <cite>pattern</cite><
 
 <dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.camp.sync_data.read_level">
-<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">read_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yml_level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mandatory_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('project',</span> <span class="pre">'mouse',</span> <span class="pre">'session')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('path',</span> <span class="pre">'notes',</span> <span class="pre">'attributes')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('recordings',</span> <span class="pre">'datasets')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/camp/sync_data.html#read_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.camp.sync_data.read_level" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">read_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yml_level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mandatory_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('project',</span> <span class="pre">'mouse',</span> <span class="pre">'session')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optional_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('path',</span> <span class="pre">'notes',</span> <span class="pre">'attributes')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('recordings',</span> <span class="pre">'datasets',</span> <span class="pre">'samples')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/camp/sync_data.html#read_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.camp.sync_data.read_level" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read one layer of the yml file (i.e. a dictionary)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -332,9 +351,29 @@ nested_levels (dict): dictionary of nested dictonaries</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="flexiznam.camp.sync_data.read_sample">
+<span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">read_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/camp/sync_data.html#read_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.camp.sync_data.read_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read YAML information corresponding to a sample</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the name of the sample</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – data for this sample only</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the sample read from the yaml</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="flexiznam.camp.sync_data.trim_paths">
 <span class="sig-prename descclassname"><span class="pre">flexiznam.camp.sync_data.</span></span><span class="sig-name descname"><span class="pre">trim_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_data_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/camp/sync_data.html#trim_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.camp.sync_data.trim_paths" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parses paths to make them relative to data</p>
+<dd><p>Parses paths to make them relative to <cite>raw_data_folder</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -395,9 +434,6 @@ data_root[‘raw’]</p></li>
 </dd></dl>
 
 </div>
-<div class="section" id="module-flexiznam.camp">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam.camp" title="Permalink to this headline">¶</a></h2>
-</div>
 </div>
 
 
@@ -407,7 +443,7 @@ data_root[‘raw’]</p></li>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="flexiznam.config.html" class="btn btn-neutral float-right" title="flexiznam.config package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="flexiznam.html" class="btn btn-neutral float-left" title="flexiznam package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="flexiznam.html" class="btn btn-neutral float-left" title="Python API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

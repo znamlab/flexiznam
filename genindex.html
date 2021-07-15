@@ -85,15 +85,13 @@
               
             
             
-              <p class="caption"><span class="caption-text">Basics:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Data organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
-</ul>
-<p class="caption"><span class="caption-text">API</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">Python API</a></li>
 </ul>
 
             
@@ -401,13 +399,15 @@
 </li>
       <li><a href="flexiznam.html#flexiznam.main.add_experimental_session">add_experimental_session() (in module flexiznam.main)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.html#flexiznam.main.add_mouse">add_mouse() (in module flexiznam.main)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.config.html#flexiznam.config.config_tools.add_password">add_password() (in module flexiznam.config.config_tools)</a>
 </li>
       <li><a href="flexiznam.html#flexiznam.main.add_recording">add_recording() (in module flexiznam.main)</a>
+</li>
+      <li><a href="flexiznam.html#flexiznam.main.add_sample">add_sample() (in module flexiznam.main)</a>
 </li>
       <li><a href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.associated_files">associated_files() (flexiznam.schema.datasets.Dataset method)</a>
 </li>
@@ -423,15 +423,17 @@
 </li>
       <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.clean_yaml">clean_yaml() (in module flexiznam.camp.sync_data)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.html#flexiznam.utils.compare_series">compare_series() (in module flexiznam.utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.html#flexiznam.errors.ConfigurationError">ConfigurationError</a>
 </li>
       <li><a href="flexiznam.config.html#flexiznam.config.config_tools.create_config">create_config() (in module flexiznam.config.config_tools)</a>
 </li>
       <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.create_dataset">create_dataset() (in module flexiznam.camp.sync_data)</a>
+</li>
+      <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.create_sample_datasets">create_sample_datasets() (in module flexiznam.camp.sync_data)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -445,14 +447,16 @@
 </li>
       <li><a href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.dataset_type">dataset_type (flexiznam.schema.datasets.Dataset property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.schema.html#flexiznam.schema.harp_data.HarpData.DATASET_TYPE">DATASET_TYPE (flexiznam.schema.harp_data.HarpData attribute)</a>
 
       <ul>
+        <li><a href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData.DATASET_TYPE">(flexiznam.schema.microscopy_data.MicroscopyData attribute)</a>
+</li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.DATASET_TYPE">(flexiznam.schema.scanimage_data.ScanimageData attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.html#flexiznam.errors.DatasetError">DatasetError</a>
 </li>
       <li><a href="flexiznam.mcms.html#flexiznam.mcms.main.download_mouse_info">download_mouse_info() (in module flexiznam.mcms.main)</a>
@@ -663,6 +667,13 @@
 </li>
       </ul></li>
       <li>
+    flexiznam.schema.microscopy_data
+
+      <ul>
+        <li><a href="flexiznam.schema.html#module-flexiznam.schema.microscopy_data">module</a>
+</li>
+      </ul></li>
+      <li>
     flexiznam.schema.scanimage_data
 
       <ul>
@@ -687,6 +698,8 @@
 </li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.harp_data.HarpData.from_flexilims">(flexiznam.schema.harp_data.HarpData class method)</a>
 </li>
+        <li><a href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData.from_flexilims">(flexiznam.schema.microscopy_data.MicroscopyData method)</a>
+</li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.from_flexilims">(flexiznam.schema.scanimage_data.ScanimageData method)</a>
 </li>
       </ul></li>
@@ -696,6 +709,8 @@
         <li><a href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.from_folder">(flexiznam.schema.datasets.Dataset class method)</a>
 </li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.harp_data.HarpData.from_folder">(flexiznam.schema.harp_data.HarpData class method)</a>
+</li>
+        <li><a href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData.from_folder">(flexiznam.schema.microscopy_data.MicroscopyData static method)</a>
 </li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.from_folder">(flexiznam.schema.scanimage_data.ScanimageData static method)</a>
 </li>
@@ -759,6 +774,8 @@
 </li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.harp_data.HarpData.is_valid">(flexiznam.schema.harp_data.HarpData method)</a>
 </li>
+        <li><a href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData.is_valid">(flexiznam.schema.microscopy_data.MicroscopyData method)</a>
+</li>
         <li><a href="flexiznam.schema.html#flexiznam.schema.scanimage_data.ScanimageData.is_valid">(flexiznam.schema.scanimage_data.ScanimageData method)</a>
 </li>
       </ul></li>
@@ -776,6 +793,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData">MicroscopyData (class in flexiznam.schema.microscopy_data)</a>
+</li>
       <li>
     module
 
@@ -807,6 +826,8 @@
         <li><a href="flexiznam.schema.html#module-flexiznam.schema.datasets">flexiznam.schema.datasets</a>
 </li>
         <li><a href="flexiznam.schema.html#module-flexiznam.schema.harp_data">flexiznam.schema.harp_data</a>
+</li>
+        <li><a href="flexiznam.schema.html#module-flexiznam.schema.microscopy_data">flexiznam.schema.microscopy_data</a>
 </li>
         <li><a href="flexiznam.schema.html#module-flexiznam.schema.scanimage_data">flexiznam.schema.scanimage_data</a>
 </li>
@@ -853,11 +874,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.read_dataset">read_dataset() (in module flexiznam.camp.sync_data)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.read_level">read_level() (in module flexiznam.camp.sync_data)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.read_recording">read_recording() (in module flexiznam.camp.sync_data)</a>
+</li>
+      <li><a href="flexiznam.camp.html#flexiznam.camp.sync_data.read_sample">read_sample() (in module flexiznam.camp.sync_data)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -908,7 +931,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.schema.html#flexiznam.schema.camera_data.CameraData.VALID_EXTENSIONS">VALID_EXTENSIONS (flexiznam.schema.camera_data.CameraData attribute)</a>
+
+      <ul>
+        <li><a href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData.VALID_EXTENSIONS">(flexiznam.schema.microscopy_data.MicroscopyData attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="flexiznam.schema.html#flexiznam.schema.camera_data.CameraData.VIDEO_EXTENSIONS">VIDEO_EXTENSIONS (flexiznam.schema.camera_data.CameraData attribute)</a>

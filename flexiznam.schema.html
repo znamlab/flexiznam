@@ -86,15 +86,13 @@
               
             
             
-              <p class="caption"><span class="caption-text">Basics:</span></p>
-<ul>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Data organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
-</ul>
-<p class="caption"><span class="caption-text">API</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="flexiznam.html">flexiznam package</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="flexiznam.html">Python API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.main">flexiznam.main module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.errors">flexiznam.errors module</a></li>
@@ -104,11 +102,12 @@
 <li class="toctree-l3"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">flexiznam.schema package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema.camera_data">flexiznam.schema.camera_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema">Module contents</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema.datasets">flexiznam.schema.datasets module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema.camera_data">flexiznam.schema.camera_data module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema.harp_data">flexiznam.schema.harp_data module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema.scanimage_data">flexiznam.schema.scanimage_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-flexiznam.schema.microscopy_data">flexiznam.schema.microscopy_data module</a></li>
 </ul>
 </li>
 </ul>
@@ -163,7 +162,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-          <li><a href="flexiznam.html">flexiznam package</a> &raquo;</li>
+          <li><a href="flexiznam.html">Python API</a> &raquo;</li>
         
       <li>flexiznam.schema package</li>
     
@@ -186,61 +185,39 @@
             
   <div class="section" id="flexiznam-schema-package">
 <h1>flexiznam.schema package<a class="headerlink" href="#flexiznam-schema-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-flexiznam.schema.camera_data">
-<span id="flexiznam-schema-camera-data-module"></span><h2>flexiznam.schema.camera_data module<a class="headerlink" href="#module-flexiznam.schema.camera_data" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.schema.camera_data.</span></span><span class="sig-name descname"><span class="pre">CameraData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.DATASET_TYPE">
-<span class="sig-name descname"><span class="pre">DATASET_TYPE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'camera'</span></em><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.DATASET_TYPE" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.VALID_EXTENSIONS">
-<span class="sig-name descname"><span class="pre">VALID_EXTENSIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'.avi',</span> <span class="pre">'.bin',</span> <span class="pre">'.csv',</span> <span class="pre">'.mp4',</span> <span class="pre">'.txt'}</span></em><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.VALID_EXTENSIONS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.VIDEO_EXTENSIONS">
-<span class="sig-name descname"><span class="pre">VIDEO_EXTENSIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'.avi',</span> <span class="pre">'.bin',</span> <span class="pre">'.mp4'}</span></em><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.VIDEO_EXTENSIONS" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.from_flexilims">
-<span class="sig-name descname"><span class="pre">from_flexilims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_series</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData.from_flexilims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.from_flexilims" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a camera dataset from flexilims entry</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.from_folder">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">from_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mouse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData.from_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.from_folder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a Camera dataset by loading info from folder</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.is_valid">
-<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.is_valid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that video, metadata and timestamps files exist</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="module-flexiznam.schema">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam.schema" title="Permalink to this headline">¶</a></h2>
+<p>This module handles all the different types of dataset we can have.
+The main functions common to all datasets are implemented in the main
+<a class="reference internal" href="#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a> class.</p>
+<p>Each type of dataset will have a subclass, such as
+<code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.camera_data.CameraData</span></code> that
+inherits the main <cite>Dataset</cite> class and can re-implement any methods if needed.</p>
+<p>For convenience, all these dataset classes are imported in the
+<cite>__init__.py</cite>. You can therefore just use <cite>schema.Camera</cite>. The init also
+populate the <cite>Dataset</cite> class property <cite>Dataset.SUBCLASSES</cite> which lists all
+the existing subclasses. It is a dictionary with flexilims datatype name as
+keys and the corresponding class object as reference.</p>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>The simpler entry points are the class methods:
+<a class="reference internal" href="#flexiznam.schema.datasets.Dataset.from_folder" title="flexiznam.schema.datasets.Dataset.from_folder"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_folder</span></code></a> and
+<a class="reference internal" href="#flexiznam.schema.datasets.Dataset.from_flexilims" title="flexiznam.schema.datasets.Dataset.from_flexilims"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset.from_flexilims</span></code></a>.</p>
+</div>
 </div>
 <div class="section" id="module-flexiznam.schema.datasets">
 <span id="flexiznam-schema-datasets-module"></span><h2>flexiznam.schema.datasets module<a class="headerlink" href="#module-flexiznam.schema.datasets" title="Permalink to this headline">¶</a></h2>
-<p>Class to handle dataset identification and validation</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="flexiznam.schema.datasets.Dataset">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.schema.datasets.</span></span><span class="sig-name descname"><span class="pre">Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/datasets.html#Dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.datasets.Dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Master class. Should be inherited by all datasets</p>
+<p>Class to handle dataset identification and validation</p>
 <p>SUBCLASSES are held in different files and added to the Dataset class by
 schema.__init__.py</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="flexiznam.schema.datasets.Dataset.SUBCLASSES">
-<span class="sig-name descname"><span class="pre">SUBCLASSES</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'camera':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.camera_data.CameraData'&gt;,</span> <span class="pre">'harp':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.harp_data.HarpData'&gt;,</span> <span class="pre">'scanimage':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.scanimage_data.ScanimageData'&gt;}</span></em><a class="headerlink" href="#flexiznam.schema.datasets.Dataset.SUBCLASSES" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">SUBCLASSES</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'camera':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.camera_data.CameraData'&gt;,</span> <span class="pre">'harp':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.harp_data.HarpData'&gt;,</span> <span class="pre">'microscopy':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.microscopy_data.MicroscopyData'&gt;,</span> <span class="pre">'scanimage':</span> <span class="pre">&lt;class</span> <span class="pre">'flexiznam.schema.scanimage_data.ScanimageData'&gt;}</span></em><a class="headerlink" href="#flexiznam.schema.datasets.Dataset.SUBCLASSES" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -391,7 +368,8 @@ is exactly one existing entry, otherwise through a
 <dl class="py property">
 <dt class="sig sig-object py" id="flexiznam.schema.datasets.Dataset.name">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#flexiznam.schema.datasets.Dataset.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Full name of the dataset, including mouse, session etc …</p>
+<dd><p>Full name of the dataset as it would appear on Flexilims.</p>
+<p>Including mouse, sample, session and recording, whichever apply.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -451,6 +429,48 @@ existing entry and clear any attributes that are not specified.</p>
 <dd class="field-even"><p>Flexilims reply</p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-flexiznam.schema.camera_data">
+<span id="flexiznam-schema-camera-data-module"></span><h2>flexiznam.schema.camera_data module<a class="headerlink" href="#module-flexiznam.schema.camera_data" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.schema.camera_data.</span></span><span class="sig-name descname"><span class="pre">CameraData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.DATASET_TYPE">
+<span class="sig-name descname"><span class="pre">DATASET_TYPE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'camera'</span></em><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.DATASET_TYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.VALID_EXTENSIONS">
+<span class="sig-name descname"><span class="pre">VALID_EXTENSIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'.avi',</span> <span class="pre">'.bin',</span> <span class="pre">'.csv',</span> <span class="pre">'.mp4',</span> <span class="pre">'.txt'}</span></em><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.VALID_EXTENSIONS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.VIDEO_EXTENSIONS">
+<span class="sig-name descname"><span class="pre">VIDEO_EXTENSIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'.avi',</span> <span class="pre">'.bin',</span> <span class="pre">'.mp4'}</span></em><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.VIDEO_EXTENSIONS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.from_flexilims">
+<span class="sig-name descname"><span class="pre">from_flexilims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_series</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData.from_flexilims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.from_flexilims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a camera dataset from flexilims entry</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.from_folder">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">from_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mouse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData.from_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.from_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Camera dataset by loading info from folder</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flexiznam.schema.camera_data.CameraData.is_valid">
+<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/camera_data.html#CameraData.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.camera_data.CameraData.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that video, metadata and timestamps files exist</p>
 </dd></dl>
 
 </dd></dl>
@@ -526,25 +546,43 @@ existing entry and clear any attributes that are not specified.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-flexiznam.schema">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flexiznam.schema" title="Permalink to this headline">¶</a></h2>
-<p>Dealing with data saving on CAMP</p>
-<p>We want to transfer data from experimental setup to camp in an automatic and
-organised fashion. We will most likely do that in steps:</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>step 1: transfer data from acquisition computers:</dt><dd><p>We have different computers and we want to be sure to be able to clean up
-space. So step one is to find the data and transfer it in the relevant
-folder. We will also add the data pieces to flexilims</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>step 2: link things together:</dt><dd><p>Once everything is on CAMP we need to make sure that we have all the data we need and update flexilims wherever needed</p>
-</dd>
-</dl>
-</li>
-</ul>
+<div class="section" id="module-flexiznam.schema.microscopy_data">
+<span id="flexiznam-schema-microscopy-data-module"></span><h2>flexiznam.schema.microscopy_data module<a class="headerlink" href="#module-flexiznam.schema.microscopy_data" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="flexiznam.schema.microscopy_data.MicroscopyData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">flexiznam.schema.microscopy_data.</span></span><span class="sig-name descname"><span class="pre">MicroscopyData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/microscopy_data.html#MicroscopyData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.microscopy_data.MicroscopyData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.datasets.Dataset</span></code></a></p>
+<p>Subclass to handle detection of ex vivo microscopy images</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flexiznam.schema.microscopy_data.MicroscopyData.DATASET_TYPE">
+<span class="sig-name descname"><span class="pre">DATASET_TYPE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'microscopy'</span></em><a class="headerlink" href="#flexiznam.schema.microscopy_data.MicroscopyData.DATASET_TYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="flexiznam.schema.microscopy_data.MicroscopyData.VALID_EXTENSIONS">
+<span class="sig-name descname"><span class="pre">VALID_EXTENSIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'.czi'}</span></em><a class="headerlink" href="#flexiznam.schema.microscopy_data.MicroscopyData.VALID_EXTENSIONS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flexiznam.schema.microscopy_data.MicroscopyData.from_flexilims">
+<span class="sig-name descname"><span class="pre">from_flexilims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_series</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/microscopy_data.html#MicroscopyData.from_flexilims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.microscopy_data.MicroscopyData.from_flexilims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a microscopy dataset from flexilims entry</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flexiznam.schema.microscopy_data.MicroscopyData.from_folder">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">from_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mouse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flm_session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/microscopy_data.html#MicroscopyData.from_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.microscopy_data.MicroscopyData.from_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create Microscopy datasets by loading info from folder</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flexiznam.schema.microscopy_data.MicroscopyData.is_valid">
+<span class="sig-name descname"><span class="pre">is_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/flexiznam/schema/microscopy_data.html#MicroscopyData.is_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flexiznam.schema.microscopy_data.MicroscopyData.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the file exist</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 

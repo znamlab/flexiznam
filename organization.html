@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Data organization &mdash; flexiznam  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line interface" href="cli.html" />
+    <link rel="prev" title="Getting started with Flexiznam" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> flexiznam
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Data organization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#datasets">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#directory-structure">Directory structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#in-vivo-recording-and-behavioral-data">In vivo recording and behavioral data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sessions">Sessions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recordings">Recordings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ex-vivo-and-other-data">Ex vivo and other data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">flexiznam</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Data organization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/organization.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="data-organization">
+<h1>Data organization<a class="headerlink" href="#data-organization" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="datasets">
+<h2>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h2>
+<p>Datasets constitute the most basic unit of organization in flexiznam. They
+correspond to the <code class="docutils literal notranslate"><span class="pre">dataset</span></code> entities on Flexilims and can represent either a
+single file or a collection of files. In the former case, the <code class="docutils literal notranslate"><span class="pre">path</span></code> attribute
+of the Flexilims entry will point to the file itself. In the latter case,
+<code class="docutils literal notranslate"><span class="pre">path</span></code> will point at the parent directory.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dataset <code class="docutils literal notranslate"><span class="pre">path</span></code> is defined relative to the root directory. See
+<a class="reference internal" href="#directory-structure"><span class="std std-ref">below</span></a> for more details.</p>
+</div>
+<p>Dataset entities have the following default attributes:</p>
+<ul class="simple">
+<li><p><strong>created</strong>: timestamp when the dataset was generated.</p></li>
+<li><p><strong>is_raw</strong>: <code class="docutils literal notranslate"><span class="pre">'yes'</span></code> or <code class="docutils literal notranslate"><span class="pre">'no'</span></code>, depending on whether the dataset
+corresponds to raw or processed data.</p></li>
+<li><p><strong>path</strong>: location of the data on CAMP.</p></li>
+<li><p><strong>dataset_type</strong>: string describing the type of data represented by the dataset,
+e.g. <code class="docutils literal notranslate"><span class="pre">'scanimage'</span></code>, <code class="docutils literal notranslate"><span class="pre">'camera'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'ephys'</span></code>. Permitted dataset types are
+listed in config.</p></li>
+</ul>
+<p>In addition, any custom attributes can be specified for individual datasets.</p>
+<p>The <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> class provides a useful
+abstraction for datasets, especially for creating entries for processed data.
+See <a class="reference internal" href="quickstart.html#adding-processed-datasets"><span class="std std-ref">the quick start guide</span></a> for more details.</p>
+<p>You can define your own subclasses of <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> to handle import or
+loading of different dataset types.
+<a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.microscopy_data.MicroscopyData" title="flexiznam.schema.microscopy_data.MicroscopyData"><code class="xref py py-class docutils literal notranslate"><span class="pre">flexiznam.schema.microscopy_data.MicroscopyData</span></code></a> provides a fairly
+minimal example.</p>
+</div>
+<div class="section" id="directory-structure">
+<h2>Directory structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
+<p>To protect the integrity of raw data and facilitate archiving, raw and processed
+data are stored in different directory trees. The paths of the raw and processed
+directories are specified in config and can be accessed through
+<code class="docutils literal notranslate"><span class="pre">flexiznam.config.PARAMETERS['data_root']['raw']</span></code> and
+<code class="docutils literal notranslate"><span class="pre">flexiznam.config.PARAMETERS['data_root']['processed']</span></code>. Paths of Flexilims are
+<em>relative to these directories</em>. The <strong>is_raw</strong> attribute of the dataset tells us
+which directory tree the dataset is stored in. When using the <a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset" title="flexiznam.schema.datasets.Dataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> class,
+the full path can be conveniently retrieved with
+<a class="reference internal" href="flexiznam.schema.html#flexiznam.schema.datasets.Dataset.path_full" title="flexiznam.schema.datasets.Dataset.path_full"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Dataset.path_full</span></code></a> property.</p>
+<p>Within raw and processed directories, subdirectories will typically correspond to
+projects, which will in turn contain subdirectories corresponding to individual
+mice.</p>
+</div>
+<div class="section" id="in-vivo-recording-and-behavioral-data">
+<h2>In vivo recording and behavioral data<a class="headerlink" href="#in-vivo-recording-and-behavioral-data" title="Permalink to this headline">¶</a></h2>
+<p>Behavioral and recording data is organized in <strong>sessions</strong>, which may be
+composed of multiple <strong>recordings</strong>. Datasets can have either sessions or
+recordings as the origin. For example, in a two-photon imaging session, all
+recordings will be segmented together and the dataset containing the resulting
+ROI will be assigned to the session. However, the ROI traces may be split and
+assigned to individual recordings.</p>
+<div class="section" id="sessions">
+<h3>Sessions<a class="headerlink" href="#sessions" title="Permalink to this headline">¶</a></h3>
+<p>In case of in vivo recordings, a session corresponds to neurons recorded together
+- if you change the imaging field of view or move the electrodes, you would
+create a new session. The idea is that all the data within a given session can
+be segmented / spike sorted together.</p>
+<p>Sessions should always have a <strong>mouse</strong> as their <strong>origin</strong> and should be
+stored under <code class="docutils literal notranslate"><span class="pre">&lt;DATA_ROOT&gt;/&lt;PROJECT&gt;/&lt;MOUSE&gt;/&lt;SYYYYMMDD&gt;</span></code>. For example, a
+session acquired for my_project on 4 July 2021 from mouse BRAC7777.1a would be
+stored in <code class="docutils literal notranslate"><span class="pre">&lt;DATA_ROOT&gt;/my_project/BRAC7777.1a/S20210704</span></code>. The name of the
+session on flexilims will also follow this hierarchy. The example session would
+be named <code class="docutils literal notranslate"><span class="pre">BRAC7777.1a_S20210704_0</span></code>. The numerical index at the end is added
+if multiple sessions are created on the same date - e.g. for imaging in two
+different fields of view. Sessions have the following default attributes:</p>
+<ul class="simple">
+<li><p><strong>date</strong>: YYYY-MM-DD string corresponding to the date of the recording.</p></li>
+<li><p><strong>path</strong>: path to the session on CAMP, used primarily to decide where to store
+processed datasets. As with datasets, this is relative to <code class="docutils literal notranslate"><span class="pre">data_root</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="recordings">
+<h3>Recordings<a class="headerlink" href="#recordings" title="Permalink to this headline">¶</a></h3>
+<p>During a session, you may carry out multiple <strong>recordings</strong>, which will be stored
+as child entities of the session. A recording essentially corresponds to every
+time you start acquisition on the microscope or the ephys rig. Recordings are
+stored as subdirectories of the session, i.e.
+<code class="docutils literal notranslate"><span class="pre">&lt;DATA_ROOT&gt;/&lt;PROJECT&gt;/&lt;MOUSE&gt;/&lt;SYYYYMMDD&gt;/RHHMMSS_PROTOCOL</span></code>, where <code class="docutils literal notranslate"><span class="pre">HHMMSS</span></code>
+is the time when the recording was started and <code class="docutils literal notranslate"><span class="pre">PROTOCOL</span></code> is a short string
+identifying the experimental protocol. Recordings have the following attributes:</p>
+<ul class="simple">
+<li><p><strong>protocol</strong>: short string describing the experimental protocol, e.g.
+<code class="docutils literal notranslate"><span class="pre">retinotopy</span></code>, or <code class="docutils literal notranslate"><span class="pre">visual_cliff</span></code>.</p></li>
+<li><p><strong>recording_type</strong>: the modality of the recording, one of <code class="docutils literal notranslate"><span class="pre">two_photon</span></code>,
+<code class="docutils literal notranslate"><span class="pre">widefield</span></code>, <code class="docutils literal notranslate"><span class="pre">intrinsic</span></code>, <code class="docutils literal notranslate"><span class="pre">ephys</span></code>, <code class="docutils literal notranslate"><span class="pre">behaviour</span></code>, or <code class="docutils literal notranslate"><span class="pre">unspecified</span></code>.</p></li>
+<li><p><strong>path</strong>: path to the recording on CAMP, used primarily to decide where to store
+processed datasets. As with datasets, this is relative to <code class="docutils literal notranslate"><span class="pre">data_root</span></code>.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="ex-vivo-and-other-data">
+<h2>Ex vivo and other data<a class="headerlink" href="#ex-vivo-and-other-data" title="Permalink to this headline">¶</a></h2>
+<p>Ex vivo data are organized through <strong>sample</strong> entities. Samples are generic
+placeholders. They can correspond to, for example, the entire brain, a slide
+with multiple tissue sections, a single tissue section, or an LCM cubelet.
+Samples can have the <strong>mouse</strong> as their origin or they can  be nested, e.g.
+sample <code class="docutils literal notranslate"><span class="pre">slide_20</span></code> can contain sample <code class="docutils literal notranslate"><span class="pre">section_5</span></code>.</p>
+<p>Raw data for samples can be stored directly as a subdirectory of the mouse
+(e.g. <code class="docutils literal notranslate"><span class="pre">&lt;DATA_ROOT&gt;/my_project/BRAC7777.1a/brain/</span></code>). In this case, the <code class="docutils literal notranslate"><span class="pre">session:</span></code>
+field should be left blank when <a class="reference internal" href="quickstart.html#syncing-data"><span class="std std-ref">uploading the YAML file to Flexilims</span></a>.
+Alternatively, samples can also be stored in subdirectories corresponding to acquisition sessions,
+e.g. <code class="docutils literal notranslate"><span class="pre">&lt;DATA_ROOT&gt;/my_project/BRAC7777.1a/S20210704/brain/</span></code>, for example if you
+would like to separate confocal data acquired on different days. In this case the
+<code class="docutils literal notranslate"><span class="pre">session:</span></code> field should be filled.
+This only affects where <a class="reference internal" href="flexiznam.camp.html#flexiznam.camp.sync_data.parse_yaml" title="flexiznam.camp.sync_data.parse_yaml"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.camp.sync_data.parse_yaml()</span></code></a> searches
+for datasets: on Flexilims the samples would still be direct children of the
+<strong>mouse</strong> entity or of other samples.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If datasets for a given sample are acquired across multiple sessions, they would
+still have the same sample as their origin. Calling
+<a class="reference internal" href="flexiznam.html#flexiznam.main.get_children" title="flexiznam.main.get_children"><code class="xref py py-meth docutils literal notranslate"><span class="pre">flexiznam.main.get_children()</span></code></a> for that sample would retrieve them all.</p>
+</div>
+<p>For nested samples, the directory structure should mirror their hierarchy (e.g.
+<code class="docutils literal notranslate"><span class="pre">&lt;DATA_ROOT&gt;/my_project/BRAC7777.1a/brain/slide_20/section_5</span></code>). It is also
+in how samples are named on flexilims - e.g. <code class="docutils literal notranslate"><span class="pre">BRAC777.1a_brain_slide_20_section_5</span></code>.</p>
+<p>Just like sessions and recordings, samples can have multiple datasets as children.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="cli.html" class="btn btn-neutral float-right" title="Command line interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Getting started with Flexiznam" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Antonin Blot, Petr Znamenskiy.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

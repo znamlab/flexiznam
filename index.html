@@ -86,15 +86,13 @@
               
             
             
-              <p class="caption"><span class="caption-text">Basics:</span></p>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Getting started with Flexiznam</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Data organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
-</ul>
-<p class="caption"><span class="caption-text">API</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">Python API</a></li>
 </ul>
 
             
@@ -167,7 +165,7 @@
 <p>Flexiznam - from <em>flexi</em>, standing for flexible, and <em>znam</em>, Slavic word meaning
 “I know”. Flexiznam - know your data!</p>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Basics:</span></p>
+<p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#configuration">Configuration</a></li>
@@ -183,6 +181,17 @@
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#adding-processed-datasets">Adding processed datasets</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">Data organization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#datasets">Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#in-vivo-recording-and-behavioral-data">In vivo recording and behavioral data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="organization.html#sessions">Sessions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="organization.html#recordings">Recordings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="organization.html#ex-vivo-and-other-data">Ex vivo and other data</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cli.html#flexiznam">flexiznam</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="cli.html#flexiznam-add-mouse">add-mouse</a></li>
@@ -194,41 +203,16 @@
 </li>
 </ul>
 </li>
-</ul>
-</div>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">API</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">flexiznam package</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="flexiznam.html">Python API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam">Module contents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.main">flexiznam.main module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.errors">flexiznam.errors module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#module-flexiznam.utils">flexiznam.utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="flexiznam.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="flexiznam.camp.html">flexiznam.camp package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp.sync_data">flexiznam.camp.sync_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.camp.html#module-flexiznam.camp">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.config_tools">flexiznam.config.config_tools module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config.default_config">flexiznam.config.default_config module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.config.html#module-flexiznam.config">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms.main">flexiznam.mcms.main module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.mcms.html#module-flexiznam.mcms">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="flexiznam.schema.html">flexiznam.schema package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.camera_data">flexiznam.schema.camera_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.datasets">flexiznam.schema.datasets module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.harp_data">flexiznam.schema.harp_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema.scanimage_data">flexiznam.schema.scanimage_data module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="flexiznam.schema.html#module-flexiznam.schema">Module contents</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.camp.html">flexiznam.camp package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.config.html">flexiznam.config package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.mcms.html">flexiznam.mcms package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flexiznam.schema.html">flexiznam.schema package</a></li>
 </ul>
 </li>
 </ul>
