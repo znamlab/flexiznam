@@ -28,11 +28,10 @@ You can also install the develop branch::
 
 Once flexiznam is installed, you can also use pip to keep the package updated::
 
-  pip install --no-deps --force-reinstall git+ssh://git@github.com/znamlab/flexiznam.git
+  pip install --upgrade git+ssh://git@github.com/znamlab/flexiznam.git
 
-``no-deps`` flag is recommended unless the requirements of ``flexiznam`` have changed.
-Otherwise, pip will reinstall all the requirements as well (e.g. numpy), which
-may result in version conflicts.
+This will update the package as long as the version of the repository is higher
+than the one you have installed.
 
 Configuration
 -------------
