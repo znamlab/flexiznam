@@ -189,12 +189,11 @@ following with the corresponding virtual environment active:</p>
 </pre></div>
 </div>
 <p>Once flexiznam is installed, you can also use pip to keep the package updated:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span> <span class="o">--</span><span class="n">force</span><span class="o">-</span><span class="n">reinstall</span> <span class="n">git</span><span class="o">+</span><span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">znamlab</span><span class="o">/</span><span class="n">flexiznam</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">git</span><span class="o">+</span><span class="n">ssh</span><span class="p">:</span><span class="o">//</span><span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">znamlab</span><span class="o">/</span><span class="n">flexiznam</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">no-deps</span></code> flag is recommended unless the requirements of <code class="docutils literal notranslate"><span class="pre">flexiznam</span></code> have changed.
-Otherwise, pip will reinstall all the requirements as well (e.g. numpy), which
-may result in version conflicts.</p>
+<p>This will update the package as long as the version of the repository is higher
+than the one you have installed.</p>
 <div class="section" id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
 <p>The default configuration settings can be created simply by running:
