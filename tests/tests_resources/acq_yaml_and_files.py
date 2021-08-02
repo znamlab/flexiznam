@@ -7,11 +7,11 @@ def get_example_yaml_files(session_name='S20210513'):
     """Help for testing: generates a yaml-like dictionary
 
     Args:
-        session_name: str name of the session
+        session_name (str): name of the session
 
     Returns:
-        miniaml: minimal example of yaml compatible with flexilims update
-        faml: full example of yaml, which includes things that need to be corrected
+        miniaml (dict): minimal example of yaml compatible with flexilims update
+        faml (dict): full example of yaml, which includes things that need to be corrected
     """
     miniaml = {"project": "test",
                "mouse": "PZAH4.1c",
@@ -63,11 +63,11 @@ def create_acq_files(target_folder, session_name='S20210513'):
     """Create empty files mimicking acq file structure
 
     Args:
-           target_folder: str temporary folder to write the data. Must not exist
-           session_name: str name of the session
+           target_folder (str): temporary folder to write the data. Must not exist
+           session_name (str): name of the session
 
     Returns:
-           session_name: str the name of the session
+           session_name (str): the name of the session
     """
 
     if session_name == 'unique':
@@ -89,7 +89,7 @@ def create_sample_file(target_folder):
     """Create empty files mimicking sample imaging file structure
 
        Args:
-              target_folder: str temporary folder to write the data. Must not exist
+              target_folder (str): temporary folder to write the data. Must not exist
 
        Returns:
               None
@@ -97,12 +97,12 @@ def create_sample_file(target_folder):
     target_folder = Path(target_folder)
     root = target_folder / MOUSE
     if root.exists():
-           raise IOError('Target folder exists')
+        raise IOError('Target folder exists')
 
     for file in ACQ:
-           file_path = root / file
-           file_path.parent.mkdir(parents=True, exist_ok=True)
-           file_path.touch()
+        file_path = root / file
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.touch()
 
 
 MOUSE = 'PZAH4.1c'
