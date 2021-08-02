@@ -99,7 +99,7 @@ def create_sample_file(target_folder):
     if root.exists():
         raise IOError('Target folder exists')
 
-    for file in ACQ:
+    for file in SPL:
         file_path = root / file
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.touch()
@@ -340,7 +340,6 @@ SPL = ['brain/Slide1/example_SC_cell_snap.czi',
        'left_retina/Stitch_A01_maybe_INL.png',
        'left_retina/Stitch_A01_binned.tif',
        'right_retina/snap_40X_green_cells_and_chat.jpg',
-       'right_retina/tile_zstack_20x_Cycle_01',
        'right_retina/tile_zstack_20x_Cycle_01/Map_A01.hdf5',
        'right_retina/tile_zstack_20x_Cycle_01/Map_A01.oir',
        'right_retina/tile_zstack_20x_Cycle_01/tile_zstack_20x_A01_G001_0003.oir',
@@ -360,7 +359,6 @@ SPL = ['brain/Slide1/example_SC_cell_snap.czi',
        'right_retina/tile_zstack_20x_Cycle/tile_zstack_20x_A01_G001_0004.oir',
        'right_retina/tile_zstack_20x_Cycle/matl_forVSIimages.omp2info',
        'right_retina/tile_zstack_20x_Cycle/tile_zstack_20x_A01_G001_0005.oir',
-       'right_retina/overview_Cycle',
        'right_retina/overview_Cycle/Map_A01.hdf5',
        'right_retina/overview_Cycle/overview_A01_G001_0001.oir',
        'right_retina/overview_Cycle/Map_A01.oir',

@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 import pandas as pd
-from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
+from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData, MicroscopyData
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
 from tests.tests_resources import acq_yaml_and_files
@@ -218,3 +218,13 @@ def test_dataset_paths(flm_sess):
     assert str(ds.path_root) == PARAMETERS['data_root']['processed']
     assert str(ds.path_full) == \
         str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))
+
+
+def test_microscopy_data(tmp_path):
+    acq_yaml_and_files.create_sample_file(tmp_path)
+    ds = MicroscopyData.from_folder(tmp_path / 'PZAH4.1c' / 'left_retina', verbose=False,
+                                    mouse=None, flm_session=None)
+    assert len(ds) == 6
+    d = ds['Stitch_A01_binned.tif']
+    assert d.name == 'Stitch_A01_binned.tif'
+    assert d.is_valid()
