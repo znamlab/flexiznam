@@ -173,7 +173,8 @@ def test_update_flexilims(flm_sess):
 
 
 def test_camera(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     data_dir = tmp_path / acq_yaml_and_files.MOUSE / miniaml['session'] / next(
         iter(miniaml['recordings'].keys()))
     ds = CameraData.from_folder(data_dir, verbose=False)

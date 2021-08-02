@@ -37,7 +37,8 @@ def test_add_password(tmp_path):
 
 
 def test_make_full_yaml(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as minifile:
@@ -68,7 +69,8 @@ def test_make_full_yaml(tmp_path):
 @pytest.mark.integtest
 def test_upload(tmp_path):
     # first generate a yaml with and without error:
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
+    session_name = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files(session_name=session_name)
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as minifile:
