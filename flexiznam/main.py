@@ -68,6 +68,7 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
         flexilims_session = get_flexilims_session(project_id, flexilims_username, flexilims_password)
     mice_df = get_entities(flexilims_session=flexilims_session, datatype='mouse')
     if mouse_name in mice_df.index:
+        print("Mouse already online")
         return mice_df.loc[mouse_name]
 
     if mcms_username is None:
@@ -87,7 +88,7 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
         datatype='mouse',
         name=mouse_name,
         attributes=dict(mouse_info),
-        strict_validation=False
+        strict_validation=False,
     )
     return resp
 
