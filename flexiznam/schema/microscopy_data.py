@@ -10,7 +10,7 @@ class MicroscopyData(Dataset):
 
     """
     DATASET_TYPE = 'microscopy'
-    VALID_EXTENSIONS = {'.czi', '.tif', '.png'}
+    VALID_EXTENSIONS = {'.czi', '.png'}
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, flm_session=None):
