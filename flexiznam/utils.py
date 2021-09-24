@@ -60,6 +60,7 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
             clean_dictionary_recursively(v, keys, path2string, format_dataset)
         if path2string and isinstance(v, pathlib.Path):
             dictionary[k] = str(PurePosixPath(v))
+            print('THIS IS NEW VER.', flush=True)
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
                 ds_dict = v.format(mode='yaml')
