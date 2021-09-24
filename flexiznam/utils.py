@@ -1,4 +1,5 @@
 import pathlib
+from pathlib import PurePosixPath
 
 import pandas as pd
 
@@ -58,7 +59,7 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
         if isinstance(v, dict):
             clean_dictionary_recursively(v, keys, path2string, format_dataset)
         if path2string and isinstance(v, pathlib.Path):
-            dictionary[k] = str(v)
+            dictionary[k] = str(PurePosixPath(v))
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
                 ds_dict = v.format(mode='yaml')
