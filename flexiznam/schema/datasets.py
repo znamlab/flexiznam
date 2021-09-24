@@ -172,9 +172,7 @@ class Dataset(object):
                 project_id=project,
                 flexilims_session=flm_session
             )
-            dataset_path = str(
-                Path(origin['path']) / Dataset.parse_dataset_name(dataset_name
-                                                                  )['dataset'])
+            dataset_path = str(Path(origin['path']) / Dataset.parse_dataset_name(dataset_name)['dataset'])
             return Dataset(
                 path=dataset_path,
                 is_raw='no',

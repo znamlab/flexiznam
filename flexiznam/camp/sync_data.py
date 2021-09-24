@@ -1,5 +1,5 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import copy
 import yaml
@@ -110,6 +110,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             conflicts=conflicts
         )
 
+
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.mouse = mouse.name
@@ -119,6 +120,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.origin_id = rec_rep['id']
             ds.flm_session = flexilims_session
             ds.update_flexilims(mode='safe')
+
     # now deal with samples
     def add_samples(samples, parent, short_parent_name=None):
         # we'll need a utility function to deal with recursion
@@ -168,25 +170,25 @@ def trim_paths(session_data, raw_data_folder):
         # utility function to recurse into samples
         for sample_name, sample_data in samples.items():
             samples[sample_name]['path'] = \
-                str(Path(samples[sample_name]['path'])
-                    .relative_to(raw_data_folder))
+                str(PurePosixPath(Path(samples[sample_name]['path'])
+                    .relative_to(raw_data_folder)))
             for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.path = ds.path.relative_to(raw_data_folder)
+                ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
             trim_sample_paths(sample_data['samples'])
 
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
     if 'path' in session_data.keys():
         session_data['path'] = \
-            str(Path(session_data['path']).relative_to(raw_data_folder))
+            str(PurePosixPath(Path(session_data['path']).relative_to(raw_data_folder)))
     for ds_name, ds in session_data.get('datasets', {}).items():
         ds.path = ds.path.relative_to(raw_data_folder)
     for rec_name, rec_data in session_data['recordings'].items():
         session_data['recordings'][rec_name]['path'] = \
-            str(Path(session_data['recordings'][rec_name]['path'])
-                .relative_to(raw_data_folder))
+            str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
+                .relative_to(raw_data_folder)))
         for ds_name, ds in rec_data.get('datasets', {}).items():
-            ds.path = ds.path.relative_to(raw_data_folder)
+            ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
     trim_sample_paths(session_data['samples'])
     return session_data
 
@@ -229,7 +231,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     )
 
     for rec_name, recording in session_data['recordings'].items():
-        recording['path'] = home_folder / rec_name
+        recording['path'] = str(PurePosixPath(Path(home_folder / rec_name)))
         recording['datasets'] = create_dataset(
             dataset_infos=recording['datasets'],
             parent=recording,

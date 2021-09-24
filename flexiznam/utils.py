@@ -1,5 +1,6 @@
 import pathlib
-from pathlib import PurePosixPath
+from pathlib import Path,PurePosixPath, PureWindowsPath
+from sys import platform
 
 import pandas as pd
 
@@ -60,7 +61,6 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
             clean_dictionary_recursively(v, keys, path2string, format_dataset)
         if path2string and isinstance(v, pathlib.Path):
             dictionary[k] = str(PurePosixPath(v))
-            print('THIS IS NEW VER.', flush=True)
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
                 ds_dict = v.format(mode='yaml')
@@ -73,4 +73,6 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
                 # Making a copy with dict is required to write yaml later on. If I keep
                 # the reference the output file has `*id001` instead of `{}`
                 ds_dict['attributes'] = dict(ds_dict.pop('extra_attributes', {}))
+                ds_dict['path'] = str(PurePosixPath(Path(ds_dict['path'])))
                 dictionary[k] = ds_dict
+
