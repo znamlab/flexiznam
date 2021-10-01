@@ -1,6 +1,5 @@
 import pathlib
-from pathlib import Path,PurePosixPath, PureWindowsPath
-from sys import platform
+from pathlib import Path,PurePosixPath
 
 import pandas as pd
 

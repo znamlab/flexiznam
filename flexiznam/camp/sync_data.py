@@ -231,7 +231,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     )
 
     for rec_name, recording in session_data['recordings'].items():
-        recording['path'] = str(PurePosixPath(Path(home_folder / rec_name)))
+        recording['path'] = str(PurePosixPath(home_folder / rec_name))
         recording['datasets'] = create_dataset(
             dataset_infos=recording['datasets'],
             parent=recording,
