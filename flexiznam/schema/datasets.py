@@ -1,4 +1,3 @@
-import pathlib
 from pathlib import Path
 import re
 import numpy as np
@@ -8,6 +7,7 @@ from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.config import PARAMETERS
 from datetime import datetime
+
 
 class Dataset(object):
     """Master class. Should be inherited by all datasets
@@ -87,7 +87,7 @@ class Dataset(object):
             project: Name of the project or hexadecimal project_id
             name: Unique name of the dataset on flexilims
             data_series: default to None. pd.Series as returned by flz.get_entities.
-                         If provided, superseeds project and name
+                         If provided, supersedes project and name
             flm_session: authentication session to access flexilims
         """
         if data_series is not None:
@@ -330,7 +330,7 @@ class Dataset(object):
                 for field in ['path', 'created', 'is_raw', 'dataset_type']:
                     attributes[field] = fmt[field]
 
-                # reseting origin_id to null is not implemented. Specifically check
+                # resetting origin_id to null is not implemented. Specifically check
                 # that it is not attempted and crash if it is
                 if self.origin_id is None:
                     if self.get_flexilims_entry().get('origin_id', None) is not None:

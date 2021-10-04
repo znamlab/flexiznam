@@ -1,5 +1,5 @@
 import pathlib
-from pathlib import Path,PurePosixPath
+from pathlib import Path, PurePosixPath
 
 import pandas as pd
 

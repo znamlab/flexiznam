@@ -110,7 +110,6 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             conflicts=conflicts
         )
 
-
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.mouse = mouse.name
@@ -255,10 +254,10 @@ def create_sample_datasets(parent, raw_data_folder):
     corresponding datasets
 
     Args:
-        parent (dict): Dictonary corresponding to the parent entity
+        parent (dict): Dictionary corresponding to the parent entity
 
     Return:
-        dict: dictonary of child samples
+        dict: dictionary of child samples
 
     """
     if 'samples' not in parent:
@@ -277,6 +276,7 @@ def create_sample_datasets(parent, raw_data_folder):
     # we update in place but we also return the dictionary of samples to make
     # for more readable code
     return parent['samples']
+
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
@@ -381,7 +381,7 @@ def clean_yaml(path_to_yaml):
         path_to_yaml (str): path to the YAML file
 
     Returns:
-        dict: nested dictonary containing entries in the YAML file
+        dict: nested dictionary containing entries in the YAML file
 
     """
     with open(path_to_yaml, 'r') as yml_file:
@@ -421,7 +421,7 @@ def read_sample(name, data):
         data,
         mandatory_args=(),
         optional_args=('notes', 'attributes', 'path'),
-        nested_levels=('datasets','samples')
+        nested_levels=('datasets', 'samples')
     )
     sample['name'] = name
 
@@ -504,8 +504,8 @@ def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
 
     Returns:
         (tuple): a tuple containing two dictionaries:
-            level (dict): dictonary of top level attributes
-            nested_levels (dict): dictionary of nested dictonaries
+            level (dict): dictionary of top level attributes
+            nested_levels (dict): dictionary of nested dictionaries
     """
     # make a copy to not change original version
     yml_level = yml_level.copy()
