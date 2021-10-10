@@ -44,6 +44,8 @@ def config(template=None, config_folder=None, update=False):
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
         config_tools.create_config(template=template, config_folder=config_folder)
+        fname = config_tools._find_file('config.yml', config_folder=config_folder)
+        click.echo('Configuration file created here:\n%s' % fname)
     click.echo('\nCurrent configuration is:')
     prm = config_tools.load_param(param_folder=config_folder)
     click.echo(yaml.dump(prm))
