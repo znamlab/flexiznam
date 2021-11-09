@@ -10,7 +10,7 @@ def test_create_config():
         config_tools.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark')
         # reload and check one random field
         prm = config_tools.load_param(tmp)
-        assert prm['mcms_username'] == 'ab8'
+        assert prm['mcms_username'] == 'yourusername'
         assert prm['favorite_colour'] == 'dark'
         # check that I load it if the cwd is the local path
         prm = config_tools.load_param()

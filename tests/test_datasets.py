@@ -215,7 +215,8 @@ def test_scanimage(tmp_path):
 def test_dataset_paths(flm_sess):
     project = 'test'
     ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
-    assert str(ds.path_root) == PARAMETERS['data_root']['processed']
+    path_root = pathlib.Path(PARAMETERS['data_root']['processed'])
+    assert ds.path_root == path_root
     assert str(ds.path_full) == \
         str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))
 
@@ -224,7 +225,7 @@ def test_microscopy_data(tmp_path):
     acq_yaml_and_files.create_sample_file(tmp_path)
     ds = MicroscopyData.from_folder(tmp_path / 'PZAH4.1c' / 'left_retina', verbose=False,
                                     mouse=None, flm_session=None)
-    assert len(ds) == 6
-    d = ds['Stitch_A01_binned.tif']
-    assert d.name == 'Stitch_A01_binned.tif'
+    assert len(ds) == 5
+    d = ds['Stitch_A01_S4_IPL_layer.png']
+    assert d.name == 'Stitch_A01_S4_IPL_layer.png'
     assert d.is_valid()
