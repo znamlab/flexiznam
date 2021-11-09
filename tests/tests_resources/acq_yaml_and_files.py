@@ -2,6 +2,8 @@
 from pathlib import Path
 import datetime
 
+TEST_PROJECT = 'demo_project'
+
 
 def get_example_yaml_files(session_name='S20210513'):
     """Help for testing: generates a yaml-like dictionary
@@ -13,6 +15,7 @@ def get_example_yaml_files(session_name='S20210513'):
         miniaml (dict): minimal example of yaml compatible with flexilims update
         faml (dict): full example of yaml, which includes things that need to be corrected
     """
+    raise DeprecationWarning
     miniaml = {"project": "test",
                "mouse": "PZAH4.1c",
                "session": session_name,
@@ -69,7 +72,7 @@ def create_acq_files(target_folder, session_name='S20210513'):
     Returns:
            session_name (str): the name of the session
     """
-
+    raise DeprecationWarning
     if session_name == 'unique':
         # create a unique session name
         session_name = 'S' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -94,6 +97,7 @@ def create_sample_file(target_folder):
        Returns:
               None
     """
+    raise DeprecationWarning
     target_folder = Path(target_folder)
     root = target_folder / MOUSE
     if root.exists():

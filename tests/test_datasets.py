@@ -6,6 +6,14 @@ from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
 from tests.tests_resources import acq_yaml_and_files
 
+# Test creation of all dataset types.
+#
+# For each dataset type we want to test:
+# - Creating by direct call
+# - Creating from_flexilims
+# - Creating from_origin
+# - Creating from_folder
+
 
 def test_dataset():
     ds = Dataset(project='test', dataset_type='camera', is_raw=False, path='')

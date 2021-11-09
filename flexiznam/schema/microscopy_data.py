@@ -8,9 +8,14 @@ from flexiznam.schema.datasets import Dataset
 class MicroscopyData(Dataset):
     """Subclass to handle detection of ex vivo microscopy images
 
+    It should deal with all images except scanimage datasets (which are handled by
+    scanimage_data.ScanimageData)
+
+    Extensions added to VALID_EXTENSIONS are considered as single file datasets
     """
+
     DATASET_TYPE = 'microscopy'
-    VALID_EXTENSIONS = {'.czi', '.png'}
+    VALID_EXTENSIONS = {'.czi', '.png', '.gif'}
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, flm_session=None):
