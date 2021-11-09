@@ -6,7 +6,8 @@ from tests.tests_resources import acq_yaml_and_files
 
 
 def test_clean_yaml(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as minifile:
@@ -19,7 +20,8 @@ def test_clean_yaml(tmp_path):
 
 
 def test_parse_yaml(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as minifile:
@@ -45,7 +47,8 @@ def test_parse_yaml(tmp_path):
 
 
 def test_write_yaml(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
     with open(path_to_full_yaml, 'w') as fullfile:
         yaml.dump(faml, fullfile)
@@ -71,7 +74,8 @@ def test_write_yaml(tmp_path):
 
 @pytest.mark.integtest
 def test_upload(tmp_path, flm_sess):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
+    session_name = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files(session_name=session_name)
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'
     with open(path_to_mini_yaml, 'w') as fullfile:
         yaml.dump(miniaml, fullfile)

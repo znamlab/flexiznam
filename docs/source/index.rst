@@ -11,16 +11,12 @@ Flexiznam - from *flexi*, standing for flexible, and *znam*, Slavic word meaning
 
 .. toctree::
    :maxdepth: 3
-   :caption: Basics:
+   :caption: Contents:
 
    installation
    quickstart
+   organization
    cli
-
-.. toctree::
-   :maxdepth: 4
-   :caption: API
-
    flexiznam
 
 Indices and tables

@@ -1,5 +1,5 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import copy
 import yaml
@@ -119,6 +119,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.origin_id = rec_rep['id']
             ds.flm_session = flexilims_session
             ds.update_flexilims(mode='safe')
+
     # now deal with samples
     def add_samples(samples, parent, short_parent_name=None):
         # we'll need a utility function to deal with recursion
@@ -168,25 +169,25 @@ def trim_paths(session_data, raw_data_folder):
         # utility function to recurse into samples
         for sample_name, sample_data in samples.items():
             samples[sample_name]['path'] = \
-                str(Path(samples[sample_name]['path'])
-                    .relative_to(raw_data_folder))
+                str(PurePosixPath(Path(samples[sample_name]['path'])
+                    .relative_to(raw_data_folder)))
             for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.path = ds.path.relative_to(raw_data_folder)
+                ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
             trim_sample_paths(sample_data['samples'])
 
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
     if 'path' in session_data.keys():
         session_data['path'] = \
-            str(Path(session_data['path']).relative_to(raw_data_folder))
+            str(PurePosixPath(Path(session_data['path']).relative_to(raw_data_folder)))
     for ds_name, ds in session_data.get('datasets', {}).items():
         ds.path = ds.path.relative_to(raw_data_folder)
     for rec_name, rec_data in session_data['recordings'].items():
         session_data['recordings'][rec_name]['path'] = \
-            str(Path(session_data['recordings'][rec_name]['path'])
-                .relative_to(raw_data_folder))
+            str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
+                .relative_to(raw_data_folder)))
         for ds_name, ds in rec_data.get('datasets', {}).items():
-            ds.path = ds.path.relative_to(raw_data_folder)
+            ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
     trim_sample_paths(session_data['samples'])
     return session_data
 
@@ -229,7 +230,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     )
 
     for rec_name, recording in session_data['recordings'].items():
-        recording['path'] = home_folder / rec_name
+        recording['path'] = str(PurePosixPath(home_folder / rec_name))
         recording['datasets'] = create_dataset(
             dataset_infos=recording['datasets'],
             parent=recording,
@@ -253,10 +254,10 @@ def create_sample_datasets(parent, raw_data_folder):
     corresponding datasets
 
     Args:
-        parent (dict): Dictonary corresponding to the parent entity
+        parent (dict): Dictionary corresponding to the parent entity
 
     Return:
-        dict: dictonary of child samples
+        dict: dictionary of child samples
 
     """
     if 'samples' not in parent:
@@ -275,6 +276,7 @@ def create_sample_datasets(parent, raw_data_folder):
     # we update in place but we also return the dictionary of samples to make
     # for more readable code
     return parent['samples']
+
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
@@ -379,7 +381,7 @@ def clean_yaml(path_to_yaml):
         path_to_yaml (str): path to the YAML file
 
     Returns:
-        dict: nested dictonary containing entries in the YAML file
+        dict: nested dictionary containing entries in the YAML file
 
     """
     with open(path_to_yaml, 'r') as yml_file:
@@ -419,7 +421,7 @@ def read_sample(name, data):
         data,
         mandatory_args=(),
         optional_args=('notes', 'attributes', 'path'),
-        nested_levels=('datasets','samples')
+        nested_levels=('datasets', 'samples')
     )
     sample['name'] = name
 
@@ -502,8 +504,8 @@ def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
 
     Returns:
         (tuple): a tuple containing two dictionaries:
-            level (dict): dictonary of top level attributes
-            nested_levels (dict): dictionary of nested dictonaries
+            level (dict): dictionary of top level attributes
+            nested_levels (dict): dictionary of nested dictionaries
     """
     # make a copy to not change original version
     yml_level = yml_level.copy()

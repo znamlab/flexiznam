@@ -1,5 +1,5 @@
-flexiznam package
-=================
+Python API
+==========
 
 Module contents
 ---------------

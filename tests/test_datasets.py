@@ -1,12 +1,10 @@
-import flexiznam
 import pytest
 import pathlib
 import pandas as pd
-from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData
+from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData, MicroscopyData
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
 from tests.tests_resources import acq_yaml_and_files
-
 
 
 def test_dataset():
@@ -21,7 +19,8 @@ def test_dataset():
                   dataset_name='name_with_underscore'),
              dict(mouse='mo_use', session='S12345678_123456', recording=None,
                   dataset_name='name_with_underscore'),
-             # dict(mouse='mo_use', session='S12345678_123456', recording='R123456wihttext',
+             # dict(mouse='mo_use', session='S12345678_123456',
+             #      recording='R123456wihttext',
              #      dataset_name='name_with_underscore'),
              # dict(mouse='mo_use', session='S12345678_123456',
              #      recording='R123456_recording_with_underscore',
@@ -58,7 +57,6 @@ def test_dataset():
 
 @pytest.mark.integtest
 def test_dataset_flexilims_integration(flm_sess):
-    flm_session = flexiznam.get_flexilims_session(project_id='test')
     ds = Dataset(project='test', path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='',
                  flm_session=flm_sess)
@@ -174,9 +172,9 @@ def test_update_flexilims(flm_sess):
     assert err.value.args[0] == 'Cannot set origin_id to null'
 
 
-
 def test_camera(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
+    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     data_dir = tmp_path / acq_yaml_and_files.MOUSE / miniaml['session'] / next(
         iter(miniaml['recordings'].keys()))
     ds = CameraData.from_folder(data_dir, verbose=False)
@@ -191,7 +189,7 @@ def test_camera(tmp_path):
 
 
 def test_harp(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
     ds = HarpData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
@@ -202,7 +200,7 @@ def test_harp(tmp_path):
 
 
 def test_scanimage(tmp_path):
-    miniaml, faml = acq_yaml_and_files.create_acq_files(tmp_path)
+    acq_yaml_and_files.create_acq_files(tmp_path)
     data_dir = tmp_path / 'PZAH4.1c/S20210513/R193432_Retinotopy'
     ds = ScanimageData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
@@ -217,6 +215,17 @@ def test_scanimage(tmp_path):
 def test_dataset_paths(flm_sess):
     project = 'test'
     ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
-    assert str(ds.path_root) == PARAMETERS['data_root']['processed']
+    path_root = pathlib.Path(PARAMETERS['data_root']['processed'])
+    assert ds.path_root == path_root
     assert str(ds.path_full) == \
         str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))
+
+
+def test_microscopy_data(tmp_path):
+    acq_yaml_and_files.create_sample_file(tmp_path)
+    ds = MicroscopyData.from_folder(tmp_path / 'PZAH4.1c' / 'left_retina', verbose=False,
+                                    mouse=None, flm_session=None)
+    assert len(ds) == 5
+    d = ds['Stitch_A01_S4_IPL_layer.png']
+    assert d.name == 'Stitch_A01_S4_IPL_layer.png'
+    assert d.is_valid()
