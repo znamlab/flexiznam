@@ -10,7 +10,7 @@ class HarpData(Dataset):
     DATASET_TYPE = 'harp'
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flm_session=None):
+    def from_folder(cls, folder, verbose=True, flm_session=None, project=None):
         """Create a harp dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
         bin_files = [f for f in fnames if f.endswith('.bin')]
@@ -44,7 +44,8 @@ class HarpData(Dataset):
                                              csv_files=associated_csv,
                                              created=created.strftime(
                                                  '%Y-%m-%d %H:%M:%S'),
-                                             flm_session=flm_session)
+                                             flm_session=flm_session,
+                                             project=project)
         if verbose:
             unmatched = set(csv_files) - matched_files
             if unmatched and verbose:

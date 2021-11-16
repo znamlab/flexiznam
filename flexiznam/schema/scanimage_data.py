@@ -12,7 +12,7 @@ class ScanimageData(Dataset):
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, session=None, recording=None,
-                    flm_session=None):
+                    flm_session=None, project=None):
         """Create a scanimage dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.tiff', '.tif'))]
         tif_files = [f for f in fnames if f.endswith(('.tif', '.tiff'))]
@@ -59,7 +59,8 @@ class ScanimageData(Dataset):
                                            tif_files=list(acq_df.filename.values),
                                            csv_files=associated_csv,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                                           flm_session=flm_session)
+                                           flm_session=flm_session,
+                                           project=project)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[acq_id], field, locals()[field])
             output[acq_id].dataset_name = acq_id
@@ -72,6 +73,7 @@ class ScanimageData(Dataset):
                     print('    %s' % m)
         return output
 
+    @staticmethod
     def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
         """Create a camera dataset from flexilims entry"""
         raise NotImplementedError
