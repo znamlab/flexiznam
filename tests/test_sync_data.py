@@ -2,7 +2,7 @@ import flexiznam
 import pytest
 import yaml
 from flexiznam.camp import sync_data
-from tests.tests_resources import acq_yaml_and_files
+from tests.tests_resources import data_for_testing
 
 
 def test_clean_yaml(tmp_path):

@@ -4,7 +4,7 @@ import pandas as pd
 from flexiznam.schema import MicroscopyData
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
-from tests.tests_resources.acq_yaml_and_files import TEST_PROJECT
+from tests.tests_resources.data_for_testing import TEST_PROJECT
 
 # Test creation of all dataset types.
 #

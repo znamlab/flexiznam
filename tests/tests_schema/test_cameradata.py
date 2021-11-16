@@ -1,5 +1,10 @@
 import pytest
 import pathlib
+from flexiznam.schema import CameraData
+from tests.tests_resources import data_for_testing as test_data
+from flexiznam.config import PARAMETERS
+
+
 import pandas as pd
 from flexiznam.schema import CameraData
 from flexiznam.config import PARAMETERS
