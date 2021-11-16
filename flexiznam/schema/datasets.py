@@ -53,7 +53,7 @@ class Dataset(object):
         return output
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flm_session=None):
+    def from_folder(cls, folder, verbose=True, flm_session=None, project=None):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not
@@ -67,7 +67,7 @@ class Dataset(object):
                 print('Looking for %s' % ds_type)
             try:
                 res = ds_class.from_folder(folder, verbose=verbose,
-                                           flm_session=flm_session)
+                                           flm_session=flm_session, project=project)
             except OSError:
                 continue
             if any(k in data for k in res):

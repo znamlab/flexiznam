@@ -12,7 +12,7 @@ class CameraData(Dataset):
 
     @staticmethod
     def from_folder(folder, camera_name=None, verbose=True, mouse=None, session=None,
-                    recording=None, flm_session=None):
+                    recording=None, flm_session=None, project=None):
         """Create a Camera dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(tuple(CameraData.VALID_EXTENSIONS))]
         metadata_files = [f for f in fnames if f.endswith('_metadata.txt')]
@@ -51,7 +51,8 @@ class CameraData(Dataset):
                                              video_file=vid[0],
                                              created=created.strftime('%Y-%m-%d '
                                                                       '%H:%M:%S'),
-                                             flm_session=flm_session)
+                                             flm_session=flm_session,
+                                             project=project)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[camera_name], field, locals()[field])
             output[camera_name].dataset_name = camera_name

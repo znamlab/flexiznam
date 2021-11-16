@@ -18,7 +18,7 @@ class MicroscopyData(Dataset):
     VALID_EXTENSIONS = {'.czi', '.png', '.gif'}
 
     @staticmethod
-    def from_folder(folder, verbose=True, mouse=None, flm_session=None):
+    def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
         """Create Microscopy datasets by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if
                   f.endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
@@ -30,7 +30,8 @@ class MicroscopyData(Dataset):
             output[fname] = MicroscopyData(
                 path=dataset_path,
                 created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                flm_session=flm_session
+                flm_session=flm_session,
+                project=project
             )
             for field in ('mouse', ):
                 setattr(output[fname], field, locals()[field])
