@@ -1,18 +1,11 @@
 import pytest
 import pathlib
 import pandas as pd
-from flexiznam.schema import Dataset, CameraData, HarpData, ScanimageData, MicroscopyData
+from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
-from tests.tests_resources import acq_yaml_and_files
 
-# Test creation of all dataset types.
-#
-# For each dataset type we want to test:
-# - Creating by direct call
-# - Creating from_flexilims
-# - Creating from_origin
-# - Creating from_folder
+# Test the generic dataset class.
 
 
 def test_dataset():
@@ -179,46 +172,6 @@ def test_update_flexilims(flm_sess):
         ds.update_flexilims(mode='overwrite')
     assert err.value.args[0] == 'Cannot set origin_id to null'
 
-
-def test_camera(tmp_path):
-    acq_yaml_and_files.create_acq_files(tmp_path)
-    miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
-    data_dir = tmp_path / acq_yaml_and_files.MOUSE / miniaml['session'] / next(
-        iter(miniaml['recordings'].keys()))
-    ds = CameraData.from_folder(data_dir, verbose=False)
-    assert len(ds) == 4
-    d = ds['butt_camera']
-    assert d.name == 'butt_camera'
-    d.project = 'test'
-    assert d.is_valid()
-    ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession',
-                                recording='testrecording')
-    assert ds['face_camera'].name == 'testmouse_testsession_testrecording_face_camera'
-
-
-def test_harp(tmp_path):
-    acq_yaml_and_files.create_acq_files(tmp_path)
-    data_dir = tmp_path / 'PZAH4.1c/S20210513/ParamLog/R193432_Retinotopy'
-    ds = HarpData.from_folder(data_dir, verbose=False)
-    assert len(ds) == 1
-    d = next(iter(ds.values()))
-    assert d.name == next(iter(ds.keys()))
-    assert d.is_valid()
-    assert len(d.csv_files) == 5
-
-
-def test_scanimage(tmp_path):
-    acq_yaml_and_files.create_acq_files(tmp_path)
-    data_dir = tmp_path / 'PZAH4.1c/S20210513/R193432_Retinotopy'
-    ds = ScanimageData.from_folder(data_dir, verbose=False)
-    assert len(ds) == 1
-    d = next(iter(ds.values()))
-    assert d.name == 'PZAH4.1c_S20210513_R193432_Retinotopy00001'
-    assert d.name == next(iter(ds.keys()))
-    assert d.is_valid()
-    assert len(d) == 39
-
-
 @pytest.mark.integtest
 def test_dataset_paths(flm_sess):
     project = 'test'
@@ -229,11 +182,3 @@ def test_dataset_paths(flm_sess):
         str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))
 
 
-def test_microscopy_data(tmp_path):
-    acq_yaml_and_files.create_sample_file(tmp_path)
-    ds = MicroscopyData.from_folder(tmp_path / 'PZAH4.1c' / 'left_retina', verbose=False,
-                                    mouse=None, flm_session=None)
-    assert len(ds) == 5
-    d = ds['Stitch_A01_S4_IPL_layer.png']
-    assert d.name == 'Stitch_A01_S4_IPL_layer.png'
-    assert d.is_valid()
