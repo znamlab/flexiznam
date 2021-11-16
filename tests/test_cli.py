@@ -14,7 +14,7 @@ def test_config(tmp_path):
     assert result.output.startswith('No configuration file. Creating one.')
     assert pathlib.Path.exists(tmp_path / 'config.yml')
     prm = config_tools.load_param(param_folder=tmp_path)
-    assert prm['data_root']['raw'] == r'/camp/lab/znamenskiyp/home/shared/projects'
+    assert prm['data_root']['raw'] == r'/camp/lab/znamenskiyp/data/instruments/raw_data'
     result = runner.invoke(cli.config, ['--config_folder', tmp_path])
     assert result.exit_code == 0
     assert result.output.startswith('Configuration file currently used is:')
