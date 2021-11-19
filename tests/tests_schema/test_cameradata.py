@@ -15,9 +15,9 @@ from tests.tests_resources import data_for_testing
 #
 # For each dataset type we want to test:
 # - Creating by direct call
-# - Creating from_flexilims
-# - Creating from_origin
 # - Creating from_folder
+# - Creating from_flexilims
+# - Creating from_origin?
 
 EX_M = 'PZAD9.4d'
 EX_S = 'S20211102'
@@ -61,6 +61,8 @@ def test_create_directly(flm_sess):
     assert data.session == EX_S
     assert data.recording == EX_R.split('_')[0]  # there is still an issue with rec
     assert data.flexilims_status() == 'not online'
+    data.update_flexilims()
+    assert data.flexilims_status() == 'up-to-date'
 
 
 @pytest.mark.integtest
@@ -85,7 +87,15 @@ def test_create_from_folder(flm_sess):
     assert data.mouse is None
     assert data.dataset_name == data.name
     assert data.is_valid()
+    assert data.project == test_data.TEST_PROJECT
     assert data.flexilims_status() == 'not online'
+
+
+def test_create_from_flexilims(flm_sess):
+    """Create from the flexilims instance made in the test_create_directly"""
+    data = CameraData.from_flexilims(project=test_data.TEST_PROJECT,
+                                     name='_'.join([EX_M, EX_S, EX_R, EX_CAM]))
+
 
 def test_camera(tmp_path):
     acq_yaml_and_files.create_acq_files(tmp_path)
