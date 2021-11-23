@@ -73,11 +73,6 @@ class ScanimageData(Dataset):
                     print('    %s' % m)
         return output
 
-    @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
-        """Create a camera dataset from flexilims entry"""
-        raise NotImplementedError
-
     def __init__(self, path, name=None, tif_files=None, csv_files=None,
                  extra_attributes=None, created=None, project=None, is_raw=True,
                  flm_session=None):

@@ -33,11 +33,6 @@ class MicroscopyData(Dataset):
             output[fname].dataset_name = fname
         return output
 
-    @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
-        """Create a microscopy dataset from flexilims entry"""
-        raise NotImplementedError
-
     def __init__(self, path, name=None, extra_attributes=None, created=None,
                  project=None, is_raw=True, flm_session=None):
         """Create a Microscopy dataset

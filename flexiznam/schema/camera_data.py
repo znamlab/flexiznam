@@ -58,10 +58,6 @@ class CameraData(Dataset):
             output[camera_name].dataset_name = camera_name
         return output
 
-    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
-        """Create a camera dataset from flexilims entry"""
-        raise NotImplementedError
-
     def __init__(self, path, timestamp_file, metadata_file, video_file, name=None,
                  extra_attributes=None, created=None, project=None, is_raw=True,
                  flm_session=None):
