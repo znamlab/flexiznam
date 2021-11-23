@@ -68,12 +68,18 @@ class CameraData(Dataset):
         """Create a Camera dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. Must contain mouse, session (and recording)
+            name: Identifier. Unique name on flexilims. Must contain mouse, session (and
+                  recording)
             path: Path to the folder containing all the files
-            dataset_name: Name of the camera, all related files are expected to contain the camera name in their filename
-            timestamp_file: file name of the timestamp file, usually camera_name_timestamps.csv
-            metadata_file: file name of the metadata file, usually camera_name_metadata.txt
-            video_file: file name of the video file, usually camera_name_data.bin/.avi/.mp4
+            timestamp_file: file name of the timestamp file, usually
+                            camera_name_timestamps.csv
+            metadata_file: file name of the metadata file, usually
+                           camera_name_metadata.txt
+            video_file: file name of the video file, usually
+                        camera_name_data.bin/.avi/.mp4
+            name: Name of the camera, is expected to be SXXXXXXXX_RXXXXXX_camera_name,
+                  create with None and change self.mouse, self.session, self.recording,
+                  and self.dataset_name to have different naming
             extra_attributes: Other optional attributes (from or for flexilims)
             created: Date of creation. Default to the creation date of the binary file
             project: name of hexadecimal id of the project to which the dataset belongs
@@ -84,9 +90,34 @@ class CameraData(Dataset):
                          dataset_type=CameraData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
-        self.timestamp_file = timestamp_file
-        self.metadata_file = metadata_file
-        self.video_file = video_file
+        input_params = dict(timestamp_file=timestamp_file, metadata_file=metadata_file,
+                            video_file=video_file)
+        for w in input_params.keys():
+            self.extra_attributes[w] = input_params[w]
+
+    @property
+    def timestamp_file(self):
+        return self.extra_attributes.get('timestamp_file', None)
+    
+    @timestamp_file.setter
+    def timestamp_file(self, value):
+        self.extra_attributes['timestamp_file'] = str(value)
+
+    @property
+    def metadata_file(self):
+        return self.extra_attributes.get('metadata_file', None)
+
+    @metadata_file.setter
+    def metadata_file(self, value):
+        self.extra_attributes['metadata_file'] = str(value)
+
+    @property
+    def video_file(self):
+        return self.extra_attributes.get('video_file', None)
+
+    @video_file.setter
+    def video_file(self, value):
+        self.extra_attributes['video_file'] = str(value)
 
     def is_valid(self):
         """Check that video, metadata and timestamps files exist"""
