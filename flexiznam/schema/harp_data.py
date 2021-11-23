@@ -75,9 +75,27 @@ class HarpData(Dataset):
                          dataset_type=HarpData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
-        self.binary_file = binary_file
-        self.csv_files = csv_files if csv_files is not None else {}
-
+        input_params = dict(binary_file=binary_file, 
+                            csv_files=csv_files if csv_files is not None else {})
+        for w in input_params.keys():
+            self.extra_attributes[w] = input_params[w]
+            
+    @property
+    def binary_file(self):
+        return self.extra_attributes.get('binary_file', None)
+    
+    @binary_file.setter
+    def binary_file(self, value):
+        self.extra_attributes['binary_file'] = str(value)
+        
+    @property
+    def csv_files(self):
+        return self.extra_attributes.get('csv_files', None)
+    
+    @csv_files.setter
+    def csv_files(self, value):
+        self.extra_attributes['csv_files'] = str(value)
+        
     def is_valid(self):
         """Check that video, metadata and timestamps files exist"""
         if not (pathlib.Path(self.path) / self.binary_file).exists():

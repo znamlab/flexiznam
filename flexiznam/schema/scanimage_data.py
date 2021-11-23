@@ -95,18 +95,30 @@ class ScanimageData(Dataset):
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
-        self.csv_files = csv_files
-        self.tif_files = tif_files
+        self.extra_attributes['csv_files'] = csv_files
+        self.extra_attributes['tif_files'] = tif_files
+
+    @property
+    def csv_files(self):
+        """List of csv files"""
+        return self.extra_attributes['csv_files']
+
+    @csv_files.setter
+    def csv_files(self, value):
+        self.extra_attributes['csv_files'] = value
 
     @property
     def tif_files(self):
-        """List of tif files, sorted alphabetically (automatically)"""
-        return self._tif_files
+        """List of tif files
+
+        Tif files are sorted alphabetically automatically done when setting this property
+        """
+        return self.extra_attributes['tif_files']
 
     @tif_files.setter
     def tif_files(self, value):
         if value is None:
-            self._tif_files = None
+            self.extra_attributes['tif_files'] = None
             return
         if isinstance(value, str):
             value = [value]
@@ -114,7 +126,7 @@ class ScanimageData(Dataset):
         if not self.is_valid(tif_files=value):
             raise IOError('One or more file do not exist. Set self._tif_files if you want'
                           ' to skip check')
-        self._tif_files = value
+        self.extra_attributes['tif_files'] = value
 
     def is_valid(self, tif_files=None):
         """Check that associated files exist"""
