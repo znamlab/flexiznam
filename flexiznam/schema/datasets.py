@@ -100,10 +100,7 @@ class Dataset(object):
                 raise FlexilimsError('No dataset named {} in project {}'.format(name,
                                                                                 project))
         dataset_type = data_series.dataset_type
-        if dataset_type in Dataset.SUBCLASSES:
-            ds_cls = Dataset.SUBCLASSES[dataset_type]
-            return ds_cls.from_flexilims(data_series=data_series, flm_session=flm_session)
-        # No subclass, let's do it myself
+
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
         kwargs['flm_session'] = flm_session
