@@ -64,13 +64,11 @@ def test_dataset_flexilims_integration(flm_sess):
     st = ds.flexilims_status()
     assert st == 'different'
     rep = ds.flexilims_report()
-    expected = pd.DataFrame(dict(offline={'created': '',
-                                          'is_raw': 'no',
+    expected = pd.DataFrame(dict(offline={'is_raw': 'no',
                                           'path': 'fake/path',
                                           'only_online': 'NA',
                                           },
-                                 flexilims={'created': None,
-                                            'is_raw': None,
+                                 flexilims={'is_raw': None,
                                             'path': 'random',
                                             'only_online': 'this attribute is only on '
                                                            'flexilims',
