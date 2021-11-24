@@ -45,10 +45,12 @@ class CameraData(Dataset):
                 raise IOError('Found more than one potential video file for camera %s' % camera_name)
             video_path = pathlib.Path(folder) / vid[0]
             created = datetime.datetime.fromtimestamp(video_path.stat().st_mtime)
+            extra_attibutes = dict(timestamp_file='%s_timestamps.csv' % camera_name,
+                                   metadata_file='%s_metadata.txt' % camera_name,
+                                   video_file=vid[0],
+)
             output[camera_name] = CameraData(path=folder,
-                                             timestamp_file='%s_timestamps.csv' % camera_name,
-                                             metadata_file='%s_metadata.txt' % camera_name,
-                                             video_file=vid[0],
+                                             extra_attributes=extra_attibutes,
                                              created=created.strftime('%Y-%m-%d '
                                                                       '%H:%M:%S'),
                                              flm_session=flm_session,
@@ -58,21 +60,14 @@ class CameraData(Dataset):
             output[camera_name].dataset_name = camera_name
         return output
 
-    def __init__(self, path, timestamp_file, metadata_file, video_file, name=None,
-                 extra_attributes=None, created=None, project=None, is_raw=True,
-                 flm_session=None):
+    def __init__(self, path,name=None, extra_attributes=None, created=None,
+                 project=None, is_raw=True, flm_session=None):
         """Create a Camera dataset
 
         Args:
             name: Identifier. Unique name on flexilims. Must contain mouse, session (and
                   recording)
             path: Path to the folder containing all the files
-            timestamp_file: file name of the timestamp file, usually
-                            camera_name_timestamps.csv
-            metadata_file: file name of the metadata file, usually
-                           camera_name_metadata.txt
-            video_file: file name of the video file, usually
-                        camera_name_data.bin/.avi/.mp4
             name: Name of the camera, is expected to be SXXXXXXXX_RXXXXXX_camera_name,
                   create with None and change self.mouse, self.session, self.recording,
                   and self.dataset_name to have different naming
@@ -81,15 +76,23 @@ class CameraData(Dataset):
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
             flm_session: authentication session for connecting to flexilims
+
+        Expected extra_attributes:
+            video_file: file name of the video file, usually
+                        camera_name_data.bin/.avi/.mp4
+            timestamp_file (optional): file name of the timestamp file, usually
+                            camera_name_timestamps.csv
+            metadata_file (optional): file name of the metadata file, usually
+                           camera_name_metadata.txt
         """
+        if 'video_file' not in extra_attributes:
+            raise IOError('Camera dataset require to have `video_file` in extra '
+                          'attributes')
+
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=CameraData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
-        input_params = dict(timestamp_file=timestamp_file, metadata_file=metadata_file,
-                            video_file=video_file)
-        for w in input_params.keys():
-            self.extra_attributes[w] = input_params[w]
 
     @property
     def timestamp_file(self):
