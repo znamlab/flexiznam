@@ -100,10 +100,7 @@ class Dataset(object):
                 raise FlexilimsError('No dataset named {} in project {}'.format(name,
                                                                                 project))
         dataset_type = data_series.dataset_type
-        if dataset_type in Dataset.SUBCLASSES:
-            ds_cls = Dataset.SUBCLASSES[dataset_type]
-            return ds_cls.from_flexilims(data_series=data_series, flm_session=flm_session)
-        # No subclass, let's do it myself
+
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
         kwargs['flm_session'] = flm_session
@@ -413,7 +410,20 @@ class Dataset(object):
                 flm_data[na_field] = None
         fmt = self.format()
 
-        differences = utils.compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
+        differences = utils.compare_series(fmt, flm_data, series_name=('offline',
+                                                                       'flexilims'))
+        # flexilims transforms empty structures into null. Consider that equal
+        to_remove = []
+        for what, series in differences.iterrows():
+            if series.flexilims is not None:
+                continue
+            if not isinstance(series.offline, bool) and not series.offline:
+                # we have a non-boolean that is False, flexilims will make it None on
+                # upload, it is not a real difference
+                to_remove.append(what)
+        print('\nWarning: %s is/are empty and will be uploaded as None on flexilims.\n' %
+              to_remove)
+        differences = differences.drop(to_remove)
         return differences
 
     def format(self, mode='flexilims'):

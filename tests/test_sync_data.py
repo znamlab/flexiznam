@@ -58,14 +58,21 @@ def test_write_yaml(tmp_path):
     pure_yaml = sync_data.write_session_data_as_yaml(session_data=sess_data,
                                                      target_file=target)
 
-    def rec_test(d):
+    def rec_test(d, name='root'):
         for k, v in d.items():
+            bad = False
             if isinstance(v, dict):
-                rec_test(v)
+                rec_test(v, name=name + '/' + k)
+            elif isinstance(v, list):
+                if any([not (isinstance(el, str) or (el is None)) for el in v]):
+                    bad = True
             elif not isinstance(v, str):
                 if v is None:
                     continue
-                raise IOError('Potentially invalid yaml. It contains: %s' % v)
+                bad = True
+            if bad:
+                raise IOError('Potentially invalid yaml. It contains: %s in %s of %s' %
+                              (v, k, name))
     rec_test(pure_yaml)
     with open(target, 'r') as reader:
         reload = yaml.safe_load(reader)

@@ -55,9 +55,11 @@ class ScanimageData(Dataset):
 
             example_tif = pathlib.Path(folder) / acq_df.filename.iloc[0]
             created = datetime.datetime.fromtimestamp(example_tif.stat().st_mtime)
+            extra_attributes = dict(tif_files=list(acq_df.filename.values),
+                                    csv_files=associated_csv)
+
             output[acq_id] = ScanimageData(path=folder,
-                                           tif_files=list(acq_df.filename.values),
-                                           csv_files=associated_csv,
+                                           extra_attributes=extra_attributes,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'),
                                            flm_session=flm_session,
                                            project=project)
@@ -68,15 +70,11 @@ class ScanimageData(Dataset):
         if verbose:
             unmatched = set(csv_files) - matched_csv
             if unmatched and verbose:
-                print('%d csv files did not match any scanimage acquisition:' % len(unmatched))
+                print('%d csv files did not match any scanimage acquisition:' % len(
+                    unmatched))
                 for m in unmatched:
                     print('    %s' % m)
         return output
-
-    @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
-        """Create a camera dataset from flexilims entry"""
-        raise NotImplementedError
 
     def __init__(self, path, name=None, tif_files=None, csv_files=None,
                  extra_attributes=None, created=None, project=None, is_raw=True,
@@ -87,31 +85,44 @@ class ScanimageData(Dataset):
             name: Identifier. Unique name on flexilims. When imported from folder,
                   default to the acquisition name
             path: Path to the folder containing all the files
-            tif_files: List of file names associated with this dataset
-            csv_files: Dictionary of csv files associated to the binary file. Keys are
-                       identifier provided for convenience, values are the full file name
             extra_attributes: Other optional attributes (from or for flexilims)
             created: Date of creation. Default to the creation date of a tif file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
             flm_session: authentication session for connecting to flexilims
+
+        Expected extra_attributes:
+            tif_files (optional): List of file names associated with this dataset
+            csv_files (optional): Dictionary of csv files associated to the scanimage
+                                  recording file. Keys are identifier provided for
+                                  convenience, values are the full file name
         """
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
-        self.csv_files = csv_files
-        self.tif_files = tif_files
+
+    @property
+    def csv_files(self):
+        """List of csv files"""
+        return self.extra_attributes['csv_files']
+
+    @csv_files.setter
+    def csv_files(self, value):
+        self.extra_attributes['csv_files'] = value
 
     @property
     def tif_files(self):
-        """List of tif files, sorted alphabetically (automatically)"""
-        return self._tif_files
+        """List of tif files
+
+        Tif files are sorted alphabetically automatically done when setting this property
+        """
+        return self.extra_attributes['tif_files']
 
     @tif_files.setter
     def tif_files(self, value):
         if value is None:
-            self._tif_files = None
+            self.extra_attributes['tif_files'] = None
             return
         if isinstance(value, str):
             value = [value]
@@ -119,7 +130,7 @@ class ScanimageData(Dataset):
         if not self.is_valid(tif_files=value):
             raise IOError('One or more file do not exist. Set self._tif_files if you want'
                           ' to skip check')
-        self._tif_files = value
+        self.extra_attributes['tif_files'] = value
 
     def is_valid(self, tif_files=None):
         """Check that associated files exist"""
