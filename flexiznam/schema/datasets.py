@@ -104,7 +104,10 @@ class Dataset(object):
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
         kwargs['flm_session'] = flm_session
-        ds = Dataset(**kwargs)
+        if dataset_type in Dataset.SUBCLASSES:
+            ds = Dataset.SUBCLASSES[dataset_type](**kwargs)
+        else:
+            ds = Dataset(**kwargs)
         try:
             ds.name = name
         except DatasetError:
