@@ -4,7 +4,6 @@ from flexiznam.schema import CameraData
 from tests.tests_resources import data_for_testing as test_data
 from flexiznam.config import PARAMETERS
 
-
 import pandas as pd
 
 from flexiznam.config import PARAMETERS
@@ -30,12 +29,12 @@ EX_CAM = 'face_camera'
 def test_create_directly(flm_sess):
     """Create by directly calling the function"""
     # first just make sure it can create an object without epic failure
+    extra_attributes = dict(timestamp_file='camel.csv',
+                            metadata_file='none',
+                            video_file='none')
     data = CameraData(path='test_path',
-                      timestamp_file='',
-                      metadata_file='none',
-                      video_file='none',
                       name=None,
-                      extra_attributes=None,
+                      extra_attributes=extra_attributes,
                       created='now',
                       project=test_data.TEST_PROJECT,
                       is_raw=True,
@@ -43,14 +42,15 @@ def test_create_directly(flm_sess):
     assert str(data.path) == 'test_path'
     assert not data.is_valid()
     assert data.name is None
+    assert data.timestamp_file == 'camel.csv'
 
     # then create an actual test dataset
+    extra_attributes = dict(timestamp_file='%s_timestamps.csv' % EX_CAM,
+                            metadata_file='%s_metadata.txt' % EX_CAM,
+                            video_file='%s_data.avi' % EX_CAM, )
     data = CameraData(path=EX_P,
-                      timestamp_file='%s_timestamps.csv' % EX_CAM,
-                      metadata_file='%s_metadata.txt' % EX_CAM,
-                      video_file='%s_data.avi' % EX_CAM,
                       name='_'.join([EX_M, EX_S, EX_R, EX_CAM]),
-                      extra_attributes=None,
+                      extra_attributes=extra_attributes,
                       created='now',
                       project=test_data.TEST_PROJECT,
                       is_raw=True,
@@ -95,6 +95,9 @@ def test_create_from_flexilims(flm_sess):
     """Create from the flexilims instance made in the test_create_directly"""
     data = CameraData.from_flexilims(project=test_data.TEST_PROJECT,
                                      name='_'.join([EX_M, EX_S, EX_R, EX_CAM]))
+    assert data.name == '_'.join([EX_M, EX_S, EX_R, EX_CAM])
+    assert str(data.path) == EX_P
+
 
 
 def test_camera(tmp_path):
@@ -111,4 +114,3 @@ def test_camera(tmp_path):
     ds = CameraData.from_folder(data_dir, mouse='testmouse', session='testsession',
                                 recording='testrecording')
     assert ds['face_camera'].name == 'testmouse_testsession_testrecording_face_camera'
-
