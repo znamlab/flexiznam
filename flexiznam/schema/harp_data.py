@@ -57,7 +57,7 @@ class HarpData(Dataset):
         return output
 
     def __init__(self, name, path, extra_attributes=None, created=None, project=None,
-                 is_raw=True, flm_session=None):
+                 project_id=None, origin_id=None, is_raw=True, flm_session=None):
         """Create a Harp dataset
 
         Args:
@@ -82,7 +82,8 @@ class HarpData(Dataset):
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=HarpData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session)
+                         project=project, project_id=project_id,
+                         origin_id=origin_id, flm_session=flm_session)
 
     @property
     def binary_file(self):

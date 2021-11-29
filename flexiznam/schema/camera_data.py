@@ -60,8 +60,9 @@ class CameraData(Dataset):
             output[camera_name].dataset_name = camera_name
         return output
 
-    def __init__(self, path,name=None, extra_attributes=None, created=None,
-                 project=None, is_raw=True, flm_session=None):
+    def __init__(self, path, name=None, extra_attributes=None, created=None,
+                 project=None, project_id=None, is_raw=True, flm_session=None,
+                 origin_id=None):
         """Create a Camera dataset
 
         Args:
@@ -92,7 +93,8 @@ class CameraData(Dataset):
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=CameraData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session)
+                         project=project, project_id=project_id,
+                         origin_id=origin_id, flm_session=flm_session)
 
     @property
     def timestamp_file(self):
