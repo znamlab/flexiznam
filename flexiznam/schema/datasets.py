@@ -100,14 +100,16 @@ class Dataset(object):
                 raise FlexilimsError('No dataset named {} in project {}'.format(name,
                                                                                 project))
         dataset_type = data_series.dataset_type
-        if dataset_type in Dataset.SUBCLASSES:
-            ds_cls = Dataset.SUBCLASSES[dataset_type]
-            return ds_cls.from_flexilims(data_series=data_series, flm_session=flm_session)
-        # No subclass, let's do it myself
+
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
         kwargs['flm_session'] = flm_session
-        ds = Dataset(**kwargs)
+        if dataset_type in Dataset.SUBCLASSES:
+            # dataset_type is already specified by subclass
+            kwargs.pop('dataset_type')
+            ds = Dataset.SUBCLASSES[dataset_type](**kwargs)
+        else:
+            ds = Dataset(**kwargs)
         try:
             ds.name = name
         except DatasetError:
@@ -237,6 +239,7 @@ class Dataset(object):
                      project_id
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
             flm_session: authentication session to connect to flexilims
         """
         self.mouse = None

@@ -38,10 +38,12 @@ class HarpData(Dataset):
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
+            extra_attributes = dict(binary_file=bin_file,
+                                    csv_files=associated_csv,
+                                    )
             output[bin_file[:-4]] = HarpData(name=bin_file[:-4],
                                              path=folder,
-                                             binary_file=bin_file,
-                                             csv_files=associated_csv,
+                                             extra_attributes=extra_attributes,
                                              created=created.strftime(
                                                  '%Y-%m-%d %H:%M:%S'),
                                              flm_session=flm_session,
@@ -54,35 +56,50 @@ class HarpData(Dataset):
                     print('    %s' % m)
         return output
 
-    @classmethod
-    def from_flexilims(cls, project=None, name=None, data_series=None, flm_session=None):
-        """Create a harp dataset from flexilims entry"""
-        raise NotImplementedError
-
-    def __init__(self, name, path, binary_file, csv_files=None, extra_attributes=None,
-                 created=None, project=None, is_raw=True, flm_session=None):
+    def __init__(self, name, path, extra_attributes=None, created=None, project=None,
+                 is_raw=True, flm_session=None):
         """Create a Harp dataset
 
         Args:
             name: Identifier. Unique name on flexilims. Import default to the file name of
                   the binary file without the extension
             path: Path to the folder containing all the files
-            binary_file: File name of the binary file.
-            csv_files: Dictionary of csv files associated to the binary file. Keys are
-                       identifier provided for convenience, values are the full file name
             extra_attributes: Other optional attributes (from or for flexilims)
             created: Date of creation. Default to the creation date of the binary file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
             flm_session: authentication session for connecting to flexilims
+
+        Expected extra_attributes:
+            binary_file: File name of the binary file.
+            csv_files (optional): Dictionary of csv files associated to the binary file.
+                                  Keys are identifier provided for convenience,
+                                  values are the full file name
         """
+        if 'binary_file' not in extra_attributes:
+            raise IOError('Harp dataset require `binary_file` in their extra_attributes')
+
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=HarpData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session)
-        self.binary_file = binary_file
-        self.csv_files = csv_files if csv_files is not None else {}
 
+    @property
+    def binary_file(self):
+        return self.extra_attributes.get('binary_file', None)
+    
+    @binary_file.setter
+    def binary_file(self, value):
+        self.extra_attributes['binary_file'] = str(value)
+        
+    @property
+    def csv_files(self):
+        return self.extra_attributes.get('csv_files', None)
+    
+    @csv_files.setter
+    def csv_files(self, value):
+        self.extra_attributes['csv_files'] = str(value)
+        
     def is_valid(self):
         """Check that video, metadata and timestamps files exist"""
         if not (pathlib.Path(self.path) / self.binary_file).exists():
