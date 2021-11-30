@@ -1,6 +1,6 @@
 import pytest
 import pathlib
-from flexiznam.schema import CameraData
+from flexiznam.schema import CameraData, Dataset
 from tests.tests_resources import data_for_testing as test_data
 from flexiznam.config import PARAMETERS
 
@@ -96,7 +96,15 @@ def test_create_from_flexilims(flm_sess):
     data = CameraData.from_flexilims(project=test_data.TEST_PROJECT,
                                      name='_'.join([EX_M, EX_S, EX_R, EX_CAM]))
     assert data.name == '_'.join([EX_M, EX_S, EX_R, EX_CAM])
-    assert str(data.path) == EX_P
+    assert str(data.path) == str(EX_P)
+    assert data.timestamp_file == 'face_camera_timestamps.csv'
+
+    # I should get the same using the parent dataset class
+    data2 = Dataset.from_flexilims(project=test_data.TEST_PROJECT,
+                                   name='_'.join([EX_M, EX_S, EX_R, EX_CAM]))
+    assert data2.extra_attributes == data.extra_attributes
+    assert data2.path == data.path
+    assert isinstance(data2, CameraData)
 
 
 
