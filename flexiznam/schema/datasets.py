@@ -105,6 +105,8 @@ class Dataset(object):
         name = kwargs.pop('name')
         kwargs['flm_session'] = flm_session
         if dataset_type in Dataset.SUBCLASSES:
+            # dataset_type is already specified by subclass
+            kwargs.pop('dataset_type')
             ds = Dataset.SUBCLASSES[dataset_type](**kwargs)
         else:
             ds = Dataset(**kwargs)
@@ -237,6 +239,7 @@ class Dataset(object):
                      project_id
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
             flm_session: authentication session to connect to flexilims
         """
         self.mouse = None
