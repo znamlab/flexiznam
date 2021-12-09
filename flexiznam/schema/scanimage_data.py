@@ -31,12 +31,19 @@ class ScanimageData(Dataset):
                       len(non_si_tiff))
                 for s in non_si_tiff:
                     print('    %s' % s)
+
         tif_df = [dict(filename=f,
                        fname=m.groups()[0],
                        acq_num=m.groups()[1],
                        file_num=m.groups()[2])
                   for f, m in zip(tif_files, matches) if m]
+
+        if not len(tif_df):
+            raise IOError('No scanimage file found. They should be named: name_A_F.tif, '
+                          'where A is the acquisition number and F the file number.')
+
         tif_df = pd.DataFrame(tif_df)
+
         tif_df['acq_identifier'] = tif_df.fname + tif_df.acq_num
 
         output = {}
