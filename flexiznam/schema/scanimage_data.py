@@ -47,26 +47,28 @@ class ScanimageData(Dataset):
                       len(non_si_tiff))
                 for s in non_si_tiff:
                     print('    %s' % s)
-        tif_df = pd.DataFrame(si_df).T
 
         # Process all acquisition sequentially
         output = {}
         matched_csv = set()
-        for acq_id, acq_df in tif_df.iterrows():
+        for acq_id, acq in si_df.items():
             # Find associated CSV files
-            associated_csv = {f for f in csv_files if f.startswith(acq_df.file_stem) and
-                              f.endswith(acq_df.acq_num + '.csv')}
+            associated_csv = {f for f in csv_files if f.startswith(acq['file_stem']) and
+                              f.endswith(acq['acq_num'] + '.csv')}
             if associated_csv in matched_csv:
                 raise IOError('A csv file matched with 2 scanimage tif datasets')
             matched_csv.update(associated_csv)
             # rename the csv key to keep only the new info:
-            associated_csv = {f[len(acq_df.file_stem): -(len(acq_df.acq_num) + 4)].strip(
+            associated_csv = {f[len(acq['file_stem']): -(len(acq['acq_num']) + 4)].strip(
                 '_'): f for f in associated_csv}
 
             # get creation date from one tif
-            first_acq_tif = folder / sorted(acq_df.file_list)[0]
+            first_acq_tif = folder / sorted(acq['file_list'])[0]
             created = datetime.datetime.fromtimestamp(first_acq_tif.stat().st_mtime)
-            extra_attributes = dict(acq_df)
+            extra_attributes = dict(acq)
+            # remove file specific fields
+            for field in ['file_num', 'channel']:
+                extra_attributes.pop(field, None)
             extra_attributes.update(csv_files=associated_csv)
 
             output[acq_id] = ScanimageData(path=folder,
@@ -211,7 +213,7 @@ def parse_si_filename(path2file):
     acq_num = parsed_name.groups()[1]
     acq_uid = '_'.join([stem, acq_num])
     out = dict(file_stem=stem, acq_num=acq_num, acq_uid=acq_uid)
-    if frame_per_file.lower() == 'inf':
+    if frame_per_file.lower() != 'inf':
         out['file_num'] = parsed_name.groups()[2]
     if parsed_name.groups()[-1]:
         out['channel'] = parsed_name.groups()[-1]
