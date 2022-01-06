@@ -15,7 +15,8 @@ setup(
         'pandas',
         'webbot',
         'pyyaml',
-        'flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims'
+        'flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims',
+        'scanimage-tiff-reader'
     ],
     entry_points='''
         [console_scripts]
