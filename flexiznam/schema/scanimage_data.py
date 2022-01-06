@@ -177,7 +177,7 @@ def parse_si_filename(path2file):
       file is not infinite (if obj.hLinScan.logFramesPerFile is not inf)
     - channel if 'chanX' and present only if we save multiple channels in different files
     - extension is always '.tif'
-    
+
     This function reads the metadata and returns the individual elements of the
     filename. It returns None if path2file is not a scanimage tif file
 
@@ -192,7 +192,7 @@ def parse_si_filename(path2file):
     fname = path2file.stem + path2file.suffix
     with ScanImageTiffReader(str(path2file)) as reader:
         mdata = reader.metadata()
-    if mdata is None:
+    if not mdata:
         # that is not a SI tif
         return None
 
@@ -218,4 +218,3 @@ def parse_si_filename(path2file):
     if parsed_name.groups()[-1]:
         out['channel'] = parsed_name.groups()[-1]
     return out
-
