@@ -3,9 +3,9 @@ import os
 import pathlib
 import re
 import pandas as pd
-from ScanImageTiffReader import ScanImageTiffReader
+from tifffile import TiffFile
 from flexiznam.schema.datasets import Dataset
-
+import math
 
 class ScanimageData(Dataset):
     DATASET_TYPE = 'scanimage'
@@ -109,6 +109,7 @@ class ScanimageData(Dataset):
             csv_files (optional): Dictionary of csv files associated to the scanimage
                                   recording file. Keys are identifier provided for
                                   convenience, values are the full file name
+
         """
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
@@ -186,25 +187,26 @@ def parse_si_filename(path2file):
 
     Returns:
         a dictionary with the defined part of the file name or None
+
     """
 
     path2file = pathlib.Path(path2file)
     fname = path2file.stem + path2file.suffix
-    with ScanImageTiffReader(str(path2file)) as reader:
-        mdata = reader.metadata()
-    if not mdata:
-        # that is not a SI tif
-        return None
+    with TiffFile(str(path2file)) as reader:
+        if not reader.is_scanimage:
+            return None
+        else:
+            mdata = reader.scanimage_metadata
 
     # find if there are multiple files (i.e. frame per file is not inf)
-    frame_per_file = re.search('logFramesPerFile = (.*)', mdata)
-    if frame_per_file is None:
+    try:
+        frames_per_file = mdata['FrameData']['SI.hScan2D.logFramesPerFile']
+    except KeyError:
         raise IOError('Could not find logFramesPerFile in metadata of %s' % fname)
-    frame_per_file = frame_per_file.groups()[0]
-    if frame_per_file.lower() == 'inf':
-        pattern = '(.*)_(\d*)(.*).tiff?'
-    else:
+    if math.isfinite(frames_per_file):
         pattern = '(.*)_(\d*)_(\d*)(.*).tiff?'
+    else:
+        pattern = '(.*)_(\d*)(.*).tiff?'
     parsed_name = re.match(pattern, fname)
     if parsed_name is None:
         raise IOError('Cannot parse file name %s with expected pattern %s' % (fname,
@@ -213,7 +215,7 @@ def parse_si_filename(path2file):
     acq_num = parsed_name.groups()[1]
     acq_uid = '_'.join([stem, acq_num])
     out = dict(file_stem=stem, acq_num=acq_num, acq_uid=acq_uid)
-    if frame_per_file.lower() != 'inf':
+    if math.isfinite(frames_per_file):
         out['file_num'] = parsed_name.groups()[2]
     if parsed_name.groups()[-1]:
         out['channel'] = parsed_name.groups()[-1]

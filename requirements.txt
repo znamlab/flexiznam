@@ -5,7 +5,7 @@ webbot
 click
 git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims
 pyyaml
-scanimage-tiff-reader
+tifffile
 sphinx
 sphinx-rtd-theme
 sphinx-click
