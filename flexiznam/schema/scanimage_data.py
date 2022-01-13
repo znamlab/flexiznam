@@ -3,7 +3,7 @@ import os
 import pathlib
 import re
 import pandas as pd
-from tifffile import TiffFile
+from tifffile import TiffFile, TiffFileError
 from flexiznam.schema.datasets import Dataset
 import math
 
@@ -192,11 +192,14 @@ def parse_si_filename(path2file):
 
     path2file = pathlib.Path(path2file)
     fname = path2file.stem + path2file.suffix
-    with TiffFile(str(path2file)) as reader:
-        if not reader.is_scanimage:
-            return None
-        else:
-            mdata = reader.scanimage_metadata
+    try:
+        with TiffFile(str(path2file)) as reader:
+            if not reader.is_scanimage:
+                return None
+            else:
+                mdata = reader.scanimage_metadata
+    except TiffFileError:
+        return None
 
     # find if there are multiple files (i.e. frame per file is not inf)
     try:
