@@ -3,6 +3,7 @@ from pathlib import Path, PurePosixPath
 import re
 import copy
 import yaml
+from yaml.parser import ParserError
 
 import flexiznam as flz
 from flexiznam.errors import SyncYmlError
@@ -385,7 +386,10 @@ def clean_yaml(path_to_yaml):
 
     """
     with open(path_to_yaml, 'r') as yml_file:
-        yml_data = yaml.safe_load(yml_file)
+        try:
+            yml_data = yaml.safe_load(yml_file)
+        except ParserError as e:
+            raise IOError("Invalid yaml. Parser returned an error: %s" % e)
 
     session, nested_levels = read_level(yml_data)
 

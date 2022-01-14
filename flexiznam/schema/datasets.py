@@ -53,7 +53,7 @@ class Dataset(object):
         return output
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flm_session=None):
+    def from_folder(cls, folder, verbose=True, flm_session=None, project=None):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not
@@ -67,7 +67,7 @@ class Dataset(object):
                 print('Looking for %s' % ds_type)
             try:
                 res = ds_class.from_folder(folder, verbose=verbose,
-                                           flm_session=flm_session)
+                                           flm_session=flm_session, project=project)
             except OSError:
                 continue
             if any(k in data for k in res):
@@ -100,14 +100,16 @@ class Dataset(object):
                 raise FlexilimsError('No dataset named {} in project {}'.format(name,
                                                                                 project))
         dataset_type = data_series.dataset_type
-        if dataset_type in Dataset.SUBCLASSES:
-            ds_cls = Dataset.SUBCLASSES[dataset_type]
-            return ds_cls.from_flexilims(data_series=data_series, flm_session=flm_session)
-        # No subclass, let's do it myself
+
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
         kwargs['flm_session'] = flm_session
-        ds = Dataset(**kwargs)
+        if dataset_type in Dataset.SUBCLASSES:
+            # dataset_type is already specified by subclass
+            kwargs.pop('dataset_type')
+            ds = Dataset.SUBCLASSES[dataset_type](**kwargs)
+        else:
+            ds = Dataset(**kwargs)
         try:
             ds.name = name
         except DatasetError:
@@ -237,6 +239,7 @@ class Dataset(object):
                      project_id
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
             flm_session: authentication session to connect to flexilims
         """
         self.mouse = None
@@ -413,7 +416,20 @@ class Dataset(object):
                 flm_data[na_field] = None
         fmt = self.format()
 
-        differences = utils.compare_series(fmt, flm_data, series_name=('offline', 'flexilims'))
+        differences = utils.compare_series(fmt, flm_data, series_name=('offline',
+                                                                       'flexilims'))
+        # flexilims transforms empty structures into null. Consider that equal
+        to_remove = []
+        for what, series in differences.iterrows():
+            if series.flexilims is not None:
+                continue
+            if not isinstance(series.offline, bool) and not series.offline:
+                # we have a non-boolean that is False, flexilims will make it None on
+                # upload, it is not a real difference
+                to_remove.append(what)
+        print('\nWarning: %s is/are empty and will be uploaded as None on flexilims.\n' %
+              to_remove)
+        differences = differences.drop(to_remove)
         return differences
 
     def format(self, mode='flexilims'):

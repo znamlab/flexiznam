@@ -13,7 +13,7 @@ class MicroscopyData(Dataset):
     VALID_EXTENSIONS = {'.czi', '.png'}
 
     @staticmethod
-    def from_folder(folder, verbose=True, mouse=None, flm_session=None):
+    def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
         """Create Microscopy datasets by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if
                   f.endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
@@ -25,17 +25,13 @@ class MicroscopyData(Dataset):
             output[fname] = MicroscopyData(
                 path=dataset_path,
                 created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                flm_session=flm_session
+                flm_session=flm_session,
+                project=project
             )
             for field in ('mouse', ):
                 setattr(output[fname], field, locals()[field])
             output[fname].dataset_name = fname
         return output
-
-    @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
-        """Create a microscopy dataset from flexilims entry"""
-        raise NotImplementedError
 
     def __init__(self, path, name=None, extra_attributes=None, created=None,
                  project=None, is_raw=True, flm_session=None):

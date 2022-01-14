@@ -97,7 +97,7 @@ def test_add_entity(flm_sess):
     dataset_name = 'test_ran_on_20210524_162613_dataset'
     with pytest.raises(FlexilimsError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
-    assert err.value.args[0] == 'Error 400:  &#39;path&#39; is a necessary attribute for dataset'
+    assert err.value.args[0] == 'Error 400:  Save failed. &#39;path&#39; is a necessary attribute for dataset. If you have &#39;null&#39; values please substitute (null) with empty string (&#39;&#39;) '
     with pytest.raises(NameNotUniqueError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))

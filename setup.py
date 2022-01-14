@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='flexiznam',
-    version='v0.2.1',
+    version='v0.2.2',
     url='https://github.com/znamlab/flexznam',
     license='MIT',
     author='Antonin Blot',
@@ -15,7 +15,8 @@ setup(
         'pandas',
         'webbot',
         'pyyaml',
-        'flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims'
+        'flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims',
+        'tifffile'
     ],
     entry_points='''
         [console_scripts]

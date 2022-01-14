@@ -49,23 +49,34 @@ def get_flexilims_session(project_id, username=None, password=None):
 
 
 def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=None,
-              flexilims_username=None, mcms_username=None, flexilims_password=None):
+              mcms_username=None, mcms_password=None, flexilims_username=None,
+              flexilims_password=None):
     """Check if a mouse is already in the database and add it if it isn't
 
     Args:
-        mouse_name:
-        project_id:
-        flexilims_session (:py:class:`flexilims.Flexilims`):
-        mcms_animal_name:
-        mcms_username:
+        mouse_name (str): name of the mouse for flexilims
+        project_id (str): hexadecimal project id or project name
+        flexilims_session (:py:class:`flexilims.Flexilims`): [optional] a flexilims
+                          session to reuse identification token
+        mcms_animal_name (str): [optional] name of the mouse on MCMS if different from
+                                flexilims name (not advised)
+        mcms_username (str): [optional] username for MCMS. Will try to get it from
+                             config if not provided
+        mcms_password (str): [optional] password for MCMS. Will try to get it from
+                             config if not provided
+        flexilims_username (str): [optional] username for flexilims, used only if
+                                  flexilims session is not provided
+        flexilims_password (str): [optional] password for flexilims, used only if
+                                  flexilims session is not provided
 
-    Returns:
+    Returns (dict):
         flexilims reply
 
     """
 
     if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id, flexilims_username, flexilims_password)
+        flexilims_session = get_flexilims_session(project_id, flexilims_username,
+                                                  flexilims_password)
     mice_df = get_entities(flexilims_session=flexilims_session, datatype='mouse')
     if mouse_name in mice_df.index:
         print("Mouse already online")
