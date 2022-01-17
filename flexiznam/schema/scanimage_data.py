@@ -91,7 +91,7 @@ class ScanimageData(Dataset):
 
     def __init__(self, path, name=None, tif_files=None, csv_files=None,
                  extra_attributes=None, created=None, project=None, is_raw=True,
-                 flm_session=None):
+                 origin_id=None, flm_session=None):
         """Create a Scanimage dataset
 
         Args:
@@ -102,6 +102,7 @@ class ScanimageData(Dataset):
             created: Date of creation. Default to the creation date of a tif file
             project: name of hexadecimal id of the project to which the dataset belongs
             is_raw: default to True. Is it processed data or raw data?
+            origin_id: hexadecimal code for the origin on flexilims.
             flm_session: authentication session for connecting to flexilims
 
         Expected extra_attributes:
@@ -114,7 +115,8 @@ class ScanimageData(Dataset):
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session)
+                         project=project, flm_session=flm_session,
+                         origin_id=origin_id)
 
     @property
     def csv_files(self):
