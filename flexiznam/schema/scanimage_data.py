@@ -91,7 +91,7 @@ class ScanimageData(Dataset):
 
     def __init__(self, path, name=None, tif_files=None, csv_files=None,
                  extra_attributes=None, created=None, project=None, is_raw=True,
-                 origin_id=None, flm_session=None):
+                 origin_id=None, flm_session=None, project_id=None):
         """Create a Scanimage dataset
 
         Args:
@@ -116,7 +116,8 @@ class ScanimageData(Dataset):
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flm_session=flm_session,
-                         origin_id=origin_id)
+                         origin_id=origin_id,
+                         project_id=project_id)
 
     @property
     def csv_files(self):
