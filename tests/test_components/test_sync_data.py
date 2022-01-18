@@ -43,7 +43,7 @@ def test_parse_yaml(tmp_path):
     sess_data = sync_data.parse_yaml(path_to_full_yaml, raw_data_folder=tmp_path,
                                      verbose=False)
     errs = sync_data.find_xxerrorxx(yml_data=sess_data)
-    assert len(errs) == 3
+    assert len(errs) == 4
 
 
 def test_write_yaml(tmp_path):

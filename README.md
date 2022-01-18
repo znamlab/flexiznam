@@ -1,9 +1,9 @@
 # flexiznam
-Znam lab tool to interact with flexilims. Detailed documentation at https://flexiznam.znamlab.org/
+Znam lab tool to interact with flexilims. Detailed documentation at https://flexiznam.znamlab.org/. Recent updates to the main branch of the repo are described in the [CHANGELOG](CHANGELOG.md).
 
 # Getting started
 
-In brief, you can follow the `setup.sh`. For clarifications see below
+In brief, you can follow the `setup.sh`. For clarifications see below.
 
 ## Installation
 
