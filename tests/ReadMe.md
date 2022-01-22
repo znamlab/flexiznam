@@ -34,5 +34,7 @@ before running the tests
 To make things simpler, the tests requiring flexilims or mcms are marked as integration 
 tests. They can be skipped by running `pytest -m "not integtest"`.
 
-To run the tests, you need to clear flexilims yourself (as there is no API to delete 
-stuff).  
+To test the upload to flexilims properly, you need to clear flexilims yourself 
+(as there is no API to delete stuff). There should be a flag `FLM_IS_WIPED` at 
+the beginning of each test file. If set to `False` (default), then tests involving
+flexilims will run with `conflicts=skip`.
