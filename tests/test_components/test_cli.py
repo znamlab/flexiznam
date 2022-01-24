@@ -4,7 +4,7 @@ import yaml
 from click.testing import CliRunner
 from flexiznam import cli
 from flexiznam.config import config_tools
-from tests.tests_resources import acq_yaml_and_files
+from tests.tests_resources import data_for_testing
 
 
 def test_config(tmp_path):

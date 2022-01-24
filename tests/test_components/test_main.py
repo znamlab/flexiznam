@@ -4,9 +4,10 @@ import flexiznam.main as flz
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 
+# Test functions from main.py
 
 @pytest.mark.integtest
-def test_get_session():
+def test_get_flm_session():
     sess = flz.get_flexilims_session(project_id=PARAMETERS['project_ids']['test'])
     assert sess.username == PARAMETERS['flexilims_username']
 

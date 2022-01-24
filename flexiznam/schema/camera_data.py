@@ -45,12 +45,12 @@ class CameraData(Dataset):
                 raise IOError('Found more than one potential video file for camera %s' % camera_name)
             video_path = pathlib.Path(folder) / vid[0]
             created = datetime.datetime.fromtimestamp(video_path.stat().st_mtime)
-            extra_attibutes = dict(timestamp_file='%s_timestamps.csv' % camera_name,
-                                   metadata_file='%s_metadata.txt' % camera_name,
-                                   video_file=vid[0],
+            extra_attributes = dict(timestamp_file='%s_timestamps.csv' % camera_name,
+                                    metadata_file='%s_metadata.txt' % camera_name,
+                                    video_file=vid[0],
 )
             output[camera_name] = CameraData(path=folder,
-                                             extra_attributes=extra_attibutes,
+                                             extra_attributes=extra_attributes,
                                              created=created.strftime('%Y-%m-%d '
                                                                       '%H:%M:%S'),
                                              flm_session=flm_session,
