@@ -60,23 +60,25 @@ class CameraData(Dataset):
             output[camera_name].dataset_name = camera_name
         return output
 
-    def __init__(self, path, name=None, extra_attributes=None, created=None,
-                 project=None, project_id=None, is_raw=True, flm_session=None,
-                 origin_id=None):
+    def __init__(self, path, is_raw, name=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flm_session=None):
         """Create a Camera dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. Must contain mouse, session (and
-                  recording)
-            path: Path to the folder containing all the files
-            name: Name of the camera, is expected to be SXXXXXXXX_RXXXXXX_camera_name,
-                  create with None and change self.mouse, self.session, self.recording,
-                  and self.dataset_name to have different naming
-            extra_attributes: Other optional attributes (from or for flexilims)
-            created: Date of creation. Default to the creation date of the binary file
-            project: name of hexadecimal id of the project to which the dataset belongs
-            is_raw: default to True. Is it processed data or raw data?
-            flm_session: authentication session for connecting to flexilims
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
+            extra_attributes: dict, optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
+            flm_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             video_file: file name of the video file, usually

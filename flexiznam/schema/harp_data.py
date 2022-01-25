@@ -56,19 +56,25 @@ class HarpData(Dataset):
                     print('    %s' % m)
         return output
 
-    def __init__(self, name, path, extra_attributes=None, created=None, project=None,
-                 project_id=None, origin_id=None, is_raw=True, flm_session=None):
+    def __init__(self, path, is_raw, name=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flm_session=None):
         """Create a Harp dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. Import default to the file name of
-                  the binary file without the extension
-            path: Path to the folder containing all the files
-            extra_attributes: Other optional attributes (from or for flexilims)
-            created: Date of creation. Default to the creation date of the binary file
-            project: name of hexadecimal id of the project to which the dataset belongs
-            is_raw: default to True. Is it processed data or raw data?
-            flm_session: authentication session for connecting to flexilims
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
+            extra_attributes: dict, optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
+            flm_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             binary_file: File name of the binary file.

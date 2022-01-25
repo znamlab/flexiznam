@@ -89,28 +89,31 @@ class ScanimageData(Dataset):
                     print('    %s' % m)
         return output
 
-    def __init__(self, path, name=None, tif_files=None, csv_files=None,
-                 extra_attributes=None, created=None, project=None, is_raw=True,
-                 origin_id=None, flm_session=None, project_id=None):
-        """Create a Scanimage dataset
+    def __init__(self, path, is_raw, name=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flm_session=None):
+        """Create a ScanImage dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. When imported from folder,
-                  default to the acquisition name
-            path: Path to the folder containing all the files
-            extra_attributes: Other optional attributes (from or for flexilims)
-            created: Date of creation. Default to the creation date of a tif file
-            project: name of hexadecimal id of the project to which the dataset belongs
-            is_raw: default to True. Is it processed data or raw data?
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
+            extra_attributes: dict, optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
-            flm_session: authentication session for connecting to flexilims
+            flm_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             tif_files (optional): List of file names associated with this dataset
             csv_files (optional): Dictionary of csv files associated to the scanimage
                                   recording file. Keys are identifier provided for
                                   convenience, values are the full file name
-
         """
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
