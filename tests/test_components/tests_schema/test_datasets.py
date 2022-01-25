@@ -3,7 +3,7 @@ import pathlib
 import pandas as pd
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
+from flexiznam.errors import DatasetError, FlexilimsError
 
 # Test the generic dataset class.
 
@@ -56,28 +56,53 @@ def test_dataset():
         assert exc.value.args[0] == err_msg
 
 
+def test_constructor():
+    """Make sure that all dataset subclass work with the same constructor"""
+    constructor = dict(path='none', is_raw=True, name=None,
+                       extra_attributes=dict(p=2), created='random',
+                       project='demo_project',
+                       project_id=PARAMETERS['project_ids']['demo_project'],
+                       origin_id='anotherthing',
+                       flm_session=None)
+    # make sure that mandatory arguments are given
+    extra_attributes = dict(camera=dict(video_file=None),
+                            harp=dict(binary_file=None))
+    for ds_type, ds_subcls in Dataset.SUBCLASSES.items():
+        if ds_type in extra_attributes:
+            constructor['extra_attributes'] = extra_attributes[ds_type]
+        ds_subcls(**constructor)
+
+
 @pytest.mark.integtest
 def test_dataset_flexilims_integration(flm_sess):
-    ds = Dataset(project='test', path='fake/path', is_raw='no',
+    """This test requires the database to be up-to-date for the physio mouse"""
+    ds = Dataset(project='demo_project', path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='',
                  flm_session=flm_sess)
-    ds.dataset_name = 'test_ran_on_20210513_113928_dataset'
+    ds.dataset_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     st = ds.flexilims_status()
     assert st == 'different'
     rep = ds.flexilims_report()
     expected = pd.DataFrame(dict(offline={'is_raw': 'no',
                                           'path': 'fake/path',
-                                          'only_online': 'NA',
+                                          'created': '',
+                                          'metadata_file': 'NA',
+                                          'timestamp_file': 'NA',
+                                          'video_file': 'NA',
                                           },
-                                 flexilims={'is_raw': None,
-                                            'path': 'random',
-                                            'only_online': 'this attribute is only on '
-                                                           'flexilims',
+                                 flexilims={'is_raw': 'yes',
+                                            'created': '2021-11-02 17:03:17',
+                                            'path': 'demo_project/mouse_physio_2p/'
+                                                    'S20211102/R165821_SpheresPermTube',
+                                            'origin_id': '61ebf94120d82a35f724490d',
+                                            'timestamp_file': 'wf_camera_timestamps.csv',
+                                            'video_file': 'wf_camera_data.bin',
+                                            'metadata_file': 'wf_camera_metadata.txt'
                                             }))
     assert all(rep.sort_index() == expected.sort_index())
-    ds_name = 'test_ran_on_20210513_113928_dataset'
+    ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     fmt = {'path': 'fake/path', 'created': '', 'dataset_type': 'camera', 'is_raw': 'no',
-           'name': ds_name, 'project': '606df1ac08df4d77c72c9aa4', 'type': 'dataset'}
+           'name': ds_name, 'project': '610989f9a651ff0b6237e0f6', 'type': 'dataset'}
     assert ds.format().name == ds_name
     assert all(ds.format().drop('origin_id') == pd.Series(data=fmt, name=ds_name))
 
@@ -103,16 +128,20 @@ def test_dataset_flexilims_integration(flm_sess):
 
 @pytest.mark.integtest
 def test_from_flexilims(flm_sess):
-    project = 'test'
-    ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
-    assert ds.name == 'test_from_flexi'
+    """This test requires the database to be up-to-date for the physio mouse"""
+    project = 'demo_project'
+    ds = Dataset.from_flexilims(project, flm_session=flm_sess,
+                                name='mouse_physio_2p_S20211102_R165821_'
+                                     'SpheresPermTube_wf_camera')
+    assert ds.name == 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     assert ds.flexilims_status() == 'up-to-date'
 
 
 @pytest.mark.integtest
 def test_from_origin(flm_sess):
-    project = 'test'
-    origin_name = 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0'
+    """This test requires the database to be up-to-date for the physio mouse"""
+    project = 'demo_project'
+    origin_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube'
     ds = Dataset.from_origin(
         project,
         origin_type='recording',
@@ -121,62 +150,49 @@ def test_from_origin(flm_sess):
         conflicts='skip',
         flm_session=flm_sess
     )
-    assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_rois_0'
-    ds = Dataset.from_origin(
-        project,
-        origin_type='recording',
-        origin_name=origin_name,
-        dataset_type='suite2p_traces',
-        conflicts='append',
-        flm_session=flm_sess)
-    assert ds.created is not None
-    assert ds.name == 'PZAJ2.1c_S20210513_0_R101502_retinotopy_0_suite2p_traces_4'
-    with pytest.raises(NameNotUniqueError) as err:
-        Dataset.from_origin(
-            project,
-            origin_type='recording',
-            origin_name=origin_name,
-            dataset_type='suite2p_traces',
-            conflicts='abort',
-            flm_session=flm_sess)
-    assert 'already processed' in err.value.args[0]
 
 
 @pytest.mark.integtest
 def test_update_flexilims(flm_sess):
-    project = 'test'
-    ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
+    """This test requires the database to be up-to-date for the physio mouse"""
+    project = 'demo_project'
+    ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
+    ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
     original_path = ds.path
     ds.path = 'new/test/path'
     with pytest.raises(FlexilimsError) as err:
         ds.update_flexilims()
     assert err.value.args[0] == "Cannot change existing flexilims entry with mode=`safe`"
     ds.update_flexilims(mode='overwrite')
-    reloaded_ds = Dataset.from_flexilims(project, name='test_from_flexi',
-                                         flm_session=flm_sess)
+    reloaded_ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
     assert str(reloaded_ds.path) == ds.path
+    # undo changes:
     ds.path = original_path
     ds.update_flexilims(mode='overwrite')
 
     # try to change the origin_id
+    original_origin_id = ds.origin_id
     ds.origin_id = '60c1fd7a5c6930620e4a4bc4'
     ds.update_flexilims(mode='overwrite')
     assert ds.get_flexilims_entry()['origin_id'] == '60c1fd7a5c6930620e4a4bc4'
-    ds.origin_id = '60c1fc875c6930620e4a4bc1'
+    ds.origin_id = original_origin_id
     ds.update_flexilims(mode='overwrite')
-    assert ds.get_flexilims_entry()['origin_id'] == '60c1fc875c6930620e4a4bc1'
+    assert ds.get_flexilims_entry()['origin_id'] == original_origin_id
     with pytest.raises(FlexilimsError) as err:
         ds.origin_id = None
         ds.update_flexilims(mode='overwrite')
     assert err.value.args[0] == 'Cannot set origin_id to null'
 
+
 @pytest.mark.integtest
 def test_dataset_paths(flm_sess):
-    project = 'test'
-    ds = Dataset.from_flexilims(project, name='test_from_flexi', flm_session=flm_sess)
-    path_root = pathlib.Path(PARAMETERS['data_root']['processed'])
+    """This test requires the database to be up-to-date for the physio mouse"""
+    project = 'demo_project'
+    ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
+    ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
+    path_root = pathlib.Path(PARAMETERS['data_root']['raw'])
     assert ds.path_root == path_root
     assert str(ds.path_full) == \
-        str(pathlib.Path(PARAMETERS['data_root']['processed'] / ds.path))
+        str(pathlib.Path(PARAMETERS['data_root']['raw'] / ds.path))
 
 

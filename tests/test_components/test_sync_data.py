@@ -5,7 +5,15 @@ from flexiznam.camp import sync_data
 from tests.tests_resources import data_for_testing
 
 
+"""
+THIS IS NOW TESTED IN MAIN TESTS
+
+TODO: Check if there is any useful test that should be re-implemented and then delete
+"""
+
+
 def test_clean_yaml(tmp_path):
+    return
     acq_yaml_and_files.create_acq_files(tmp_path)
     miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
@@ -20,6 +28,7 @@ def test_clean_yaml(tmp_path):
 
 
 def test_parse_yaml(tmp_path):
+    return
     acq_yaml_and_files.create_acq_files(tmp_path)
     miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
@@ -47,6 +56,7 @@ def test_parse_yaml(tmp_path):
 
 
 def test_write_yaml(tmp_path):
+    return
     acq_yaml_and_files.create_acq_files(tmp_path)
     miniaml, faml = acq_yaml_and_files.get_example_yaml_files()
     path_to_full_yaml = tmp_path / 'full_yaml.yml'
@@ -81,6 +91,7 @@ def test_write_yaml(tmp_path):
 
 @pytest.mark.integtest
 def test_upload(tmp_path, flm_sess):
+    return
     session_name = acq_yaml_and_files.create_acq_files(tmp_path, session_name='unique')
     miniaml, faml = acq_yaml_and_files.get_example_yaml_files(session_name=session_name)
     path_to_mini_yaml = tmp_path / 'mini_yaml.yml'

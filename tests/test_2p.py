@@ -15,7 +15,7 @@ from flexiznam import camp
 
 MOUSE = 'mouse_physio_2p'
 YAML = 'physio_acq_yaml.yml'
-FLM_IS_WIPED = False # switch this flag to True if you deleted everything on flexilims
+FLM_IS_WIPED = False  # switch this flag to True if you deleted everything on flexilims
 
 # An acquisition yaml file must be written by hand
 # The format is quite simple, you must specify the project, mouse and session name

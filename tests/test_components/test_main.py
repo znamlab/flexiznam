@@ -25,40 +25,35 @@ def test_format_results():
 
 @pytest.mark.integtest
 def test_get_experimental_sessions(flm_sess):
-    proj_id = PARAMETERS['project_ids']['test']
+    proj_id = PARAMETERS['project_ids']['demo_project']
     exp_sess = flz.get_experimental_sessions(project_id=proj_id,
                                              flexilims_session=flm_sess)
     assert all(exp_sess.type == 'session')
     assert all(exp_sess.project == proj_id)
-    assert len(exp_sess.origin.unique()) > 1
-    exp_sess_mouse = flz.get_experimental_sessions(project_id=proj_id,
-                                                   mouse='test_mouse',
-                                                   flexilims_session=flm_sess)
-    assert len(exp_sess) > len(exp_sess_mouse)
-    assert len(exp_sess_mouse.origin.unique()) == 1
+    assert len(exp_sess.origin_id.unique()) == 1
 
 
 @pytest.mark.integtest
 def test_get_entities(flm_sess):
-    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
+    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', flexilims_session=flm_sess)
-    assert mice_df.shape == (7, 79)
-    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['test'],
+    assert mice_df.shape == (1, 12)
+    mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', format_reply=False,
                                flexilims_session=flm_sess)
     assert isinstance(mice_df, list)
-    assert len(mice_df) == 7
+    assert len(mice_df) == 1
 
 
 @pytest.mark.integtest
 def test_get_entity(flm_sess):
-    mouse = flz.get_entity(id='6094f7212597df357fa24a8c',
-                           project_id=PARAMETERS['project_ids']['test'],
+    mouse = flz.get_entity(id='61b4c65d068a8561a85ae891',
+                           project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse', flexilims_session=flm_sess)
     assert isinstance(mouse, pd.Series)
     assert mouse.shape == (12,)
-    mouse = flz.get_entity(id='6094f7212597df357fa24a8c',
-                           project_id=PARAMETERS['project_ids']['test'],
+    mouse = flz.get_entity(id='61b4c65d068a8561a85ae891',
+                           project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse',
                            format_reply=False,
                            flexilims_session=flm_sess)
@@ -68,10 +63,10 @@ def test_get_entity(flm_sess):
 
 @pytest.mark.integtest
 def test_get_mouse_id(flm_sess):
-    mid = flz.get_id(name='test_mouse',
-                     project_id=PARAMETERS['project_ids']['test'],
+    mid = flz.get_id(name='mouse_physio_2p',
+                     project_id=PARAMETERS['project_ids']['demo_project'],
                      flexilims_session=flm_sess)
-    assert mid == '6094f7212597df357fa24a8c'
+    assert mid == '61b4c65d068a8561a85ae891'
 
 
 @pytest.mark.integtest
@@ -87,7 +82,7 @@ def test_generate_name(flm_sess):
     assert name.endswith('_0')
     name = flz.generate_name(datatype='dataset', name='suffix_already_01',
                              flexilims_session=flm_sess)
-    assert name  == 'suffix_already_1'
+    assert name == 'suffix_already_1'
     name = flz.generate_name(datatype='dataset', name='134241',
                              flexilims_session=flm_sess)
     assert name == '134241_0'
