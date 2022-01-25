@@ -39,7 +39,7 @@ class ScanimageData(Dataset):
             # remove matched files to not re-read metadata
             for file in this_acq:
                 tif_files.remove(file)
-            parsed_name['file_list'] = this_acq
+            parsed_name['tif_files'] = this_acq
             si_df[parsed_name['acq_uid']] = parsed_name
         if verbose:
             if non_si_tiff:
@@ -63,7 +63,7 @@ class ScanimageData(Dataset):
                 '_'): f for f in associated_csv}
 
             # get creation date from one tif
-            first_acq_tif = folder / sorted(acq['file_list'])[0]
+            first_acq_tif = folder / sorted(acq['tif_files'])[0]
             created = datetime.datetime.fromtimestamp(first_acq_tif.stat().st_mtime)
             extra_attributes = dict(acq)
             # remove file specific fields
