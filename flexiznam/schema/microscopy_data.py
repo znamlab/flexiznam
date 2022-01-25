@@ -21,7 +21,7 @@ class MicroscopyData(Dataset):
     def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
         """Create Microscopy datasets by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if
-                  f.endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
+                  f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
 
         output = dict()
         for fname in fnames:

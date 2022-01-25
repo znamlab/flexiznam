@@ -3,6 +3,8 @@
 ##v0.2.3
 
 - Tests are now using real data and require CAMP being mounted and configured
+- Bugfixes:
+  - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files` 
 
 ## v0.2.2
 

@@ -1,10 +1,6 @@
 import pytest
-import pathlib
-import pandas as pd
-from flexiznam.schema import MicroscopyData
-from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError, NameNotUniqueError, FlexilimsError
-from tests.tests_resources.data_for_testing import TEST_PROJECT
+from flexiznam.schema.microscopy_data import MicroscopyData
+from tests.tests_resources.data_for_testing import DATA_ROOT
 
 # Test creation of all dataset types.
 #
@@ -15,13 +11,11 @@ from tests.tests_resources.data_for_testing import TEST_PROJECT
 # - Creating from_folder
 
 
+@pytest.mark.integtest
 def test_from_folder():
-    raw_folder = pathlib.Path(PARAMETERS['data_root']['raw']) / TEST_PROJECT
-    ds = MicroscopyData.from_folder(raw_folder / 'PZAJ5.1a',
-                                    verbose=False,
-                                    mouse=None, flm_session=None)
-    assert len(ds) == 6
-    d = ds['Stitch_A01_binned.tif']
-    assert d.name == 'Stitch_A01_binned.tif'
+    raw_folder = DATA_ROOT / 'mouse_physio_2p'
+    ds = MicroscopyData.from_folder(raw_folder, verbose=False)
+    assert len(ds) == 1
+    d = ds['wf_overview.PNG']
+    assert d.name == 'wf_overview.PNG'
     assert d.is_valid()
-    #/Volumes/lab-znamenskiyp/data/instruments/raw_data/projects/demo_project/PZAJ5.1a
