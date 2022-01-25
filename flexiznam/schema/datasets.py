@@ -326,7 +326,8 @@ class Dataset(object):
         if status == 'different':
             if mode == 'safe':
                 raise FlexilimsError('Cannot change existing flexilims entry with '
-                                     'mode=`safe`')
+                                     'mode=`safe`. \nDifferences:%s' %
+                                     self.flexilims_report())
             if (mode == 'overwrite') or (mode == 'update'):
                 # I need to pack the dataset field in attributes
                 fmt = self.format()
@@ -540,6 +541,18 @@ class Dataset(object):
 
     @is_raw.setter
     def is_raw(self, value):
+        """Set the `is_raw` flag.
+
+        Valid values are 'yes' and 'no'. If set to None, try to guess from path and
+        crash if it doesn't work"""
+        if value is None:
+            paths = PARAMETERS['data_root']
+            if Path(paths['raw']) in self.path.parents:
+                value = 'yes'
+            elif Path(paths['processed']) in self.path.parents:
+                value = 'no'
+            else:
+                raise IOError('Cannot create a dataset without setting `is_raw`')
         if isinstance(value, str):
             if value.lower() == 'yes':
                 value = True
@@ -556,6 +569,8 @@ class Dataset(object):
         """Get CAMP root path that should apply to this dataset"""
         if self.is_raw:
             return Path(flz.config.PARAMETERS['data_root']['raw'])
+        elif self.is_raw is None:
+            raise AttributeError('`is_raw` must be set to find path.')
         else:
             return Path(flz.config.PARAMETERS['data_root']['processed'])
 

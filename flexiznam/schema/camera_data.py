@@ -60,7 +60,7 @@ class CameraData(Dataset):
             output[camera_name].dataset_name = camera_name
         return output
 
-    def __init__(self, path, is_raw, name=None, extra_attributes=None,
+    def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
                  flm_session=None):
         """Create a Camera dataset
