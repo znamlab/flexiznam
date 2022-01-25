@@ -5,6 +5,8 @@ from flexiznam.config import PARAMETERS
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 
 # Test functions from main.py
+from flexiznam.schema import Dataset
+
 
 @pytest.mark.integtest
 def test_get_flm_session():
@@ -90,19 +92,17 @@ def test_generate_name(flm_sess):
 
 @pytest.mark.integtest
 def test_add_entity(flm_sess):
-    dataset_name = 'test_ran_on_20210524_162613_dataset'
+    dataset_name = 'mouse_physio_2p_S20211102_overview_zoom2_00001'
     with pytest.raises(FlexilimsError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
     assert err.value.args[0] == 'Error 400:  Save failed. &#39;path&#39; is a necessary attribute for dataset. If you have &#39;null&#39; values please substitute (null) with empty string (&#39;&#39;) '
     with pytest.raises(NameNotUniqueError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
-    new_name = flz.generate_name(datatype='dataset', name='test_iter',
+    new_name = flz.generate_name(datatype='dataset', name=dataset_name,
                                  flexilims_session=flm_sess)
-    rep = flz.add_entity(datatype='dataset', name=new_name, flexilims_session=flm_sess,
-                       attributes=dict(path='random', dataset_type='scanimage'))
-    assert rep['name'] == new_name
-    assert len(rep) == 9
+    assert flz.get_entity(datatype='dataset', name=new_name,
+                          flexilims_session=flm_sess) is None
 
 
 @pytest.mark.integtest
@@ -114,34 +114,32 @@ def test_update_entity(flm_sess):
             flexilims_session=flm_sess)
     assert err.value.args[0] == 'Cannot find an entity of type `dataset` named ' \
                                 '`gibberish`'
-    dataset_name = 'test_iter_0'
-    res = flz.update_entity(
-        'dataset',
-        name=dataset_name,
-        flexilims_session=flm_sess,
-        attributes={
-            'path': 'old/path',
-            'an_attr': 'non null',
-            'dataset_type': 'scanimage'}
-    )
+    dataset_name = 'mouse_physio_2p_S20211102_overview_zoom2_00001'
+    original_entity = flz.get_entity(datatype='dataset', name=dataset_name,
+                                     flexilims_session=flm_sess)
+    res = flz.update_entity('dataset',
+                            name=dataset_name,
+                            flexilims_session=flm_sess,
+                            attributes={
+                                'path': 'old/path',
+                                'dataset_type': 'scanimage'},
+                            mode='update'
+                            )
     assert (res['attributes']['path'] == 'old/path')
-    assert (res['attributes']['an_attr'] == 'non null')
-    res = flz.update_entity(
-        'dataset',
-        name=dataset_name,
-        flexilims_session=flm_sess,
-        attributes={'path': 'new/path', 'test': 'test value'},
-        mode='update',
-    )
+    assert (res['attributes']['acq_num'] == '00001')  # existing attribute is unchanged
+    # now in overwrite mode
+    res = flz.update_entity('dataset',
+                            name=dataset_name,
+                            flexilims_session=flm_sess,
+                            attributes={'path': 'new/path',
+                                        'dataset_type': 'scanimage'},
+                            )
     assert (res['attributes']['path'] == 'new/path')
-    assert (res['attributes']['test'] == 'test value')
-    assert (res['attributes']['an_attr'] == 'non null')
-    res = flz.update_entity(
-        'dataset',
-        name=dataset_name,
-        flexilims_session=flm_sess,
-        attributes={'path': 'test/path', 'dataset_type': 'scanimage'}
-    )
-    assert (res['attributes']['path'] == 'test/path')
-    assert (res['attributes']['test'] is None)
-    assert (res['attributes']['an_attr'] is None)
+    assert (res['attributes']['acq_num'] is None)
+
+    # restore database state
+    ds = Dataset.from_flexilims(data_series=original_entity, flm_session=flm_sess)
+    ds.update_flexilims(mode='overwrite')
+    new_entity = flz.get_entity(datatype='dataset', name=dataset_name,
+                                flexilims_session=flm_sess)
+    assert repr(new_entity) == repr(original_entity)
