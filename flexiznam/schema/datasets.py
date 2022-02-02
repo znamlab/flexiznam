@@ -1,3 +1,4 @@
+import pathlib
 from pathlib import Path
 import re
 import numpy as np
@@ -59,6 +60,9 @@ class Dataset(object):
         Will try all defined subclasses of datasets and keep everything that does not
         crash. If you know which dataset to expect, use the subclass directly
         """
+        folder = pathlib.Path(folder)
+        if not folder.is_dir():
+            raise IOError('%s is not a directory.' % folder)
         data = dict()
         if not cls.SUBCLASSES:
             raise IOError('Dataset subclasses not assigned')
