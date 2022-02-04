@@ -16,6 +16,8 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+When installing `flexiznam` requirments, `flexilims` will be installed from our Crick github page. Make sure you have access to this repository by setting ssh keys as advised on the github [help page](https://docs.github.com/en/enterprise-server@3.0/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
+
 Don't forget to use the `-e` flag when installing flexiznam if you want to be able to edit the code.
 
 To check that the install is successful you can type `flexiznam --help` in a terminal. You can also start python and `import flexiznam`.
