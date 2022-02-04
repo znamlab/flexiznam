@@ -7,6 +7,7 @@ from tifffile import TiffFile, TiffFileError
 from flexiznam.schema.datasets import Dataset
 import math
 
+
 class ScanimageData(Dataset):
     DATASET_TYPE = 'scanimage'
 

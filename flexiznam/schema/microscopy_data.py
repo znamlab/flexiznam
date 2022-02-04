@@ -3,6 +3,7 @@ import os
 import pathlib
 
 from flexiznam.schema.datasets import Dataset
+from flexiznam.schema.scanimage_data import parse_si_filename
 
 
 class MicroscopyData(Dataset):
@@ -15,13 +16,28 @@ class MicroscopyData(Dataset):
     """
 
     DATASET_TYPE = 'microscopy'
-    VALID_EXTENSIONS = {'.czi', '.png', '.gif'}
+    VALID_EXTENSIONS = {'.czi', '.png', '.gif', '.tif', '.tiff'}
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
         """Create Microscopy datasets by loading info from folder"""
+        folder = pathlib.Path(folder)
+        if not folder.is_dir():
+            raise IOError('%s is not a folder' % folder)
         fnames = [f for f in os.listdir(folder) if
                   f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
+
+        # filter out SI tifs
+        si_fnames = []
+        for f in fnames:
+            if not(f.lower().endswith('tif') or f.lower().endswith('tiff')):
+                continue
+            if parse_si_filename(folder / f) is None:
+                continue
+            else:
+                si_fnames.append(f)
+        [fnames.remove(f) for f in si_fnames]
+        print('Ignored %d SI tif' % len(si_fnames))
 
         output = dict()
         for fname in fnames:
