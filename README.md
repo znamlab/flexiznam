@@ -32,11 +32,17 @@ You can also install the develop branch:
 pip install git+ssh://git@github.com/znamlab/flexiznam.git@dev
 ```
 
+## Updating
+
 Once flexiznam is installed, you can also use pip to keep the package updated:
 ```
 pip install --upgrade git+ssh://git@github.com/znamlab/flexiznam.git
 ```
-This will update the package as long as the version of the repository is higher than the one you have installed.
+This will update the package as long as the version of the repository is higher than the one you have installed. After the update, it is advised to update the config file to create potentially new entries. This can be done with:
+
+```
+flexiznam config --update
+```
 
 ## Configuration
 
