@@ -5,8 +5,10 @@
 - Tests are now using real data and require CAMP being mounted and configured.
 - Dataset.is_raw can be autodetermined from path. If this fails, it **must** be 
   manually set.
+- Extensions for microscopy dataset are now defined in the config file.
 - Bugfixes:
-  - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files` 
+  - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`
+  - Scanimage dataset are recognise as such and not as MicroscopyData
 
 ## v0.2.2
 

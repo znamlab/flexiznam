@@ -1,7 +1,8 @@
 import datetime
 import os
 import pathlib
-
+import warnings
+from flexiznam.config import PARAMETERS
 from flexiznam.schema.datasets import Dataset
 from flexiznam.schema.scanimage_data import parse_si_filename
 
@@ -16,7 +17,12 @@ class MicroscopyData(Dataset):
     """
 
     DATASET_TYPE = 'microscopy'
-    VALID_EXTENSIONS = {'.czi', '.png', '.gif', '.tif', '.tiff'}
+    try:
+        VALID_EXTENSIONS = PARAMETERS['microscopy_extensions']
+    except KeyError:
+        VALID_EXTENSIONS = {'.czi', '.png', '.gif', '.tif', '.tiff'}
+        warnings.warn('Could not find `microscopy_extensions` in config. Please update '
+                      'config file', stacklevel=2)
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
