@@ -2,7 +2,9 @@
 
 ##v0.2.3
 
-- Tests are now using real data and require CAMP being mounted and configured
+- Tests are now using real data and require CAMP being mounted and configured.
+- Dataset.is_raw can be autodetermined from path. If this fails, it **must** be 
+  manually set.
 - Bugfixes:
   - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files` 
 

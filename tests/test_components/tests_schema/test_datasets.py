@@ -162,7 +162,7 @@ def test_update_flexilims(flm_sess):
     ds.path = 'new/test/path'
     with pytest.raises(FlexilimsError) as err:
         ds.update_flexilims()
-    assert err.value.args[0] == "Cannot change existing flexilims entry with mode=`safe`"
+    assert err.value.args[0].startswith("Cannot change existing flexilims entry with")
     ds.update_flexilims(mode='overwrite')
     reloaded_ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
     assert str(reloaded_ds.path) == ds.path

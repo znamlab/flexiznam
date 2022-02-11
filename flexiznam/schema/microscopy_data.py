@@ -3,6 +3,7 @@ import os
 import pathlib
 
 from flexiznam.schema.datasets import Dataset
+from flexiznam.schema.scanimage_data import parse_si_filename
 
 
 class MicroscopyData(Dataset):
@@ -15,13 +16,28 @@ class MicroscopyData(Dataset):
     """
 
     DATASET_TYPE = 'microscopy'
-    VALID_EXTENSIONS = {'.czi', '.png', '.gif'}
+    VALID_EXTENSIONS = {'.czi', '.png', '.gif', '.tif', '.tiff'}
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
         """Create Microscopy datasets by loading info from folder"""
+        folder = pathlib.Path(folder)
+        if not folder.is_dir():
+            raise IOError('%s is not a folder' % folder)
         fnames = [f for f in os.listdir(folder) if
                   f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
+
+        # filter out SI tifs
+        si_fnames = []
+        for f in fnames:
+            if not(f.lower().endswith('tif') or f.lower().endswith('tiff')):
+                continue
+            if parse_si_filename(folder / f) is None:
+                continue
+            else:
+                si_fnames.append(f)
+        [fnames.remove(f) for f in si_fnames]
+        print('Ignored %d SI tif' % len(si_fnames))
 
         output = dict()
         for fname in fnames:
@@ -38,23 +54,34 @@ class MicroscopyData(Dataset):
             output[fname].dataset_name = fname
         return output
 
-    def __init__(self, path, name=None, extra_attributes=None, created=None,
-                 project=None, is_raw=True, flm_session=None):
+    def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flm_session=None):
         """Create a Microscopy dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. Must contain mouse, session (and recording)
-            path: Path to the folder containing all the files
-            extra_attributes: Other optional attributes (from or for flexilims)
-            created: Date of creation. Default to the creation date of the binary file
-            project: name of hexadecimal id of the project to which the dataset belongs
-            is_raw: default to True. Is it processed data or raw data?
-            flm_session: authentication session for connecting to flexilims
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
+            extra_attributes: dict, optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
+            flm_session: authentication session to connect to flexilims
+
+        Expected extra_attributes:
+            None
         """
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=MicroscopyData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session)
+                         project=project, project_id=project_id,
+                         origin_id=origin_id, flm_session=flm_session)
 
     def is_valid(self):
         """Check that the file exist"""
