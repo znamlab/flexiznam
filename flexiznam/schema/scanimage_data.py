@@ -2,6 +2,8 @@ import datetime
 import os
 import pathlib
 import re
+import warnings
+
 import pandas as pd
 from tifffile import TiffFile, TiffFileError
 from flexiznam.schema.datasets import Dataset
@@ -10,6 +12,7 @@ import math
 
 class ScanimageData(Dataset):
     DATASET_TYPE = 'scanimage'
+    DEFAULT_STACK_TYPE = 'calcium'
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, session=None, recording=None,
@@ -115,7 +118,16 @@ class ScanimageData(Dataset):
             csv_files (optional): Dictionary of csv files associated to the scanimage
                                   recording file. Keys are identifier provided for
                                   convenience, values are the full file name
+            stack_type (optional): Type of scanimage type. Expected values are in:
+                                   'calcium', 'zstack', 'multichannel-reference',
+                                   'motion-reference, 'overview'
         """
+        if 'stack_type' not in extra_attributes:
+            warnings.warn('No `stack_type` provided for SI dataset %s. '
+                          'Set to default: %s' % self.DEFAULT_STACK_TYPE,
+                          stacklevel=2)
+            extra_attributes['stack_type'] = self.DEFAULT_STACK_TYPE
+
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
@@ -131,6 +143,16 @@ class ScanimageData(Dataset):
     @csv_files.setter
     def csv_files(self, value):
         self.extra_attributes['csv_files'] = value
+
+    @property
+    def stack_type(self):
+        """Type of scanimage stack.
+        See ScanImageData.__init__ docstring for valid values"""
+        return self.extra_attributes['stack_type']
+
+    @stack_type.setter
+    def stack_type(self, value):
+        self.extra_attributes['stack_type'] = value
 
     @property
     def tif_files(self):
