@@ -147,7 +147,8 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     if attributes is None:
         attributes = {}
     if ('date' in attributes) and (date != attributes['date']):
-        raise FlexilimsError('Got two values for date: %s and %s' % (date, attributes['date']))
+        raise FlexilimsError(
+            'Got two values for date: %s and %s' % (date, attributes['date']))
     if ('path' not in attributes):
         attributes['path'] = str(Path(mouse_name) / session_name)
     session_info.update(attributes)
@@ -195,7 +196,7 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     if recording_name is None:
         recording_name = experimental_session['name'] + '_' + protocol + '_0'
     online_recording = get_entity(datatype='recording', name=recording_name,
-                                flexilims_session=flexilims_session)
+                                  flexilims_session=flexilims_session)
     if online_recording is not None:
         if conflicts.lower() == 'skip':
             print('A recording named %s already exists' % (recording_name))
@@ -376,7 +377,8 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
 
 
 def get_entities(datatype='mouse', query_key=None, query_value=None, project_id=None,
-                 flexilims_session=None, name=None, origin_id=None, id=None, format_reply=True):
+                 flexilims_session=None, name=None, origin_id=None, id=None,
+                 format_reply=True):
     """
     Get entities of a given type and format results.
 
@@ -423,8 +425,9 @@ def get_entities(datatype='mouse', query_key=None, query_value=None, project_id=
     return results
 
 
-def get_entity(datatype=None, query_key=None, query_value=None, project_id=None, flexilims_session=None,
-               name=None, origin_id=None, id=None, format_reply=True):
+def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
+               flexilims_session=None, name=None, origin_id=None, id=None,
+               format_reply=True):
     """
     Get one entity and format result.
 
@@ -485,7 +488,7 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
         flexilims_session = get_flexilims_session(project_id)
     parts = name.split('_')
     if not parts[-1].isnumeric():
-        root =  name + '_'
+        root = name + '_'
         suffix = 0
     else:
         root = '_'.join(parts[:-1])
@@ -495,7 +498,8 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
         else:
             root = parts[-1] + '_'
             suffix = 0
-    while get_entity(datatype, name='%s%s' % (root, suffix), flexilims_session=flexilims_session) is not None:
+    while get_entity(datatype, name='%s%s' % (root, suffix),
+                     flexilims_session=flexilims_session) is not None:
         suffix += 1
     name = '%s%s' % (root, suffix)
     return name
@@ -546,13 +550,14 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
 
     Args:
         datatype (str): flexilims type
-        name (str): name on flexilims
+        name (str or None): name on flexilims
+        id (str or None): id of the entity on flexilims
         origin_id (str or None): hexadecimal id of the origin
         mode (str): what to do with attributes that are not explicitly specified.
 
             `overwrite`
-                (default) all attributes that already exist on
-                flexilims but are not specified in the function call are set to 'null'.
+                (default) all attributes that already exist on flexilims but are not
+                specified in the function call are set to 'null'.
             `update`
                 update the attributes given in this call and do not change the
                 others.
@@ -570,10 +575,10 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     entity = get_entity(datatype=datatype,
-        name=name,
-        id=id,
-        flexilims_session=flexilims_session,
-        format_reply=False)
+                        name=name,
+                        id=id,
+                        flexilims_session=flexilims_session,
+                        format_reply=False)
     if entity is None:
         err_msg = 'Cannot find an entity of type `%s` named `%s`' % (datatype, name)
         raise FlexilimsError(err_msg)
@@ -599,7 +604,7 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
         name=None,
         attributes=full_attributes,
         strict_validation=False
-        )
+    )
     return rep
 
 
@@ -621,7 +626,8 @@ def format_results(results):
     for result in results:
         for attr_name, attr_value in result['attributes'].items():
             if attr_name in result:
-                raise FlexilimsError('An entity should not have %s as attribute' % attr_name)
+                raise FlexilimsError(
+                    'An entity should not have %s as attribute' % attr_name)
             result[attr_name] = attr_value
         result.pop('attributes')
     df = pd.DataFrame(results)
@@ -652,8 +658,10 @@ def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     for datatype in PARAMETERS['datatypes']:
-        resp = get_entity(datatype=datatype, name=name, id=id, flexilims_session=flexilims_session)
-        if resp: return datatype
+        resp = get_entity(datatype=datatype, name=name, id=id,
+                          flexilims_session=flexilims_session)
+        if resp:
+            return datatype
     return None
 
 
@@ -775,7 +783,8 @@ def get_datasets(origin_id, recording_type=None, dataset_type=None, project_id=N
                                 flexilims_session=flexilims_session)
         datapaths = []
         for (dataset_path, is_raw) in zip(datasets['path'], datasets['is_raw']):
-            prefix = PARAMETERS['data_root']['raw'] if is_raw=='yes' else PARAMETERS['data_root']['processed']
+            prefix = PARAMETERS['data_root']['raw'] if is_raw == 'yes' else \
+                PARAMETERS['data_root']['processed']
             this_path = Path(prefix) / dataset_path
             if this_path.exists():
                 datapaths.append(str(this_path))
