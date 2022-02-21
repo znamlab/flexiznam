@@ -49,6 +49,9 @@ def test_parse_yaml():
                                            raw_data_folder=DATA_ROOT)
 
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
+    # If the parsed has changed and you want to overwrite it, you can do:
+    # fzn.camp.sync_data.write_session_data_as_yaml(parsed, target_file=saved_parsed_yaml,
+    #                                               overwrite=True)
     # parsed contains datasets, we need to make them  into str to compare with saved data
     parsed_str = copy.deepcopy(parsed)
     clean_dictionary_recursively(parsed_str, keys=['name'], format_dataset=True)
@@ -61,8 +64,11 @@ def test_parse_yaml():
 def test_flm():
     """Check that we can upload to flexilims if the database is wiped"""
     if FLM_IS_WIPED:
+        # there shouldn't be anything in the way, if there is we have an issue
         conflicts = 'abort'
     else:
+        # entries already exist, just skip them. Will still crash if there is dataset
+        # that has changed.
         conflicts = 'skip'
 
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
