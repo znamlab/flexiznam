@@ -423,7 +423,7 @@ class Dataset(object):
 
         differences = utils.compare_series(fmt, flm_data, series_name=('offline',
                                                                        'flexilims'))
-        # flexilims transforms empty structures into null. Consider that equal
+        # flexilims transforms empty structures into None. Consider that equal
         to_remove = []
         for what, series in differences.iterrows():
             if series.flexilims is not None:
@@ -432,8 +432,9 @@ class Dataset(object):
                 # we have a non-boolean that is False, flexilims will make it None on
                 # upload, it is not a real difference
                 to_remove.append(what)
-        print('\nWarning: %s is/are empty and will be uploaded as None on flexilims.\n' %
-              to_remove)
+        if len(to_remove):
+            print('\nWarning: %s is/are empty and will be uploaded as None on '
+                  'flexilims.\n' % to_remove)
         differences = differences.drop(to_remove)
         return differences
 

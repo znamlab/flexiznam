@@ -583,7 +583,7 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
         err_msg = 'Cannot find an entity of type `%s` named `%s`' % (datatype, name)
         raise FlexilimsError(err_msg)
     if mode.lower() == 'overwrite':
-        full_attributes = {k: '' for k in entity['attributes'].keys()}
+        full_attributes = {k: None for k in entity['attributes'].keys()}
         full_attributes.update(attributes)
     elif mode.lower() == 'update':
         full_attributes = attributes.copy()
@@ -591,11 +591,6 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
         raise AttributeError('`mode` must be `overwrite` or `update`')
     if id is None:
         id = entity['id']
-
-    # the update cannot deal with None, set them to ''
-    for k, v in full_attributes.items():
-        if v is None:
-            full_attributes[k] = ''
 
     rep = flexilims_session.update_one(
         id=id,
