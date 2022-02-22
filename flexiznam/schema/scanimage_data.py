@@ -124,7 +124,7 @@ class ScanimageData(Dataset):
         """
         if 'stack_type' not in extra_attributes:
             warnings.warn('No `stack_type` provided for SI dataset %s. '
-                          'Set to default: %s' % self.DEFAULT_STACK_TYPE,
+                          'Set to default: %s' % (name, self.DEFAULT_STACK_TYPE),
                           stacklevel=2)
             extra_attributes['stack_type'] = self.DEFAULT_STACK_TYPE
 

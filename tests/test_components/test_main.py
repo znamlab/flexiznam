@@ -15,8 +15,10 @@ def test_get_flm_session():
 
 
 def test_format_results():
-    exmple_res = {'id': 'randomid', 'type': 'flmdatatype', 'name': 'fake_results', 'incrementalId': 'SOMETHING0000001',
-                  'attributes': {'exmpl_attr': 'this will be flattened'}, 'createdBy': 'Antonin Blot',
+    exmple_res = {'id': 'randomid', 'type': 'flmdatatype', 'name': 'fake_results',
+                  'incrementalId': 'SOMETHING0000001',
+                  'attributes': {'exmpl_attr': 'this will be flattened'},
+                  'createdBy': 'Antonin Blot',
                   'dateCreated': 1620375329769, 'objects': {}, 'customEntities': '[]',
                   'project': '606df1ac08df4d77c72c9aa4'}
     exmple_res = [exmple_res, exmple_res.copy()]
@@ -108,10 +110,7 @@ def test_add_entity(flm_sess):
 @pytest.mark.integtest
 def test_update_entity(flm_sess):
     with pytest.raises(FlexilimsError) as err:
-        res = flz.update_entity(
-            'dataset',
-            name='gibberish',
-            flexilims_session=flm_sess)
+        flz.update_entity('dataset', name='gibberish', flexilims_session=flm_sess)
     assert err.value.args[0] == 'Cannot find an entity of type `dataset` named ' \
                                 '`gibberish`'
     dataset_name = 'mouse_physio_2p_S20211102_overview_zoom2_00001'
@@ -132,10 +131,16 @@ def test_update_entity(flm_sess):
                             name=dataset_name,
                             flexilims_session=flm_sess,
                             attributes={'path': 'new/path',
-                                        'dataset_type': 'scanimage'},
+                                        'dataset_type': 'scanimage',
+                                        'is_raw': res['attributes']['is_raw']},
                             )
+    # in the reply the null values are []
     assert (res['attributes']['path'] == 'new/path')
-    assert (res['attributes']['acq_num'] is None)
+    assert (res['attributes']['acq_num'] == [])
+    # but in the database they are null
+    dbval = flz.get_entity('dataset', name=dataset_name, flexilims_session=flm_sess,
+                           format_reply=False)
+    assert (dbval['attributes']['acq_num'] is None)
 
     # restore database state
     ds = Dataset.from_flexilims(data_series=original_entity, flm_session=flm_sess)

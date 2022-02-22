@@ -23,7 +23,10 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         verbose (bool): print progress information
         log_func: function to deal with warnings and messages
         flexilims_session (Flexilims): session to avoid recreating a token
-        conflicts (str): `abort` to crash if there is a conflict, `skip` to ignore and proceed
+        conflicts (str): `abort` to crash if there is already a session or recording
+                         existing on flexilims, `skip` to ignore and proceed. Samples
+                         are always updated with `skip` and datasets always have
+                         mode=`safe`
 
     Returns:
         dictionary or flexilims ID

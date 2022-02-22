@@ -172,9 +172,9 @@ def test_update_flexilims(flm_sess):
 
     # try to change the origin_id
     original_origin_id = ds.origin_id
-    ds.origin_id = '60c1fd7a5c6930620e4a4bc4'
+    ds.origin_id = '61b4c65d068a8561a85ae891'
     ds.update_flexilims(mode='overwrite')
-    assert ds.get_flexilims_entry()['origin_id'] == '60c1fd7a5c6930620e4a4bc4'
+    assert ds.get_flexilims_entry()['origin_id'] == '61b4c65d068a8561a85ae891'
     ds.origin_id = original_origin_id
     ds.update_flexilims(mode='overwrite')
     assert ds.get_flexilims_entry()['origin_id'] == original_origin_id
