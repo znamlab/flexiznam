@@ -2,6 +2,7 @@
 
 ##v0.2.3
 
+- Compatible with flexilims v0.2. `None` and `''` can both be uploaded.
 - Dataset.is_raw can be autodetermined from path. If this fails, it **must** be 
   manually set.
 - Extensions for microscopy dataset are now defined in the config file.
