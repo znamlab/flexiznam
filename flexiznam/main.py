@@ -672,22 +672,16 @@ def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
     return None
 
 
-def get_id(name, datatype='mouse', project_id=None, flexilims_session=None):
+def get_id(name, datatype=None, project_id=None, flexilims_session=None):
     """Get database ID for entity by name"""
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
-    entities = get_entities(datatype=datatype,
-                            flexilims_session=flexilims_session,
-                            name=name)
-    if len(entities) != 1:
-        raise NameNotUniqueError(
-            'ERROR: Found {num} entities of type {datatype} with name {name}!'
-                .format(num=len(entities), datatype=datatype, name=name))
-        return None
-    else:
-        return entities['id'][0]
+    entity = get_entity(datatype=datatype,
+                          flexilims_session=flexilims_session,
+                          name=name)
+    return entity['id']
 
 
 def get_path(name, datatype='mouse', project_id=None, flexilims_session=None):
