@@ -104,13 +104,13 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
     return resp
 
 
-def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
+def add_experimental_session(parent_name, date, attributes={}, session_name=None,
                              other_relations=None, flexilims_session=None,
                              project_id=None, conflicts='abort'):
     """Add a new session as a child entity of a mouse
 
     Args:
-        mouse_name (str): name of the mouse. Must exist on flexilims
+        parent_name (str): name of the parent, usually a mouse. Must exist on flexilims
         date (str): date of the session. If `session_name` is not provided, will be used as name
         attributes (dict): dictionary of additional attributes (on top of date)
         session_name (str or None): name of the session, usually in the shape `S20210420`.
@@ -131,9 +131,9 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
     if conflicts.lower() not in ('skip', 'abort'):
         raise AttributeError('conflicts must be `skip` or `abort`')
 
-    mouse_id = get_id(mouse_name, datatype='mouse', flexilims_session=flexilims_session)
+    parent_id = get_id(parent_name, flexilims_session=flexilims_session)
     if session_name is None:
-        session_name = mouse_name + '_' + date + '_0'
+        session_name = parent_name + '_' + date + '_0'
     online_session = get_entity(datatype='session', name=session_name,
                                 flexilims_session=flexilims_session)
     if online_session is not None:
@@ -150,13 +150,13 @@ def add_experimental_session(mouse_name, date, attributes={}, session_name=None,
         raise FlexilimsError(
             'Got two values for date: %s and %s' % (date, attributes['date']))
     if ('path' not in attributes):
-        attributes['path'] = str(Path(mouse_name) / session_name)
+        attributes['path'] = str(Path(parent_name) / session_name)
     session_info.update(attributes)
     resp = flexilims_session.post(
         datatype='session',
         name=session_name,
         attributes=session_info,
-        origin_id=mouse_id,
+        origin_id=parent_id,
         other_relations=other_relations,
         strict_validation=False
     )

@@ -72,7 +72,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     # children of the mouse
     if session_data['session'] is not None:
         session = flz.add_experimental_session(
-            mouse_name=mouse['name'],
+            parent_name=mouse['name'],
             session_name=mouse['name'] + '_' + session_data['session'],
             flexilims_session=flexilims_session,
             date=date,
