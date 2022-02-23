@@ -438,7 +438,8 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
 
     Args:
         datatype (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
-            'recording', or 'dataset'. This is the only mandatory argument.
+            'recording', or 'dataset'. If None, will iterate on all datatype until the
+            entity is found.
         query_key (str): attribute to filter by.
         query_value (str): attribute value to select
         project_id (str): text name of the project. Either `project_id` or
@@ -458,6 +459,17 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
         format_reply is False
 
     """
+
+    if datatype is None:
+        #datatype is not specify, try everything
+        args = [datatype, query_key, query_value, project_id, flexilims_session, name,
+                origin_id, id, format_reply]
+        for dt in ('mouse', 'session', 'sample', 'recording', 'dataset'):
+            args[0] = dt
+            entity = get_entity(*args)
+            if entity is not None:
+                return entity
+
     entity = get_entities(
         datatype=datatype,
         query_key=query_key,
