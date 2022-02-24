@@ -398,7 +398,8 @@ def clean_yaml(path_to_yaml):
 
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
-        session['datasets'][dataset_name] = read_dataset(name=dataset_name, data=dataset_dict)
+        session['datasets'][dataset_name] = read_dataset(name=dataset_name,
+                                                         data=dataset_dict)
 
     session['recordings'] = {}
     for rec_name, rec_dict in nested_levels['recordings'].items():
