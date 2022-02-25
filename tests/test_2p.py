@@ -6,14 +6,15 @@ The example data is found in demo_project
 import copy
 import yaml
 
-from flexiznam.camp.sync_data import upload_yaml
+from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
 from flexiznam.utils import clean_dictionary_recursively
 from tests.tests_resources import flm_session
-from tests.tests_resources.data_for_testing import DATA_ROOT, PROCESSED_ROOT
+from tests.tests_resources.data_for_testing import DATA_ROOT, PROCESSED_ROOT, TEST_PROJECT
 import flexiznam as fzn
 from flexiznam import camp
 
 MOUSE = 'mouse_physio_2p'
+SESSION = 'S20211102'
 YAML = 'physio_acq_yaml.yml'
 FLM_IS_WIPED = False  # switch this flag to True if you deleted everything on flexilims
 
@@ -21,31 +22,29 @@ FLM_IS_WIPED = False  # switch this flag to True if you deleted everything on fl
 # The format is quite simple, you must specify the project, mouse and session name
 # An example is in: `shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml.yml`
 
+def test_create_yaml():
+    """Test automatic yaml creation
 
-def physio_mouse_exists():
-    mouse = fzn.get_entity(datatype='mouse', name=MOUSE, flexilims_session=flm_session)
-    if FLM_IS_WIPED:
-        assert mouse is None
-        # we need to add the mouse. If it was a real MCMS mouse we could do:
-        # `fzn.add_mouse(project=test_data.TEST_PROJECT, mouse_name=MOUSE)`
-        # but since it's a dummy mouse, I'll just add it manually:
-        resp = flm_session.post(datatype='mouse',
-                                name=MOUSE,
-                                strict_validation=False,
-                                attributes=dict(birth_date='01-Mar-2021',
-                                                sex='Female',
-                                                animal_name=MOUSE),
-                                )
-    else:
-        assert mouse is not None
+    We check that the acquisition yaml can also be created automatically
+    """
+    saved_skeleton = PROCESSED_ROOT / MOUSE / YAML.replace('.yml',
+                                                           'automatic_skeletion.yml')
+    # To save the yaml the first time we add outfile:
+    automat = create_yaml(DATA_ROOT / MOUSE / SESSION, mouse=MOUSE,
+                          project=TEST_PROJECT, outfile=saved_skeleton, overwrite=True)
 
+    with open(saved_skeleton, 'r') as fopen:
+        saved = yaml.safe_load(fopen)
+    assert saved == automat
+    # test that it can be parsed
+    p = parse_yaml(path_to_yaml=saved_skeleton, verbose=False, raw_data_folder=DATA_ROOT)
 
 def test_parse_yaml():
     """Test that we can parse the acq yaml
 
     We check that we can parse the yaml and that the output is similar to a known copy
     """
-    parsed = fzn.camp.sync_data.parse_yaml(path_to_yaml=PROCESSED_ROOT / MOUSE / YAML,
+    parsed = parse_yaml(path_to_yaml=PROCESSED_ROOT / MOUSE / YAML,
                                            raw_data_folder=DATA_ROOT)
 
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
@@ -70,7 +69,25 @@ def test_flm():
         # entries already exist, just skip them. Will still crash if there is dataset
         # that has changed.
         conflicts = 'skip'
-
+    physio_mouse_exists()
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
     upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
                 log_func=print, flexilims_session=flm_session, conflicts=conflicts)
+
+
+def physio_mouse_exists():
+    mouse = fzn.get_entity(datatype='mouse', name=MOUSE, flexilims_session=flm_session)
+    if FLM_IS_WIPED:
+        assert mouse is None
+        # we need to add the mouse. If it was a real MCMS mouse we could do:
+        # `fzn.add_mouse(project=test_data.TEST_PROJECT, mouse_name=MOUSE)`
+        # but since it's a dummy mouse, I'll just add it manually:
+        resp = flm_session.post(datatype='mouse',
+                                name=MOUSE,
+                                strict_validation=False,
+                                attributes=dict(birth_date='01-Mar-2021',
+                                                sex='Female',
+                                                animal_name=MOUSE),
+                                )
+    else:
+        assert mouse is not None

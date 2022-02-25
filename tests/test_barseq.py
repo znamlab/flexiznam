@@ -21,24 +21,19 @@ FLM_IS_WIPED = False  # switch this flag to True if you deleted everything on fl
 # The format is quite simple, you must specify the project, mouse and session name
 # An example is in: `shared/projects/demo_project/mouse_barseq/barseq_yaml.yml`
 
+def test_create_yaml():
+    """Test automatic yaml creation
 
-def barseq_mouse_exists():
-    mouse = fzn.get_entity(datatype='mouse', name=MOUSE, flexilims_session=flm_session)
-    if FLM_IS_WIPED:
-        assert mouse is None
-        # we need to add the mouse. If it was a real MCMS mouse we could do:
-        # `fzn.add_mouse(project=test_data.TEST_PROJECT, mouse_name=MOUSE)`
-        # but since it's a dummy mouse, I'll just add it manually:
-        resp = flm_session.post(datatype='mouse',
-                                name=MOUSE,
-                                strict_validation=False,
-                                attributes=dict(birth_date='01-Mar-2021',
-                                                sex='Female',
-                                                animal_name=MOUSE),
-                                )
-    else:
-        assert mouse is not None
+    We check that the acquisition yaml can also be created automatically
+    """
+    saved_skeleton = PROCESSED_ROOT / MOUSE / 'yaml_automatic_skeleton.yml'
+    # To save the yaml the first time we add outfile:
+    automat = create_yaml(DATA_ROOT / MOUSE, mouse=MOUSE, project=TEST_PROJECT)
+    #                      outfile=saved_skeleton, overwrite=True)
 
+    with open(saved_skeleton, 'r') as fopen:
+        saved = yaml.safe_load(fopen)
+    assert saved == automat
 
 def test_parse_yaml():
     """Test that we can parse the acq yaml

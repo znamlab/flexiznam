@@ -1,4 +1,6 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
+import os
+import pathlib
 from pathlib import Path, PurePosixPath
 import re
 import copy
@@ -10,6 +12,128 @@ from flexiznam.errors import SyncYmlError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_dictionary_recursively
+
+
+def create_yaml(root_folder, outfile=None, project='NOT SPECIFIED',
+                mouse='NOT SPECIFIED', overwrite=False):
+    """Automatically create a yaml file skeleton
+
+    Goes recursively in root folder and create a set of nested structure
+
+    Args:
+        root_folder (str or Path): base folder, usually a session but can be a sample
+        outfile (str or Path): target to write the yaml. Do not write file if `None`
+        project (str): name of the project
+        mouse (str): name of the mouse
+        overwrite (bool): overwrite outfile if it exists. Default False.
+
+    Returns:
+        yaml_dict (dict): created structure
+    """
+    root_folder = pathlib.Path(root_folder)
+    assert root_folder.is_dir()
+    yaml_dict=dict(project=project, mouse=mouse)
+    yaml_dict['session'] = None
+    # check if we were given a session folder
+    if re.match('S\d*', root_folder.stem):
+        yaml_dict['session'] = root_folder.stem
+
+    _find_yaml_struct(root_folder, yaml_dict)
+
+    if outfile is not None:
+        if outfile.is_file() and not overwrite:
+            raise IOError('File %s already exists. Use `overwrite` to replace.' % outfile)
+        with open(outfile, 'w') as writer:
+            yaml.dump(yaml_dict, writer)
+
+    return yaml_dict
+
+
+def _find_yaml_struct(path, current_dict):
+    """Parse one level of yaml structure for autogenerating yaml
+
+    Args:
+        path: path to the dir to parse
+        current_dict: current level
+
+    Returns:
+        current_dict (do changes in place)
+    """
+    path = Path(path)
+    for el in os.listdir(path):
+        if not (path / el).is_dir():
+            continue
+        # match known recording format
+        m = re.fullmatch('R\d\d\d\d\d\d_?(.*)?', el)
+        if m:
+            el_type = 'recordings'
+            protocol = m[1] if m[1] is not None else 'PROTOCOL NOT SPECIFIED'
+        else:
+            el_type = 'samples'
+        subdict = current_dict.get(el_type, {})
+        subdict[el] = dict()
+        if el_type == 'recordings':
+            subdict[el]['protocol'] = protocol
+        current_dict[el_type] = subdict
+        _find_yaml_struct(path / el, current_dict[el_type][el])
+    return current_dict
+
+
+def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
+    """Read an acquisition yaml and create corresponding datasets
+
+    Args:
+        path_to_yaml (str): path to the file to parse
+        raw_data_folder (str): root folder containing the mice folders
+        verbose (bool): print info while looking for datasets
+
+    Returns:
+        dict: A yaml dictionary with dataset classes
+
+    """
+    session_data = _clean_yaml(path_to_yaml)
+
+    if raw_data_folder is None:
+        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
+        raw_data_folder /= session_data['project']
+
+    if session_data['path'] is not None:
+        home_folder = Path(raw_data_folder) / session_data['path']
+    elif session_data['session'] is not None:
+        home_folder = Path(raw_data_folder) / session_data['mouse'] / \
+                      session_data['session']
+    else:
+        home_folder = Path(raw_data_folder) / session_data['mouse']
+        # first load datasets in the session level
+    if not home_folder.is_dir():
+        raise FileNotFoundError('Session directory %s does not exist' % home_folder)
+    session_data['path'] = home_folder
+    session_data['datasets'] = create_dataset(
+        dataset_infos=session_data['datasets'],
+        verbose=verbose,
+        parent=session_data,
+        raw_data_folder=raw_data_folder,
+        error_handling='report'
+    )
+
+    for rec_name, recording in session_data['recordings'].items():
+        recording['path'] = str(PurePosixPath(home_folder / rec_name))
+        recording['datasets'] = create_dataset(
+            dataset_infos=recording['datasets'],
+            parent=recording,
+            raw_data_folder=raw_data_folder,
+            verbose=verbose,
+            error_handling='report'
+        )
+
+    session_data['samples'] = _create_sample_datasets(
+        session_data,
+        raw_data_folder
+    )
+
+    # remove the full path that are not needed
+    clean_dictionary_recursively(session_data)
+    return session_data
 
 
 def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
@@ -155,132 +279,6 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             add_samples(sample_data['samples'], sample_rep, short_sample_name)
     # samples are attached to mice, not sessions
     add_samples(session_data['samples'], mouse)
-
-
-def trim_paths(session_data, raw_data_folder):
-    """Parses paths to make them relative to `raw_data_folder`
-
-    Args:
-        session_data (dict): dictionary containing children of the session
-        raw_data_folder (str): part of the path to be omitted from on flexilims
-
-    Returns:
-        dict: `session_data` after trimming the paths
-
-    """
-
-    def trim_sample_paths(samples):
-        # utility function to recurse into samples
-        for sample_name, sample_data in samples.items():
-            samples[sample_name]['path'] = \
-                str(PurePosixPath(Path(samples[sample_name]['path'])
-                    .relative_to(raw_data_folder)))
-            for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
-            trim_sample_paths(sample_data['samples'])
-
-    if raw_data_folder is None:
-        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
-    if 'path' in session_data.keys():
-        session_data['path'] = \
-            str(PurePosixPath(Path(session_data['path']).relative_to(raw_data_folder)))
-    for ds_name, ds in session_data.get('datasets', {}).items():
-        ds.path = ds.path.relative_to(raw_data_folder)
-    for rec_name, rec_data in session_data['recordings'].items():
-        session_data['recordings'][rec_name]['path'] = \
-            str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
-                .relative_to(raw_data_folder)))
-        for ds_name, ds in rec_data.get('datasets', {}).items():
-            ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
-    trim_sample_paths(session_data['samples'])
-    return session_data
-
-
-def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
-    """Read an acquisition yaml and create corresponding datasets
-
-    Args:
-        path_to_yaml (str): path to the file to parse
-        raw_data_folder (str): root folder containing the mice folders
-        verbose (bool): print info while looking for datasets
-
-    Returns:
-        dict: A yaml dictionary with dataset classes
-
-    """
-    session_data = clean_yaml(path_to_yaml)
-
-    if raw_data_folder is None:
-        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
-        raw_data_folder /= session_data['project']
-
-    if session_data['path'] is not None:
-        home_folder = Path(raw_data_folder) / session_data['path']
-    elif session_data['session'] is not None:
-        home_folder = Path(raw_data_folder) / session_data['mouse'] / \
-                      session_data['session']
-    else:
-        home_folder = Path(raw_data_folder) / session_data['mouse']
-        # first load datasets in the session level
-    if not home_folder.is_dir():
-        raise FileNotFoundError('Session directory %s does not exist' % home_folder)
-    session_data['path'] = home_folder
-    session_data['datasets'] = create_dataset(
-        dataset_infos=session_data['datasets'],
-        verbose=verbose,
-        parent=session_data,
-        raw_data_folder=raw_data_folder,
-        error_handling='report'
-    )
-
-    for rec_name, recording in session_data['recordings'].items():
-        recording['path'] = str(PurePosixPath(home_folder / rec_name))
-        recording['datasets'] = create_dataset(
-            dataset_infos=recording['datasets'],
-            parent=recording,
-            raw_data_folder=raw_data_folder,
-            verbose=verbose,
-            error_handling='report'
-        )
-
-    session_data['samples'] = create_sample_datasets(
-        session_data,
-        raw_data_folder
-    )
-
-    # remove the full path that are not needed
-    clean_dictionary_recursively(session_data)
-    return session_data
-
-
-def create_sample_datasets(parent, raw_data_folder):
-    """Recursively index samples creating a nested dictionary and generate
-    corresponding datasets
-
-    Args:
-        parent (dict): Dictionary corresponding to the parent entity
-
-    Return:
-        dict: dictionary of child samples
-
-    """
-    if 'samples' not in parent:
-        return dict()
-    for sample_name, sample in parent['samples'].items():
-        sample['path'] = parent['path'] / sample_name
-        sample['datasets'] = create_dataset(
-            dataset_infos=sample['datasets'],
-            parent=sample,
-            raw_data_folder=raw_data_folder,
-            error_handling='report'
-        )
-
-        # recurse into child samples
-        sample['samples'] = create_sample_datasets(sample, raw_data_folder)
-    # we update in place but we also return the dictionary of samples to make
-    # for more readable code
-    return parent['samples']
-
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
