@@ -5,6 +5,8 @@
 - Compatible with flexilims v0.2. `None` and `''` can both be uploaded.
 - Dataset.is_raw can be autodetermined from path. If this fails, it **must** be 
   manually set.
+- New function and CLI entry: `create_yaml` to create the skeleton of a yaml before 
+  parsing.
 - Extensions for microscopy dataset are now defined in the config file.
 - ScanImage datasets have a `stack_type` attribute, default to `calcium`
 - Tests are now using real data and require CAMP being mounted and configured.
