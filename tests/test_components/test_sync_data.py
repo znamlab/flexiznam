@@ -23,8 +23,8 @@ def test_clean_yaml(tmp_path):
     with open(path_to_full_yaml, 'w') as fullfile:
         yaml.dump(faml, fullfile)
 
-    sync_data.clean_yaml(path_to_mini_yaml)
-    sync_data.clean_yaml(path_to_full_yaml)
+    sync_data._clean_yaml(path_to_mini_yaml)
+    sync_data._clean_yaml(path_to_full_yaml)
 
 
 def test_parse_yaml(tmp_path):

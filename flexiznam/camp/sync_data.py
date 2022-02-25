@@ -59,7 +59,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             log_func('Cannot parse date for session %s.' % session_data['session'])
             date = 'N/A'
 
-    session_data = trim_paths(session_data, raw_data_folder)
+    session_data = _trim_paths(session_data, raw_data_folder)
 
     attributes = session_data.get('attributes', None)
     if attributes is None:
@@ -375,7 +375,73 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
     return datasets
 
 
-def clean_yaml(path_to_yaml):
+def _trim_paths(session_data, raw_data_folder):
+    """Parses paths to make them relative to `raw_data_folder`
+
+    Args:
+        session_data (dict): dictionary containing children of the session
+        raw_data_folder (str): part of the path to be omitted from on flexilims
+
+    Returns:
+        dict: `session_data` after trimming the paths
+
+    """
+
+    def trim_sample_paths(samples):
+        # utility function to recurse into samples
+        for sample_name, sample_data in samples.items():
+            samples[sample_name]['path'] = \
+                str(PurePosixPath(Path(samples[sample_name]['path'])
+                    .relative_to(raw_data_folder)))
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
+            trim_sample_paths(sample_data['samples'])
+
+    if raw_data_folder is None:
+        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
+    if 'path' in session_data.keys():
+        session_data['path'] = \
+            str(PurePosixPath(Path(session_data['path']).relative_to(raw_data_folder)))
+    for ds_name, ds in session_data.get('datasets', {}).items():
+        ds.path = ds.path.relative_to(raw_data_folder)
+    for rec_name, rec_data in session_data['recordings'].items():
+        session_data['recordings'][rec_name]['path'] = \
+            str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
+                .relative_to(raw_data_folder)))
+        for ds_name, ds in rec_data.get('datasets', {}).items():
+            ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
+    trim_sample_paths(session_data['samples'])
+    return session_data
+
+def _create_sample_datasets(parent, raw_data_folder):
+    """Recursively index samples creating a nested dictionary and generate
+    corresponding datasets
+
+    Args:
+        parent (dict): Dictionary corresponding to the parent entity
+
+    Return:
+        dict: dictionary of child samples
+
+    """
+    if 'samples' not in parent:
+        return dict()
+    for sample_name, sample in parent['samples'].items():
+        sample['path'] = parent['path'] / sample_name
+        sample['datasets'] = create_dataset(
+            dataset_infos=sample['datasets'],
+            parent=sample,
+            raw_data_folder=raw_data_folder,
+            error_handling='report'
+        )
+
+        # recurse into child samples
+        sample['samples'] = _create_sample_datasets(sample, raw_data_folder)
+    # we update in place but we also return the dictionary of samples to make
+    # for more readable code
+    return parent['samples']
+
+def _clean_yaml(path_to_yaml):
     """Read a yaml file and check that it is correctly formatted
 
     This does not do any processing, just make sure that I can read the whole yaml and
@@ -394,25 +460,25 @@ def clean_yaml(path_to_yaml):
         except ParserError as e:
             raise IOError("Invalid yaml. Parser returned an error: %s" % e)
 
-    session, nested_levels = read_level(yml_data)
+    session, nested_levels = _read_level(yml_data)
 
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
-        session['datasets'][dataset_name] = read_dataset(name=dataset_name,
-                                                         data=dataset_dict)
+        session['datasets'][dataset_name] = _read_dataset(name=dataset_name,
+                                                          data=dataset_dict)
 
     session['recordings'] = {}
     for rec_name, rec_dict in nested_levels['recordings'].items():
-        session['recordings'][rec_name] = read_recording(name=rec_name, data=rec_dict)
+        session['recordings'][rec_name] = _read_recording(name=rec_name, data=rec_dict)
 
     session['samples'] = {}
     for sample_name, sample_dict in nested_levels['samples'].items():
-        session['samples'][sample_name] = read_sample(name=sample_name, data=sample_dict)
+        session['samples'][sample_name] = _read_sample(name=sample_name, data=sample_dict)
 
     return session
 
 
-def read_sample(name, data):
+def _read_sample(name, data):
     """Read YAML information corresponding to a sample
 
     Args:
@@ -425,7 +491,7 @@ def read_sample(name, data):
     """
     if data is None:
         data = {}
-    sample, nested_levels = read_level(
+    sample, nested_levels = _read_level(
         data,
         mandatory_args=(),
         optional_args=('notes', 'attributes', 'path'),
@@ -435,14 +501,14 @@ def read_sample(name, data):
 
     sample['datasets'] = dict()
     for ds_name, ds_data in nested_levels['datasets'].items():
-        sample['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+        sample['datasets'][ds_name] = _read_dataset(name=ds_name, data=ds_data)
     sample['samples'] = dict()
     for sample_name, sample_data in nested_levels['samples'].items():
-        sample['samples'][sample_name] = read_sample(name=sample_name, data=sample_data)
+        sample['samples'][sample_name] = _read_sample(name=sample_name, data=sample_data)
     return sample
 
 
-def read_recording(name, data):
+def _read_recording(name, data):
     """Read YAML information corresponding to a recording
 
     Args:
@@ -453,7 +519,7 @@ def read_recording(name, data):
         dict: the recording read from the yaml
 
     """
-    recording, datasets = read_level(
+    recording, datasets = _read_level(
         data,
         mandatory_args=('protocol',),
         optional_args=('notes', 'attributes', 'path', 'recording_type', 'timestamp'),
@@ -470,12 +536,12 @@ def read_recording(name, data):
         recording['timestamp'] = m.groups()[0]
     recording['datasets'] = dict()
     for ds_name, ds_data in datasets['datasets'].items():
-        recording['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+        recording['datasets'][ds_name] = _read_dataset(name=ds_name, data=ds_data)
 
     return recording
 
 
-def read_dataset(name, data):
+def _read_dataset(name, data):
     """Read YAML information corresponding to a dataset
 
     Args:
@@ -488,7 +554,7 @@ def read_dataset(name, data):
         'attributes' and 'name'
 
     """
-    level, _ = read_level(
+    level, _ = _read_level(
         data,
         mandatory_args=('dataset_type', 'path'),
         optional_args=('notes', 'attributes', 'created', 'is_raw', 'origin_id'),
@@ -498,9 +564,9 @@ def read_dataset(name, data):
     return level
 
 
-def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
-               optional_args=('path', 'notes', 'attributes'),
-               nested_levels=('recordings', 'datasets', 'samples')):
+def _read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
+                optional_args=('path', 'notes', 'attributes'),
+                nested_levels=('recordings', 'datasets', 'samples')):
     """Read one layer of the yml file (i.e. a dictionary)
 
     Args:
