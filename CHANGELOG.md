@@ -2,18 +2,28 @@
 
 ##v0.2.3
 
+### Breaking changes:
+- `Dataset.flm_session` is now `flexilims_session` (harmonise with main functions)
+
+### Main changes
 - Compatible with flexilims v0.2. `None` and `''` can both be uploaded.
 - Dataset.is_raw can be autodetermined from path. If this fails, it **must** be 
   manually set.
 - New function and CLI entry: `create_yaml` to create the skeleton of a yaml before 
   parsing.
-- Extensions for microscopy dataset are now defined in the config file.
+- Extensions for microscopy datasets are now defined in the config file.
 - ScanImage datasets have a `stack_type` attribute, default to `calcium`
-- Tests are now using real data and require CAMP being mounted and configured.
 - `get_entity` and `get_id` can work without specifying `datatype`
-- Bugfixes:
+
+### Bugfixes:
   - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`
-  - Scanimage dataset are recognise as such and not as MicroscopyData
+  - ScanImage dataset are recognised as such and not as MicroscopyData
+
+
+### Misc:
+  - Tests are now using real data and require CAMP being mounted and configured.
+  - Dataset project is set when setting `Dataset.flexilims_session`
+
 
 ## v0.2.2
 
