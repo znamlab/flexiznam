@@ -4,6 +4,7 @@ import pandas as pd
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError
+from tests.tests_resources.data_for_testing import TEST_PROJECT
 
 # Test the generic dataset class.
 
@@ -63,7 +64,7 @@ def test_constructor():
                        project='demo_project',
                        project_id=PARAMETERS['project_ids']['demo_project'],
                        origin_id='anotherthing',
-                       flm_session=None)
+                       flexilims_session=None)
     # make sure that mandatory arguments are given
     extra_attributes = dict(camera=dict(video_file=None),
                             harp=dict(binary_file=None))
@@ -115,15 +116,16 @@ def test_dataset_flexilims_integration(flm_sess):
         pass
     assert ds_yaml == fmt
 
+    ds = Dataset(path='fake/path', is_raw='no',
+                 dataset_type='camera', extra_attributes={}, created='')
+    assert ds.project_id is None
     # check that updating project change id
     ds.project = '3d_vision'
     assert ds.project_id == PARAMETERS['project_ids']['3d_vision']
     # and conversely
     ds.project_id = PARAMETERS['project_ids']['test']
     assert ds.project == 'test'
-    ds = Dataset(path='fake/path', is_raw='no',
-                 dataset_type='camera', extra_attributes={}, created='')
-    assert ds.project_id is None
+
 
 
 @pytest.mark.integtest
@@ -135,6 +137,7 @@ def test_from_flexilims(flm_sess):
                                      'SpheresPermTube_wf_camera')
     assert ds.name == 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     assert ds.flexilims_status() == 'up-to-date'
+    assert ds.project == project
 
 
 @pytest.mark.integtest
@@ -196,3 +199,21 @@ def test_dataset_paths(flm_sess):
         str(pathlib.Path(PARAMETERS['data_root']['raw'] / ds.path))
 
 
+@pytest.mark.integtest
+def test_project_project_id(flm_sess):
+    """Check that project, project_id and flm_sess.project are linked"""
+    with pytest.raises(DatasetError) as err:
+        Dataset(path='fake/path', is_raw='no',
+                dataset_type='camera', extra_attributes={}, created='', project='test',
+                flexilims_session=flm_sess)
+    assert err.value.args[0] == 'Project must match that of flexilims_session'
+    ds = Dataset(path='fake/path', is_raw='no', dataset_type='camera',
+                 extra_attributes={}, created='', project='test', flexilims_session=None)
+    with pytest.raises(DatasetError) as err:
+        ds.flexilims_session = flm_sess
+    assert err.value.args[0] == 'Cannot use a flexilims_session from a different project'
+    ds.project_id = PARAMETERS['project_ids'][TEST_PROJECT]
+    # that changes project too
+    assert ds.project == TEST_PROJECT
+    # now I can change flm_sess
+    ds.flexilims_session = flm_sess

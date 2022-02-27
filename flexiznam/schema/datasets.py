@@ -258,6 +258,7 @@ class Dataset(object):
         self.extra_attributes = extra_attributes if extra_attributes is not None else {}
         self.created = created
         self.origin_id = origin_id
+        self._flexilims_session = flexilims_session
         if project is not None:
             self.project = project
             if project_id is not None:
@@ -267,7 +268,7 @@ class Dataset(object):
         else:
             self._project = None
             self._project_id = None
-        self.flexilims_session = flexilims_session
+
 
     def is_valid(self):
         """
@@ -479,6 +480,10 @@ class Dataset(object):
         project = flz.main._lookup_project(value, flz.PARAMETERS)
         if project is None:
             raise IOError('Unknown project ID. Please update config file')
+        if self.flexilims_session is not None:
+            sp = self.flexilims_session.project_id
+            if (sp is not None) and (sp != value):
+                raise DatasetError('Project must match that of flexilims_session')
         self._project = project
         self._project_id = value
 
@@ -493,8 +498,29 @@ class Dataset(object):
             raise IOError('Unknown project name. Please update config file')
 
         proj_id = flz.PARAMETERS['project_ids'][value]
+        if self.flexilims_session is not None:
+            sp = self.flexilims_session.project_id
+            if (sp is not None) and (sp != proj_id):
+                raise DatasetError('Project must match that of flexilims_session')
         self._project_id = proj_id
         self._project = value
+
+    @property
+    def flexilims_session(self):
+        """Flexilims session. It's project must match self.project"""
+        return self._flexilims_session
+
+    @flexilims_session.setter
+    def flexilims_session(self, value):
+        self._flexilims_session = value
+        if value is None:
+            return
+        if hasattr(value, 'project_id'):
+            if self.project_id is None:
+                self.project_id = value.project_id
+            elif self.project_id != value.project_id:
+                raise DatasetError('Cannot use a flexilims_session from a different '
+                                   'project')
 
     @property
     def name(self):
