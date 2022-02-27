@@ -17,7 +17,7 @@ def test_create_directly(flm_sess):
                       created='now',
                       project=TEST_PROJECT,
                       is_raw=True,
-                      flm_session=flm_sess)
+                      flexilims_session=flm_sess)
     assert str(data.path) == 'test_path'
     assert not data.is_valid()
     assert data.name is None

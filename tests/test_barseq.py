@@ -35,6 +35,7 @@ def test_create_yaml():
         saved = yaml.safe_load(fopen)
     assert saved == automat
 
+
 def test_parse_yaml():
     """Test that we can parse the acq yaml
 

@@ -212,7 +212,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         ds.project = session_data['project']
         ds.session = session_data['session']
         ds.origin_id = root_id
-        ds.flm_session = flexilims_session
+        ds.flexilims_session = flexilims_session
         ds.update_flexilims(mode='safe')
 
     # now deal with recordings
@@ -245,7 +245,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.session = session_data['session']
             ds.recording = short_rec_name
             ds.origin_id = rec_rep['id']
-            ds.flm_session = flexilims_session
+            ds.flexilims_session = flexilims_session
             ds.update_flexilims(mode='safe')
 
     # now deal with samples
@@ -273,7 +273,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
                 ds.sample = short_sample_name
                 ds.session = session_data['session']
                 ds.origin_id = sample_rep['id']
-                ds.flm_session = flexilims_session
+                ds.flexilims_session = flexilims_session
                 ds.update_flexilims(mode='safe')
             # now add child samples
             add_samples(sample_data['samples'], sample_rep, short_sample_name)

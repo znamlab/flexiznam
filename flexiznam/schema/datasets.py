@@ -107,7 +107,7 @@ class Dataset(object):
 
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
-        kwargs['flm_session'] = flm_session
+        kwargs['flexilims_session'] = flm_session
         if dataset_type in Dataset.SUBCLASSES:
             # dataset_type is already specified by subclass
             kwargs.pop('dataset_type')
@@ -187,7 +187,7 @@ class Dataset(object):
                 created=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 project=project,
                 origin_id=origin['id'],
-                flm_session=flm_session
+                flexilims_session=flm_session
             )
         else:
             if (conflicts is None) or (conflicts == 'abort'):
@@ -226,7 +226,7 @@ class Dataset(object):
 
     def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
-                 flm_session=None):
+                 flexilims_session=None):
         """Construct a dataset manually. Is usually called through static methods
         'from_folder', 'from_flexilims', or 'from_origin'
 
@@ -244,7 +244,7 @@ class Dataset(object):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
-            flm_session: authentication session to connect to flexilims
+            flexilims_session: authentication session to connect to flexilims
         """
         self.mouse = None
         self.session = None
@@ -267,7 +267,7 @@ class Dataset(object):
         else:
             self._project = None
             self._project_id = None
-        self.flm_session = flm_session
+        self.flexilims_session = flexilims_session
 
     def is_valid(self):
         """
@@ -301,7 +301,7 @@ class Dataset(object):
         series = flz.get_entity(datatype='dataset',
                                 project_id=self.project_id,
                                 name=self.name,
-                                flexilims_session=self.flm_session)
+                                flexilims_session=self.flexilims_session)
         return series
 
     def update_flexilims(self, mode='safe'):
@@ -351,7 +351,7 @@ class Dataset(object):
                     mode=mode,
                     attributes=attributes,
                     project_id=self.project_id,
-                    flexilims_session=self.flm_session
+                    flexilims_session=self.flexilims_session
                 )
             else:
                 raise IOError('`mode` must be `safe`, `overwrite` or `update`')
@@ -370,7 +370,7 @@ class Dataset(object):
             project_id=self.project_id,
             dataset_name=self.name,
             attributes=attributes,
-            flexilims_session=self.flm_session,
+            flexilims_session=self.flexilims_session,
             conflicts='abort',
         )
         # update the dataset name to reflex the potential new index due to append

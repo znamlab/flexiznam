@@ -78,7 +78,7 @@ class ScanimageData(Dataset):
             output[acq_id] = ScanimageData(path=folder,
                                            extra_attributes=extra_attributes,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                                           flm_session=flm_session,
+                                           flexilims_session=flm_session,
                                            project=project)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[acq_id], field, locals()[field])
@@ -95,7 +95,7 @@ class ScanimageData(Dataset):
 
     def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
-                 flm_session=None):
+                 flexilims_session=None):
         """Create a ScanImage dataset
 
         Args:
@@ -111,7 +111,7 @@ class ScanimageData(Dataset):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
-            flm_session: authentication session to connect to flexilims
+            flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             tif_files (optional): List of file names associated with this dataset
@@ -131,7 +131,7 @@ class ScanimageData(Dataset):
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session,
+                         project=project, flexilims_session=flexilims_session,
                          origin_id=origin_id,
                          project_id=project_id)
 

@@ -53,7 +53,7 @@ class CameraData(Dataset):
                                              extra_attributes=extra_attributes,
                                              created=created.strftime('%Y-%m-%d '
                                                                       '%H:%M:%S'),
-                                             flm_session=flm_session,
+                                             flexilims_session=flm_session,
                                              project=project)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[camera_name], field, locals()[field])
@@ -62,7 +62,7 @@ class CameraData(Dataset):
 
     def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
-                 flm_session=None):
+                 flexilims_session=None):
         """Create a Camera dataset
 
         Args:
@@ -78,7 +78,7 @@ class CameraData(Dataset):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
-            flm_session: authentication session to connect to flexilims
+            flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             video_file: file name of the video file, usually
@@ -96,7 +96,7 @@ class CameraData(Dataset):
                          dataset_type=CameraData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, project_id=project_id,
-                         origin_id=origin_id, flm_session=flm_session)
+                         origin_id=origin_id, flexilims_session=flexilims_session)
 
     @property
     def timestamp_file(self):

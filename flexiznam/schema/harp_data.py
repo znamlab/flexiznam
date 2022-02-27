@@ -46,7 +46,7 @@ class HarpData(Dataset):
                                              extra_attributes=extra_attributes,
                                              created=created.strftime(
                                                  '%Y-%m-%d %H:%M:%S'),
-                                             flm_session=flm_session,
+                                             flexilims_session=flm_session,
                                              project=project)
         if verbose:
             unmatched = set(csv_files) - matched_files
@@ -58,7 +58,7 @@ class HarpData(Dataset):
 
     def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
-                 flm_session=None):
+                 flexilims_session=None):
         """Create a Harp dataset
 
         Args:
@@ -74,7 +74,7 @@ class HarpData(Dataset):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
-            flm_session: authentication session to connect to flexilims
+            flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             binary_file: File name of the binary file.
@@ -89,7 +89,7 @@ class HarpData(Dataset):
                          dataset_type=HarpData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, project_id=project_id,
-                         origin_id=origin_id, flm_session=flm_session)
+                         origin_id=origin_id, flexilims_session=flexilims_session)
 
     @property
     def binary_file(self):

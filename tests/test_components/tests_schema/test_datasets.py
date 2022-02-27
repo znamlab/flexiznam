@@ -78,7 +78,7 @@ def test_dataset_flexilims_integration(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     ds = Dataset(project='demo_project', path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='',
-                 flm_session=flm_sess)
+                 flexilims_session=flm_sess)
     ds.dataset_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     st = ds.flexilims_status()
     assert st == 'different'
