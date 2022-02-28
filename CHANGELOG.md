@@ -13,14 +13,16 @@
   parsing.
 - Extensions for microscopy datasets are now defined in the config file.
 - ScanImage datasets have a `stack_type` attribute, default to `calcium`
-- `get_entity` and `get_id` can work without specifying `datatype`
+
 
 ### Bugfixes:
   - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`
   - ScanImage dataset are recognised as such and not as MicroscopyData
 
 
-### Misc:
+### Misc and minor:
+  - `get_entity` and `get_id` can work without specifying `datatype`
+  - `get_children` works without specifying datatype
   - Tests are now using real data and require CAMP being mounted and configured.
   - Dataset project is set when setting `Dataset.flexilims_session`
 

@@ -717,13 +717,15 @@ def get_experimental_sessions(project_id=None, flexilims_session=None, mouse=Non
         return expts[expts['origin_id'] == mouse_id]
 
 
-def get_children(parent_id, children_datatype, project_id=None, flexilims_session=None):
+def get_children(parent_id, children_datatype=None, project_id=None,
+                 flexilims_session=None):
     """
     Get all entries belonging to a particular parent entity
 
     Args:
         parent_id (str): hexadecimal id of the parent entity
-        children_datatype (str): type of child entities to fetch
+        children_datatype (str or None): type of child entities to fetch (return all
+                                         types if None)
         project_id (str): text name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
 
@@ -734,10 +736,9 @@ def get_children(parent_id, children_datatype, project_id=None, flexilims_sessio
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
-
-    results = format_results(flexilims_session.get(
-        children_datatype,
-        origin_id=parent_id))
+    results = format_results(flexilims_session.get_children(parent_id))
+    if children_datatype is not None:
+        results = results.loc[results.type == children_datatype, :]
     return results
 
 

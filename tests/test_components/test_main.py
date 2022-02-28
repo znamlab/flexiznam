@@ -93,6 +93,13 @@ def test_generate_name(flm_sess):
 
 
 @pytest.mark.integtest
+def test_get_children(flm_sess):
+    parent_id = '6094f7212597df357fa24a8c'
+    res = flz.get_children(parent_id, flexilims_session=flm_sess)
+    assert len(res) > 1
+
+
+@pytest.mark.integtest
 def test_add_entity(flm_sess):
     dataset_name = 'mouse_physio_2p_S20211102_overview_zoom2_00001'
     with pytest.raises(FlexilimsError) as err:
