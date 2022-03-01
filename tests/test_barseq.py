@@ -21,6 +21,7 @@ FLM_IS_WIPED = False  # switch this flag to True if you deleted everything on fl
 # The format is quite simple, you must specify the project, mouse and session name
 # An example is in: `shared/projects/demo_project/mouse_barseq/barseq_yaml.yml`
 
+
 def test_create_yaml():
     """Test automatic yaml creation
 
@@ -71,7 +72,6 @@ def test_flm():
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
     upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
                 log_func=print, flexilims_session=flm_session, conflicts=conflicts)
-
 
 
 def barseq_mouse_exists():

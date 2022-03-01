@@ -111,15 +111,17 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
 
     Args:
         parent_name (str): name of the parent, usually a mouse. Must exist on flexilims
-        date (str): date of the session. If `session_name` is not provided, will be used as name
+        date (str): date of the session. If `session_name` is not provided, will be
+                    used as name
         attributes (dict): dictionary of additional attributes (on top of date)
         session_name (str or None): name of the session, usually in the shape `S20210420`.
-        conflicts (str): What to do if a session with that name already exists? Can be `skip`
-            for skiping creation and returning the session from flexilims or
-            `abort` to crash
+        conflicts (str): What to do if a session with that name already exists? Can be
+                        `skip`, `abort`, `update` or `overwrite` (see update_entity for
+                        detailed description)
         other_relations: ID(s) of custom entities related to the session
         flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session
-        project_id (str): name of the project or hexadecimal project id (needed if session is not provided)
+        project_id (str): name of the project or hexadecimal project id (needed if
+                          session is not provided)
 
     Returns:
         flexilims reply
@@ -128,20 +130,12 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
-    if conflicts.lower() not in ('skip', 'abort'):
+    if conflicts.lower() not in ('skip', 'abort', 'overwrite', 'update'):
         raise AttributeError('conflicts must be `skip` or `abort`')
 
     parent_id = get_id(parent_name, flexilims_session=flexilims_session)
     if session_name is None:
         session_name = parent_name + '_' + date + '_0'
-    online_session = get_entity(datatype='session', name=session_name,
-                                flexilims_session=flexilims_session)
-    if online_session is not None:
-        if conflicts.lower() == 'skip':
-            print('A session named %s already exists' % session_name)
-            return online_session
-        else:
-            raise FlexilimsError('A session named %s already exists' % session_name)
 
     session_info = {'date': date}
     if attributes is None:
@@ -149,9 +143,29 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
     if ('date' in attributes) and (date != attributes['date']):
         raise FlexilimsError(
             'Got two values for date: %s and %s' % (date, attributes['date']))
-    if ('path' not in attributes):
+    if 'path' not in attributes:
         attributes['path'] = str(Path(parent_name) / session_name)
     session_info.update(attributes)
+
+    online_session = get_entity(datatype='session', name=session_name,
+                                flexilims_session=flexilims_session)
+    if online_session is not None:
+        if conflicts.lower() == 'skip':
+            print('A session named %s already exists' % session_name)
+            return online_session
+        elif conflicts.lower() == 'abort':
+            raise FlexilimsError('A session named %s already exists' % session_name)
+        else:
+            resp = update_entity(datatype='session',
+                                 name=session_name,
+                                 id=online_session['id'],
+                                 origin_id=parent_id,
+                                 mode=conflicts,
+                                 attributes=attributes,
+                                 other_relations=None,
+                                 flexilims_session=flexilims_session)
+            return resp
+
     resp = flexilims_session.post(
         datatype='session',
         name=session_name,
@@ -174,7 +188,8 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
         protocol (str): experimental protocol (`retinotopy` for instance)
         attributes (dict):  dictionary of additional attributes (on top of protocol and recording_type)
         recording_name (str or None): name of the recording, usually in the shape `R152356`.
-        conflicts (str): `skip` or `abort`: how to handle conflicts
+        conflicts (str): `skip`, `abort`, `update` or `overwrite` (see update_entity for
+                        detailed description)
         other_relations: ID(s) of custom entities related to the session
         flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session
         project_id (str): name of the project or hexadecimal project id (needed if session is not provided)
@@ -187,28 +202,16 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
-    if conflicts.lower() not in ('skip', 'abort'):
-        raise AttributeError('conflicts must be `skip` or `abort`')
+    if conflicts.lower() not in ('skip', 'abort', 'overwrite', 'update'):
+        raise AttributeError('conflicts must be `skip`, `abort`, `overwrite` or `update`')
 
     experimental_session = get_entity(datatype='session',
                                       flexilims_session=flexilims_session,
                                       id=session_id)
-    if recording_name is None:
-        recording_name = experimental_session['name'] + '_' + protocol + '_0'
-    online_recording = get_entity(datatype='recording', name=recording_name,
-                                  flexilims_session=flexilims_session)
-    if online_recording is not None:
-        if conflicts.lower() == 'skip':
-            print('A recording named %s already exists' % (recording_name))
-            return online_recording
-        else:
-            raise FlexilimsError('A recording named %s already exists' %
-                                 recording_name)
-
     recording_info = {'recording_type': recording_type, 'protocol': protocol}
     if attributes is None:
         attributes = {}
-    if ('path' not in attributes):
+    if 'path' not in attributes:
         attributes['path'] = str(Path(get_path(
             experimental_session['path'],
             datatype='session',
@@ -218,6 +221,28 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
             raise FlexilimsError('Got two values for %s: '
                                  '`%s` and `%s`' % (key, attributes[key], locals()[key]))
     recording_info.update(attributes)
+
+    if recording_name is None:
+        recording_name = experimental_session['name'] + '_' + protocol + '_0'
+    online_recording = get_entity(datatype='recording', name=recording_name,
+                                  flexilims_session=flexilims_session)
+    if online_recording is not None:
+        if conflicts.lower() == 'skip':
+            print('A recording named %s already exists' % (recording_name))
+            return online_recording
+        elif conflicts.lower() == 'abort':
+            raise FlexilimsError('A recording named %s already exists' %
+                                 recording_name)
+        else:
+            resp = update_entity(datatype='recording',
+                                 name=recording_name,
+                                 id=online_recording['id'],
+                                 origin_id=session_id,
+                                 mode=conflicts,
+                                 attributes=recording_info,
+                                 other_relations=None,
+                                 flexilims_session=flexilims_session)
+            return resp
 
     resp = flexilims_session.post(
         datatype='recording',
@@ -242,7 +267,8 @@ def add_sample(parent_id, attributes=None, sample_name=None,
         parent_id (str): hexadecimal ID of the parent entity. Must exist on flexilims.
         attributes (dict): dictionary of additional attributes.
         sample_name (str or None): name of the sample.
-        conflicts (str): `skip` or `abort`: how to handle conflicts.
+        conflicts (str): `skip`, `abort`, `update` or `overwrite`: how to handle
+                         conflicts.
         other_relations: ID(s) of custom entities related to the sample.
         flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session.
         project_id (str): name of the project or hexadecimal project id
@@ -255,7 +281,7 @@ def add_sample(parent_id, attributes=None, sample_name=None,
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
-    if conflicts.lower() not in ('skip', 'abort'):
+    if conflicts.lower() not in ('skip', 'abort', 'update', 'overwrite'):
         raise AttributeError('conflicts must be `skip` or `abort`')
 
     if sample_name is None:
@@ -275,16 +301,23 @@ def add_sample(parent_id, attributes=None, sample_name=None,
         name=sample_name,
         flexilims_session=flexilims_session
     )
+    if attributes is None:
+        attributes = {}
     if online_sample is not None:
         if conflicts.lower() == 'skip':
             print('A sample named %s already exists' % (sample_name))
             return online_sample
-        else:
+        elif conflicts.lower() == 'abort':
             raise FlexilimsError('A sample named %s already exists' %
                                  sample_name)
+        else:
+            resp = update_entity(datatype='sample', name=sample_name,
+                                 id=online_sample['id'], origin_id=parent_id,
+                                 mode=conflicts, attributes=attributes,
+                                 other_relations=None,
+                                 flexilims_session=flexilims_session)
+            return resp
 
-    if attributes is None:
-        attributes = {}
     resp = flexilims_session.post(
         datatype='sample',
         name=sample_name,
@@ -314,9 +347,12 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
         attributes (dict): optional attributes
         strict_validation (bool): default False, if True, only attributes in lab settings are
             allowed
-        conflicts (str): `abort`, `skip`, `append`, what to do if a dataset with this name
-            already exists? `abort` to crash, `skip` to ignore and return the
-            online version, `append` to increment name and create a new dataset.
+        conflicts (str): `abort`, `skip`, `append`, `overwrite`, `update`, what to do
+                         if a dataset with this name already exists? `abort` to crash,
+                         `skip` to ignore and return the online version, `append` to
+                         increment name and create a new dataset. `overwrite` will
+                         set all existing attributes to None before updating, `update`
+                         will update without clearing pre-existing attributes
 
     Returns:
         the flexilims response
@@ -324,7 +360,7 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
     """
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
-    valid_conflicts = ('abort', 'skip', 'append')
+    valid_conflicts = ('abort', 'skip', 'append', 'overwrite', 'update')
     if conflicts.lower() not in valid_conflicts:
         raise AttributeError('`conflicts` must be in [%s]' % ', '.join(valid_conflicts))
 
@@ -341,18 +377,6 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
                          id=parent_id)
         ])['name'][0]
         dataset_name = parent_name + '_' + dataset_type + '_0'
-    if conflicts.lower() == 'append':
-        dataset_name = generate_name('dataset', dataset_name,
-                                     flexilims_session=flexilims_session)
-    else:
-        online_version = get_entity('dataset', name=dataset_name,
-                                    flexilims_session=flexilims_session)
-        if online_version is not None:
-            if conflicts.lower() == 'abort':
-                raise FlexilimsError('A dataset named %s already exists' % (dataset_name))
-            else:
-                print('A dataset named %s already exists' % (dataset_name))
-                return online_version
 
     dataset_info = {
         'dataset_type': dataset_type,
@@ -365,6 +389,29 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
         for attribute in attributes:
             assert attribute not in reserved_attributes
             dataset_info[attribute] = attributes[attribute]
+
+    if conflicts.lower() == 'append':
+        dataset_name = generate_name('dataset', dataset_name,
+                                     flexilims_session=flexilims_session)
+    else:
+        online_version = get_entity('dataset', name=dataset_name,
+                                    flexilims_session=flexilims_session)
+        if online_version is not None:
+            if conflicts.lower() == 'abort':
+                raise FlexilimsError('A dataset named %s already exists' % dataset_name)
+            elif conflicts.lower() == 'skip':
+                print('A dataset named %s already exists' % dataset_name)
+                return online_version
+            else:
+                resp = update_entity(datatype='dataset',
+                                     name=dataset_name,
+                                     id=online_version['id'],
+                                     origin_id=parent_id,
+                                     mode=conflicts,
+                                     attributes=dataset_info,
+                                     other_relations=None,
+                                     flexilims_session=flexilims_session)
+                return resp
 
     resp = flexilims_session.post(
         datatype='dataset',
@@ -461,7 +508,7 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
     """
 
     if datatype is None:
-        #datatype is not specify, try everything
+        # datatype is not specify, try everything
         args = [datatype, query_key, query_value, project_id, flexilims_session, name,
                 origin_id, id, format_reply]
         for dt in ('mouse', 'session', 'sample', 'recording', 'dataset'):
@@ -679,8 +726,8 @@ def get_id(name, datatype=None, project_id=None, flexilims_session=None):
         flexilims_session = get_flexilims_session(project_id)
 
     entity = get_entity(datatype=datatype,
-                          flexilims_session=flexilims_session,
-                          name=name)
+                        flexilims_session=flexilims_session,
+                        name=name)
     return entity['id']
 
 

@@ -12,8 +12,8 @@
 - New function and CLI entry: `create_yaml` to create the skeleton of a yaml before 
   parsing.
 - Extensions for microscopy datasets are now defined in the config file.
-- ScanImage datasets have a `stack_type` attribute, default to `calcium`
-
+- ScanImage datasets have a `stack_type` attribute, default to `calcium`.
+- authorise `overwrite` when adding samples, sessions, recordings, or datasets.
 
 ### Bugfixes:
   - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`

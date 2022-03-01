@@ -5,7 +5,7 @@ from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError
 from tests.tests_resources.data_for_testing import TEST_PROJECT
-
+from tests.test_components.test_main import MOUSE_ID
 # Test the generic dataset class.
 
 
@@ -175,9 +175,9 @@ def test_update_flexilims(flm_sess):
 
     # try to change the origin_id
     original_origin_id = ds.origin_id
-    ds.origin_id = '61b4c65d068a8561a85ae891'
+    ds.origin_id = MOUSE_ID
     ds.update_flexilims(mode='overwrite')
-    assert ds.get_flexilims_entry()['origin_id'] == '61b4c65d068a8561a85ae891'
+    assert ds.get_flexilims_entry()['origin_id'] == MOUSE_ID
     ds.origin_id = original_origin_id
     ds.update_flexilims(mode='overwrite')
     assert ds.get_flexilims_entry()['origin_id'] == original_origin_id

@@ -6,7 +6,8 @@ from flexiznam.errors import FlexilimsError, NameNotUniqueError
 
 # Test functions from main.py
 from flexiznam.schema import Dataset
-
+# this needs to change every time I reset flexlilims
+MOUSE_ID = '621bb04521d6217134881268'
 
 @pytest.mark.integtest
 def test_get_flm_session():
@@ -51,12 +52,12 @@ def test_get_entities(flm_sess):
 
 @pytest.mark.integtest
 def test_get_entity(flm_sess):
-    mouse = flz.get_entity(id='61b4c65d068a8561a85ae891',
+    mouse = flz.get_entity(id=MOUSE_ID,
                            project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse', flexilims_session=flm_sess)
     assert isinstance(mouse, pd.Series)
     assert mouse.shape == (12,)
-    mouse = flz.get_entity(id='61b4c65d068a8561a85ae891',
+    mouse = flz.get_entity(id=MOUSE_ID,
                            project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse',
                            format_reply=False,
@@ -70,7 +71,7 @@ def test_get_mouse_id(flm_sess):
     mid = flz.get_id(name='mouse_physio_2p',
                      project_id=PARAMETERS['project_ids']['demo_project'],
                      flexilims_session=flm_sess)
-    assert mid == '61b4c65d068a8561a85ae891'
+    assert mid == MOUSE_ID
 
 
 @pytest.mark.integtest
@@ -94,9 +95,9 @@ def test_generate_name(flm_sess):
 
 @pytest.mark.integtest
 def test_get_children(flm_sess):
-    parent_id = '6094f7212597df357fa24a8c'
+    parent_id = MOUSE_ID
     res = flz.get_children(parent_id, flexilims_session=flm_sess)
-    assert len(res) > 1
+    assert len(res) == 1
 
 
 @pytest.mark.integtest
@@ -104,7 +105,10 @@ def test_add_entity(flm_sess):
     dataset_name = 'mouse_physio_2p_S20211102_overview_zoom2_00001'
     with pytest.raises(FlexilimsError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess)
-    assert err.value.args[0] == 'Error 400:  Save failed. &#39;path&#39; is a necessary attribute for dataset. If you have &#39;null&#39; values please substitute (null) with empty string (&#39;&#39;) '
+    msg = 'Error 400:  Save failed. &#39;path&#39; is a necessary attribute for ' \
+          'dataset. If you have &#39;null&#39; values please substitute (null) with ' \
+          'empty string (&#39;&#39;) '
+    assert err.value.args[0] == msg
     with pytest.raises(NameNotUniqueError) as err:
         flz.add_entity(datatype='dataset', name=dataset_name, flexilims_session=flm_sess,
                        attributes=dict(path='random', dataset_type='scanimage'))
