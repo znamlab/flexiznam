@@ -48,14 +48,15 @@ def get_flexilims_session(project_id, username=None, password=None):
     return session
 
 
-def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=None,
+def add_mouse(mouse_name, project_id=None, flexilims_session=None, mcms_animal_name=None,
               mcms_username=None, mcms_password=None, flexilims_username=None,
               flexilims_password=None):
     """Check if a mouse is already in the database and add it if it isn't
 
     Args:
         mouse_name (str): name of the mouse for flexilims
-        project_id (str): hexadecimal project id or project name
+        project_id (str): hexadecimal project id or project name (used only if
+                          flexilims_session is None)
         flexilims_session (:py:class:`flexilims.Flexilims`): [optional] a flexilims
                           session to reuse identification token
         mcms_animal_name (str): [optional] name of the mouse on MCMS if different from
@@ -77,6 +78,7 @@ def add_mouse(mouse_name, project_id, flexilims_session=None, mcms_animal_name=N
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id, flexilims_username,
                                                   flexilims_password)
+
     mice_df = get_entities(flexilims_session=flexilims_session, datatype='mouse')
     if mouse_name in mice_df.index:
         print("Mouse already online")

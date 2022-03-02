@@ -30,8 +30,8 @@ def test_create_yaml():
     saved_skeleton = PROCESSED_ROOT / MOUSE / YAML.replace('.yml',
                                                            'automatic_skeletion.yml')
     # To save the yaml the first time we add outfile:
-    automat = create_yaml(DATA_ROOT / MOUSE / SESSION, mouse=MOUSE,
-                          project=TEST_PROJECT, outfile=saved_skeleton, overwrite=True)
+    automat = create_yaml(DATA_ROOT / MOUSE / SESSION, mouse=MOUSE, project=TEST_PROJECT)
+                          #, outfile=saved_skeleton, overwrite=True)
 
     with open(saved_skeleton, 'r') as fopen:
         saved = yaml.safe_load(fopen)
