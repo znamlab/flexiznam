@@ -32,7 +32,9 @@ def create_yaml(root_folder, outfile=None, project='NOT SPECIFIED',
     """
     root_folder = pathlib.Path(root_folder)
     assert root_folder.is_dir()
-    yaml_dict=dict(project=project, mouse=mouse)
+    assert isinstance(project, str)
+    assert isinstance(mouse, str)
+    yaml_dict = dict(project=project, mouse=mouse)
     yaml_dict['session'] = None
     # check if we were given a session folder
     if re.match('S\d*', root_folder.stem):
@@ -83,7 +85,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     """Read an acquisition yaml and create corresponding datasets
 
     Args:
-        path_to_yaml (str): path to the file to parse
+        path_to_yaml (str or dict): path to the file to parse or dict of yaml contect
         raw_data_folder (str): root folder containing the mice folders
         verbose (bool): print info while looking for datasets
 
@@ -446,17 +448,21 @@ def _clean_yaml(path_to_yaml):
     generate dictionary will all expected fields
 
     Args:
-        path_to_yaml (str): path to the YAML file
+        path_to_yaml (str): path to the YAML file, or dict of the yaml content
 
     Returns:
         dict: nested dictionary containing entries in the YAML file
 
     """
-    with open(path_to_yaml, 'r') as yml_file:
-        try:
-            yml_data = yaml.safe_load(yml_file)
-        except ParserError as e:
-            raise IOError("Invalid yaml. Parser returned an error: %s" % e)
+
+    if isinstance(path_to_yaml, dict):
+        yml_data = path_to_yaml
+    else:
+        with open(path_to_yaml, 'r') as yml_file:
+            try:
+                yml_data = yaml.safe_load(yml_file)
+            except ParserError as e:
+                raise IOError("Invalid yaml. Parser returned an error: %s" % e)
 
     session, nested_levels = _read_level(yml_data)
 
