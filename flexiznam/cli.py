@@ -71,8 +71,8 @@ def add_password(app, username, password, password_file):
 @click.option('-s', '--source_dir', required=True,
               help='Base directory for this yaml file. Usually a session directory')
 @click.option('-t', '--target_yaml', required=True, help='Path to output YAML file.')
-@click.option('-p', '--project', default=None, help='Project name on flexilims.')
-@click.option('-m', '--mouse', default=None, help='Mouse name on flexilims.')
+@click.option('-p', '--project', default='NOT SPECIFIED', help='Project name on flexilims.')
+@click.option('-m', '--mouse', default='NOT SPECIFIED', help='Mouse name on flexilims.')
 @click.option('--overwrite/--no-overwrite', default=False,
               help='If target yaml exist, should I replace it?.')
 @click.option('--process/--no-process', default=False,
