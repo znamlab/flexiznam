@@ -90,6 +90,7 @@ def test_dataset_flexilims_integration(flm_sess):
                                           'metadata_file': 'NA',
                                           'timestamp_file': 'NA',
                                           'video_file': 'NA',
+                                          'genealogy': 'NA'
                                           },
                                  flexilims={'is_raw': 'yes',
                                             'created': '2021-11-02 17:03:17',
@@ -98,7 +99,11 @@ def test_dataset_flexilims_integration(flm_sess):
                                             'origin_id': '61ebf94120d82a35f724490d',
                                             'timestamp_file': 'wf_camera_timestamps.csv',
                                             'video_file': 'wf_camera_data.bin',
-                                            'metadata_file': 'wf_camera_metadata.txt'
+                                            'metadata_file': 'wf_camera_metadata.txt',
+                                            'genealogy':  ['mouse_physio_2p',
+                                                           'S20211102',
+                                                           'R165821_SpheresPermTube',
+                                                           'wf_camera']
                                             }))
     assert all(rep.sort_index() == expected.sort_index())
     ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
@@ -125,7 +130,6 @@ def test_dataset_flexilims_integration(flm_sess):
     # and conversely
     ds.project_id = PARAMETERS['project_ids']['test']
     assert ds.project == 'test'
-
 
 
 @pytest.mark.integtest

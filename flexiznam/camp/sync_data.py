@@ -279,8 +279,10 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
                 ds.update_flexilims(mode='safe')
             # now add child samples
             add_samples(sample_data['samples'], sample_rep, short_sample_name)
+
     # samples are attached to mice, not sessions
     add_samples(session_data['samples'], mouse)
+
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
     """Write a session_data dictionary into a yaml
@@ -360,9 +362,9 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
         # match by name
         if ds_name in ds:
             ds = ds[ds_name]
-        else:      # now we're in trouble.
+        else:  # now we're in trouble.
             err_msg = 'Could not find dataset "%s". Found "%s" instead' % (
-                       ds_name, ', '.join(ds.keys()))
+                ds_name, ', '.join(ds.keys()))
             if error_handling == 'crash':
                 raise SyncYmlError(err_msg)
             datasets[ds_name] = 'XXERRORXX!! ' + err_msg
@@ -392,7 +394,7 @@ def _trim_paths(session_data, raw_data_folder):
         for sample_name, sample_data in samples.items():
             samples[sample_name]['path'] = \
                 str(PurePosixPath(Path(samples[sample_name]['path'])
-                    .relative_to(raw_data_folder)))
+                                  .relative_to(raw_data_folder)))
             for ds_name, ds in sample_data.get('datasets', {}).items():
                 ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
             trim_sample_paths(sample_data['samples'])
@@ -407,11 +409,12 @@ def _trim_paths(session_data, raw_data_folder):
     for rec_name, rec_data in session_data['recordings'].items():
         session_data['recordings'][rec_name]['path'] = \
             str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
-                .relative_to(raw_data_folder)))
+                              .relative_to(raw_data_folder)))
         for ds_name, ds in rec_data.get('datasets', {}).items():
             ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
     trim_sample_paths(session_data['samples'])
     return session_data
+
 
 def _create_sample_datasets(parent, raw_data_folder):
     """Recursively index samples creating a nested dictionary and generate
@@ -440,6 +443,7 @@ def _create_sample_datasets(parent, raw_data_folder):
     # we update in place but we also return the dictionary of samples to make
     # for more readable code
     return parent['samples']
+
 
 def _clean_yaml(path_to_yaml):
     """Read a yaml file and check that it is correctly formatted
@@ -601,7 +605,7 @@ def _read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
     # the rest is unexpected
     if len(yml_level):
         raise SyncYmlError('Got unexpected attribute(s): %s' % (
-                           ', '.join(yml_level.keys())))
+            ', '.join(yml_level.keys())))
     return level, nested_levels
 
 

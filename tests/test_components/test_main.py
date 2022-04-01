@@ -42,7 +42,7 @@ def test_get_experimental_sessions(flm_sess):
 def test_get_entities(flm_sess):
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', flexilims_session=flm_sess)
-    assert mice_df.shape == (3, 12)
+    assert mice_df.shape == (3, 14)
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', format_reply=False,
                                flexilims_session=flm_sess)
@@ -56,7 +56,7 @@ def test_get_entity(flm_sess):
                            project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse', flexilims_session=flm_sess)
     assert isinstance(mouse, pd.Series)
-    assert mouse.shape == (12,)
+    assert mouse.shape == (14,)
     mouse = flz.get_entity(id=MOUSE_ID,
                            project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse',

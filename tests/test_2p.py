@@ -22,6 +22,7 @@ FLM_IS_WIPED = False  # switch this flag to True if you deleted everything on fl
 # The format is quite simple, you must specify the project, mouse and session name
 # An example is in: `shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml.yml`
 
+
 def test_create_yaml():
     """Test automatic yaml creation
 
@@ -38,6 +39,7 @@ def test_create_yaml():
     assert saved == automat
     # test that it can be parsed
     p = parse_yaml(path_to_yaml=saved_skeleton, verbose=False, raw_data_folder=DATA_ROOT)
+
 
 def test_parse_yaml():
     """Test that we can parse the acq yaml
@@ -76,18 +78,18 @@ def test_flm():
 
 
 def physio_mouse_exists():
-    mouse = fzn.get_entity(datatype='mouse', name=MOUSE, flexilims_session=flexilims_session)
+    mouse = fzn.get_entity(datatype='mouse', name=MOUSE,
+                           flexilims_session=flexilims_session)
     if FLM_IS_WIPED:
         assert mouse is None
         # we need to add the mouse. If it was a real MCMS mouse we could do:
         # `fzn.add_mouse(project=test_data.TEST_PROJECT, mouse_name=MOUSE)`
         # but since it's a dummy mouse, I'll just add it manually:
-        resp = flexilims_session.post(datatype='mouse',
-                                name=MOUSE,
-                                strict_validation=False,
-                                attributes=dict(birth_date='01-Mar-2021',
-                                                sex='Female',
-                                                animal_name=MOUSE),
-                                )
-    else:
-        assert mouse is not None
+        mouse = flexilims_session.post(datatype='mouse',
+                                       name=MOUSE,
+                                       strict_validation=False,
+                                       attributes=dict(birth_date='01-Mar-2021',
+                                                       sex='Female',
+                                                       animal_name=MOUSE),
+                                       )
+    assert mouse is not None
