@@ -175,7 +175,7 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
 
 def _check_name(output, element, flexilims_session, parent_name, recursive):
     if (parent_name is not None) and not element.name.startswith(parent_name):
-        output.append(element.name, parent_name)
+        output.append([element.name, parent_name])
     parent_name = element.name
     if recursive:
         children = flz.get_children(element.id, flexilims_session=flexilims_session)
