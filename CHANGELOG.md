@@ -1,6 +1,12 @@
 # Change log
 
-##v0.3.0
+## v0.3.1
+
+### Main changes
+- Add CLI function: `check_flexilims_issues` to check for ill-named entity and invalid 
+  paths
+
+## v0.3.0
 
 ### Breaking changes:
 - All `flm_session` are now `flexilims_session` (harmonise with main functions)

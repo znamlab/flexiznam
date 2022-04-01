@@ -4,7 +4,7 @@ import yaml
 from click.testing import CliRunner
 from flexiznam import cli
 from flexiznam.config import config_tools
-from tests.tests_resources.data_for_testing import PROCESSED_ROOT
+from tests.tests_resources.data_for_testing import PROCESSED_ROOT, TEST_PROJECT
 
 
 def test_config(tmp_path):
@@ -88,3 +88,11 @@ def test_upload(tmp_path):
 
     result = runner.invoke(cli.yaml_to_flexilims, ['-s', out_yml, '--conflicts', 'skip'])
     assert result.exit_code == 0
+
+
+@pytest.mark.integtest
+def test_flm_issues(tmp_path):
+    out_csv = tmp_path / 'report.csv'
+    runner = CliRunner()
+    result = runner.invoke(cli.check_flexilims_issues,
+                           ['-t', out_csv, '-p', TEST_PROJECT])

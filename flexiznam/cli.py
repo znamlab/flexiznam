@@ -157,9 +157,40 @@ def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     import pathlib
 
 
-    source_yaml = pathlib.Path(source_yaml)
-    try:
-        camp.sync_data.upload_yaml(source_yaml, raw_data_folder, conflicts=conflicts,
-                                   verbose=False)
-    except errors.SyncYmlError as err:
-        raise click.ClickException(err.args[0])
+
+@cli.command()
+@click.option('-p', '--project_id', prompt='Enter the project ID', help='Project ID.')
+@click.option('-t', '--target_file', default=None, help='Path to write csv output.')
+@click.option('-r', '--root_name', default=None, help='Root entity to start the check.')
+@click.option('--flexilims_username', default=None, help='Your username on flexilims.')
+def check_flexilims_issues(project_id, target_file, root_name, flexilims_username):
+    """Check that database is properly formatted
+
+    This will check recursively all mice if `root_name` is not provided. Elements that
+    are not descendent of mice will NOT be check if root_name is not selected
+    appropriately.
+    """
+    from flexiznam.main import get_flexilims_session
+    from flexiznam import utils
+    import pathlib
+    import pandas as pd
+    flexilims_session = get_flexilims_session(project_id=project_id,
+                                              username=flexilims_username)
+    ndf = utils.check_flexilims_names(flexilims_session, root_name=root_name,
+                                      recursive=True)
+    pdf = utils.check_flexilims_paths(flexilims_session)
+    pdf.set_index('name', inplace=True)
+    pdf['error_type'] = 'path'
+    if ndf is not None:
+        ndf.set_index('name', inplace=True)
+        ndf['error_type'] = 'name'
+        # check for non-unique names
+        bad = ndf.index.value_counts()
+        bad = bad[bad > 1].index
+        if len(bad):
+            ndf['name_is_not_unique'] = 0
+            ndf.loc[ndf.index.isin(bad.index), 'name_is_not_unique'] = 1
+        df = pd.concat([pdf, ndf], axis=0)
+    else:
+        df = pdf
+    df.to_csv(target_file)
