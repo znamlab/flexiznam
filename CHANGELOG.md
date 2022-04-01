@@ -1,6 +1,6 @@
 # Change log
 
-##v0.2.3
+##v0.3.0
 
 ### Breaking changes:
 - All `flm_session` are now `flexilims_session` (harmonise with main functions)
