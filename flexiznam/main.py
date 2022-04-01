@@ -788,6 +788,8 @@ def get_children(parent_id, children_datatype=None, project_id=None,
     results = format_results(flexilims_session.get_children(parent_id))
     if children_datatype is not None:
         results = results.loc[results.type == children_datatype, :]
+    if len(results):
+        results.set_index('name', drop=False, inplace=True)
     return results
 
 
