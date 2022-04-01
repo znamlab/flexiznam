@@ -13,7 +13,10 @@
   parsing.
 - Extensions for microscopy datasets are now defined in the config file.
 - ScanImage datasets have a `stack_type` attribute, default to `calcium`.
-- authorise `overwrite` when adding samples, sessions, recordings, or datasets.
+- Authorise `overwrite` when adding samples, sessions, recordings, or datasets.
+- Add  `flz.utils.check_flexilims_path` to verify that defined paths actually exist.
+- Add `flz.utils.check_flexilims_names` to verify that entity names start with their 
+  parent's name.
 
 ### Bugfixes:
   - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`

@@ -1,8 +1,7 @@
 import os
-import pathlib
-import shutil
 import tempfile
 from flexiznam.config import config_tools, DEFAULT_CONFIG
+from flexiznam import utils
 
 
 def test_create_config():
@@ -44,3 +43,22 @@ def test_passwd_creation():
 
         pwd = config_tools.get_password('username1', 'my_app', tmp.name)
         assert pwd == 'password1'
+
+
+def test_check_flexilims_paths(flm_sess):
+    df = utils.check_flexilims_paths(flm_sess)
+    df2 = utils.check_flexilims_paths(flm_sess, error_only=False)
+    assert df.shape[1] == df2.shape[1]-1
+    assert df2.shape[0] > df.shape[0]
+    df = utils.check_flexilims_paths(flm_sess, root_name='mouse_physio_2p',
+                                     recursive=False, error_only=False)
+    assert len(df) == 1
+    df = utils.check_flexilims_paths(flm_sess, root_name='mouse_physio_2p',
+                                     recursive=True, error_only=False)
+    assert len(df) > 1
+
+
+def test_check_flexilims_names(flm_sess):
+    df = utils.check_flexilims_names(flm_sess, root_name='mouse_physio_2p')
+    df2 = utils.check_flexilims_names(flm_sess)
+    assert df2.shape[0] > df.shape[0]
