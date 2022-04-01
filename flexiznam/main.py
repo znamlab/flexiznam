@@ -257,6 +257,44 @@ def add_recording(session_id, recording_type, protocol, attributes=None,
     return resp
 
 
+def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=None,
+               flexilims_session=None, project_id=None):
+    """Add a new entity on flexilims. Name must be unique
+
+    Args:
+        datatype (str): flexilims type
+        name (str): name on flexilims
+        origin_id (str or None): hexadecimal id of the origin
+        attributes (dict or None): attributes to update
+        other_relations (str or :obj:`list` of :obj:`str`): hexadecimal ID(s)
+            of custom entities link to the entry to update
+        project_id (str): text name of the project
+        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+
+    Returns:
+        flexilims reply
+
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+
+    try:
+        rep = flexilims_session.post(
+            datatype=datatype,
+            name=name,
+            attributes=attributes,
+            origin_id=origin_id,
+            other_relations=other_relations,
+            strict_validation=False
+        )
+    except OSError as err:
+        if 'already exist in the project ' in err.args[0]:
+            raise NameNotUniqueError(err.args[0])
+        raise FlexilimsError(err.args[0])
+    return rep
+
+
 def add_sample(parent_id, attributes=None, sample_name=None,
                conflicts='skip', other_relations=None, flexilims_session=None,
                project_id=None):
@@ -425,6 +463,66 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
     return resp
 
 
+def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite',
+                  attributes={}, other_relations=None, flexilims_session=None,
+                  project_id=None):
+    """Update one entity identified with its datatype and name or id
+
+    Args:
+        datatype (str): flexilims type
+        name (str or None): name on flexilims
+        id (str or None): id of the entity on flexilims
+        origin_id (str or None): hexadecimal id of the origin
+        mode (str): what to do with attributes that are not explicitly specified.
+
+            `overwrite`
+                (default) all attributes that already exist on flexilims but are not
+                specified in the function call are set to 'null'.
+            `update`
+                update the attributes given in this call and do not change the
+                others.
+
+        attributes (dict or None): attributes to update
+        project_id (str): text name of the project
+        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+
+    Returns:
+        flexilims reply
+
+    """
+    assert (name is not None) or (id is not None)
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    entity = get_entity(datatype=datatype,
+                        name=name,
+                        id=id,
+                        flexilims_session=flexilims_session,
+                        format_reply=False)
+    if entity is None:
+        err_msg = 'Cannot find an entity of type `%s` named `%s`' % (datatype, name)
+        raise FlexilimsError(err_msg)
+    if mode.lower() == 'overwrite':
+        full_attributes = {k: None for k in entity['attributes'].keys()}
+        full_attributes.update(attributes)
+    elif mode.lower() == 'update':
+        full_attributes = attributes.copy()
+    else:
+        raise AttributeError('`mode` must be `overwrite` or `update`')
+    if id is None:
+        id = entity['id']
+
+    rep = flexilims_session.update_one(
+        id=id,
+        datatype=datatype,
+        origin_id=origin_id,
+        name=None,
+        attributes=full_attributes,
+        strict_validation=False
+    )
+    return rep
+
+
 def get_entities(datatype='mouse', query_key=None, query_value=None, project_id=None,
                  flexilims_session=None, name=None, origin_id=None, id=None,
                  format_reply=True):
@@ -539,157 +637,6 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
     return entity[0]
 
 
-def generate_name(datatype, name, flexilims_session=None, project_id=None):
-    """
-    Generate a number for incrementally increasing the numeric suffix
-
-    """
-    assert (project_id is not None) or (flexilims_session is not None)
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id)
-    parts = name.split('_')
-    if not parts[-1].isnumeric():
-        root = name + '_'
-        suffix = 0
-    else:
-        root = '_'.join(parts[:-1])
-        if root:
-            root += '_'
-            suffix = int(parts[-1])
-        else:
-            root = parts[-1] + '_'
-            suffix = 0
-    while get_entity(datatype, name='%s%s' % (root, suffix),
-                     flexilims_session=flexilims_session) is not None:
-        suffix += 1
-    name = '%s%s' % (root, suffix)
-    return name
-
-
-def add_entity(datatype, name, origin_id=None, attributes={}, other_relations=None,
-               flexilims_session=None, project_id=None):
-    """Add a new entity on flexilims. Name must be unique
-
-    Args:
-        datatype (str): flexilims type
-        name (str): name on flexilims
-        origin_id (str or None): hexadecimal id of the origin
-        attributes (dict or None): attributes to update
-        other_relations (str or :obj:`list` of :obj:`str`): hexadecimal ID(s)
-            of custom entities link to the entry to update
-        project_id (str): text name of the project
-        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
-
-    Returns:
-        flexilims reply
-
-    """
-    assert (project_id is not None) or (flexilims_session is not None)
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id)
-
-    try:
-        rep = flexilims_session.post(
-            datatype=datatype,
-            name=name,
-            attributes=attributes,
-            origin_id=origin_id,
-            other_relations=other_relations,
-            strict_validation=False
-        )
-    except OSError as err:
-        if 'already exist in the project ' in err.args[0]:
-            raise NameNotUniqueError(err.args[0])
-        raise FlexilimsError(err.args[0])
-    return rep
-
-
-def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite',
-                  attributes={}, other_relations=None, flexilims_session=None,
-                  project_id=None):
-    """Update one entity identified with its datatype and name or id
-
-    Args:
-        datatype (str): flexilims type
-        name (str or None): name on flexilims
-        id (str or None): id of the entity on flexilims
-        origin_id (str or None): hexadecimal id of the origin
-        mode (str): what to do with attributes that are not explicitly specified.
-
-            `overwrite`
-                (default) all attributes that already exist on flexilims but are not
-                specified in the function call are set to 'null'.
-            `update`
-                update the attributes given in this call and do not change the
-                others.
-
-        attributes (dict or None): attributes to update
-        project_id (str): text name of the project
-        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
-
-    Returns:
-        flexilims reply
-
-    """
-    assert (name is not None) or (id is not None)
-    assert (project_id is not None) or (flexilims_session is not None)
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id)
-    entity = get_entity(datatype=datatype,
-                        name=name,
-                        id=id,
-                        flexilims_session=flexilims_session,
-                        format_reply=False)
-    if entity is None:
-        err_msg = 'Cannot find an entity of type `%s` named `%s`' % (datatype, name)
-        raise FlexilimsError(err_msg)
-    if mode.lower() == 'overwrite':
-        full_attributes = {k: None for k in entity['attributes'].keys()}
-        full_attributes.update(attributes)
-    elif mode.lower() == 'update':
-        full_attributes = attributes.copy()
-    else:
-        raise AttributeError('`mode` must be `overwrite` or `update`')
-    if id is None:
-        id = entity['id']
-
-    rep = flexilims_session.update_one(
-        id=id,
-        datatype=datatype,
-        origin_id=origin_id,
-        name=None,
-        attributes=full_attributes,
-        strict_validation=False
-    )
-    return rep
-
-
-def format_results(results):
-    """Make request output a nice DataFrame
-
-    This will crash if any attribute is also present in the flexilims reply,
-    i.e. if an attribute is named:
-    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated',
-    'origin_id', 'objects', 'customEntities', or 'project'
-
-    Args:
-        results (:obj:`list` of :obj:`dict`): Flexilims reply
-
-    Returns:
-        :py:class:`pandas.DataFrame`: Reply formatted as a DataFrame
-
-    """
-    for result in results:
-        for attr_name, attr_value in result['attributes'].items():
-            if attr_name in result:
-                raise FlexilimsError(
-                    'An entity should not have %s as attribute' % attr_name)
-            result[attr_name] = attr_value
-        result.pop('attributes')
-    df = pd.DataFrame(results)
-    return df
-
-
 def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
     """
     Loop through possible datatypes and return the first with a matching name.
@@ -733,22 +680,29 @@ def get_id(name, datatype=None, project_id=None, flexilims_session=None):
     return entity['id']
 
 
-def get_path(name, datatype='mouse', project_id=None, flexilims_session=None):
-    """Get database ID for entity by name"""
+def get_path(name, datatype='dataset', project_id=None, flexilims_session=None):
+    """Get path for entity by name
+
+    Parameters
+    ----------
+    name (str): name of the entity on flexilims
+    datatype (str): datatype, 'mouse' or 'dataset' for instance
+    project_id (str): hexadecimal project id
+    flexilims_session (flm.Session): flexilims session object
+
+    Returns
+    -------
+    path (str): path to the entity
+
+    """
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
 
-    entities = get_entities(datatype=datatype,
-                            flexilims_session=flexilims_session,
-                            name=name)
-    if len(entities) != 1:
-        raise NameNotUniqueError(
-            'ERROR: Found {num} entities of type {datatype} with name {name}!'
-                .format(num=len(entities), datatype=datatype, name=name))
-        return None
-    else:
-        return entities['path'][0]
+    entity = get_entity(datatype=datatype,
+                        flexilims_session=flexilims_session,
+                        name=name)
+    return entity['path']
 
 
 def get_experimental_sessions(project_id=None, flexilims_session=None, mouse=None):
@@ -845,3 +799,58 @@ def get_datasets(origin_id, recording_type=None, dataset_type=None, project_id=N
                 raise IOError('Dataset {} not found'.format(this_path))
             datapath_dict[recording_id] = datapaths
     return datapath_dict
+
+
+def generate_name(datatype, name, flexilims_session=None, project_id=None):
+    """
+    Generate a number for incrementally increasing the numeric suffix
+
+    """
+    assert (project_id is not None) or (flexilims_session is not None)
+    if flexilims_session is None:
+        flexilims_session = get_flexilims_session(project_id)
+    parts = name.split('_')
+    if not parts[-1].isnumeric():
+        root = name + '_'
+        suffix = 0
+    else:
+        root = '_'.join(parts[:-1])
+        if root:
+            root += '_'
+            suffix = int(parts[-1])
+        else:
+            root = parts[-1] + '_'
+            suffix = 0
+    while get_entity(datatype, name='%s%s' % (root, suffix),
+                     flexilims_session=flexilims_session) is not None:
+        suffix += 1
+    name = '%s%s' % (root, suffix)
+    return name
+
+
+def format_results(results):
+    """Make request output a nice DataFrame
+
+    This will crash if any attribute is also present in the flexilims reply,
+    i.e. if an attribute is named:
+    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated',
+    'origin_id', 'objects', 'customEntities', or 'project'
+
+    Args:
+        results (:obj:`list` of :obj:`dict`): Flexilims reply
+
+    Returns:
+        :py:class:`pandas.DataFrame`: Reply formatted as a DataFrame
+
+    """
+    for result in results:
+        for attr_name, attr_value in result['attributes'].items():
+            if attr_name in result:
+                raise FlexilimsError(
+                    'An entity should not have %s as attribute' % attr_name)
+            result[attr_name] = attr_value
+        result.pop('attributes')
+    df = pd.DataFrame(results)
+    return df
+
+
