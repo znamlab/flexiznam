@@ -132,7 +132,7 @@ def test_dataset_flexilims_integration(flm_sess):
 def test_from_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = 'demo_project'
-    ds = Dataset.from_flexilims(project, flm_session=flm_sess,
+    ds = Dataset.from_flexilims(project, flexilims_session=flm_sess,
                                 name='mouse_physio_2p_S20211102_R165821_'
                                      'SpheresPermTube_wf_camera')
     assert ds.name == 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
@@ -151,7 +151,7 @@ def test_from_origin(flm_sess):
         origin_name=origin_name,
         dataset_type='suite2p_rois',
         conflicts='skip',
-        flm_session=flm_sess
+        flexilims_session=flm_sess
     )
 
 
@@ -160,14 +160,14 @@ def test_update_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = 'demo_project'
     ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
-    ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
+    ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
     original_path = ds.path
     ds.path = 'new/test/path'
     with pytest.raises(FlexilimsError) as err:
         ds.update_flexilims()
     assert err.value.args[0].startswith("Cannot change existing flexilims entry with")
     ds.update_flexilims(mode='overwrite')
-    reloaded_ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
+    reloaded_ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
     assert str(reloaded_ds.path) == ds.path
     # undo changes:
     ds.path = original_path
@@ -192,7 +192,7 @@ def test_dataset_paths(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = 'demo_project'
     ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
-    ds = Dataset.from_flexilims(project, name=ds_name, flm_session=flm_sess)
+    ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
     path_root = pathlib.Path(PARAMETERS['data_root']['raw'])
     assert ds.path_root == path_root
     assert str(ds.path_full) == \

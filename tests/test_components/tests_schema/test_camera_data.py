@@ -35,13 +35,13 @@ def test_create_from_folder(flm_sess):
                                   camera_name=None,
                                   verbose=False,
                                   project=TEST_PROJECT,
-                                  flm_session=flm_sess)
+                                  flexilims_session=flm_sess)
     assert len(data) == 5
     data = CameraData.from_folder(folder=data_dir,
                                   camera_name='face_camera',
                                   verbose=False,
                                   project=TEST_PROJECT,
-                                  flm_session=flm_sess)
+                                  flexilims_session=flm_sess)
     assert len(data) == 1
     ds = data['face_camera']
     assert ds.flexilims_status() == 'not online'

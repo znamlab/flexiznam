@@ -1,9 +1,9 @@
 import pytest
-from tests.tests_resources import flm_session
+from tests.tests_resources import flexilims_session
 
 @pytest.fixture
 def flm_sess():
-    return flm_session
+    return flexilims_session
 
 
 def pytest_addoption(parser):

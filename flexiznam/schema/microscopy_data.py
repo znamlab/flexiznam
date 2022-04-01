@@ -25,7 +25,7 @@ class MicroscopyData(Dataset):
                       'config file', stacklevel=2)
 
     @staticmethod
-    def from_folder(folder, verbose=True, mouse=None, flm_session=None, project=None):
+    def from_folder(folder, verbose=True, mouse=None, flexilims_session=None, project=None):
         """Create Microscopy datasets by loading info from folder"""
         folder = pathlib.Path(folder)
         if not folder.is_dir():
@@ -52,7 +52,7 @@ class MicroscopyData(Dataset):
             output[fname] = MicroscopyData(
                 path=dataset_path,
                 created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                flexilims_session=flm_session,
+                flexilims_session=flexilims_session,
                 project=project
             )
             for field in ('mouse', ):

@@ -10,7 +10,7 @@ from flexiznam.schema import Dataset
 MOUSE_ID = '621bb04521d6217134881268'
 
 @pytest.mark.integtest
-def test_get_flm_session():
+def test_get_flexilims_session():
     sess = flz.get_flexilims_session(project_id=PARAMETERS['project_ids']['test'])
     assert sess.username == PARAMETERS['flexilims_username']
 
@@ -154,7 +154,7 @@ def test_update_entity(flm_sess):
     assert (dbval['attributes']['acq_num'] is None)
 
     # restore database state
-    ds = Dataset.from_flexilims(data_series=original_entity, flm_session=flm_sess)
+    ds = Dataset.from_flexilims(data_series=original_entity, flexilims_session=flm_sess)
     ds.update_flexilims(mode='overwrite')
     new_entity = flz.get_entity(datatype='dataset', name=dataset_name,
                                 flexilims_session=flm_sess)

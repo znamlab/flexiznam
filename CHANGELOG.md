@@ -3,7 +3,7 @@
 ##v0.2.3
 
 ### Breaking changes:
-- `Dataset.flm_session` is now `flexilims_session` (harmonise with main functions)
+- All `flm_session` are now `flexilims_session` (harmonise with main functions)
 
 ### Main changes
 - Compatible with flexilims v0.2. `None` and `''` can both be uploaded.

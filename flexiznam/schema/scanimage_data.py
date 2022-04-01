@@ -16,7 +16,7 @@ class ScanimageData(Dataset):
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, session=None, recording=None,
-                    flm_session=None, project=None):
+                    flexilims_session=None, project=None):
         """Create a scanimage dataset by loading info from folder"""
         folder = pathlib.Path(folder)
         assert folder.is_dir()
@@ -78,7 +78,7 @@ class ScanimageData(Dataset):
             output[acq_id] = ScanimageData(path=folder,
                                            extra_attributes=extra_attributes,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                                           flexilims_session=flm_session,
+                                           flexilims_session=flexilims_session,
                                            project=project)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[acq_id], field, locals()[field])

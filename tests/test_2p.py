@@ -8,7 +8,7 @@ import yaml
 
 from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
 from flexiznam.utils import clean_dictionary_recursively
-from tests.tests_resources import flm_session
+from tests.tests_resources import flexilims_session
 from tests.tests_resources.data_for_testing import DATA_ROOT, PROCESSED_ROOT, TEST_PROJECT
 import flexiznam as fzn
 from flexiznam import camp
@@ -72,17 +72,17 @@ def test_flm():
     physio_mouse_exists()
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
     upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
-                log_func=print, flexilims_session=flm_session, conflicts=conflicts)
+                log_func=print, flexilims_session=flexilims_session, conflicts=conflicts)
 
 
 def physio_mouse_exists():
-    mouse = fzn.get_entity(datatype='mouse', name=MOUSE, flexilims_session=flm_session)
+    mouse = fzn.get_entity(datatype='mouse', name=MOUSE, flexilims_session=flexilims_session)
     if FLM_IS_WIPED:
         assert mouse is None
         # we need to add the mouse. If it was a real MCMS mouse we could do:
         # `fzn.add_mouse(project=test_data.TEST_PROJECT, mouse_name=MOUSE)`
         # but since it's a dummy mouse, I'll just add it manually:
-        resp = flm_session.post(datatype='mouse',
+        resp = flexilims_session.post(datatype='mouse',
                                 name=MOUSE,
                                 strict_validation=False,
                                 attributes=dict(birth_date='01-Mar-2021',
