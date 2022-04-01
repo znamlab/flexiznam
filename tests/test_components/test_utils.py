@@ -60,5 +60,17 @@ def test_check_flexilims_paths(flm_sess):
 
 def test_check_flexilims_names(flm_sess):
     df = utils.check_flexilims_names(flm_sess, root_name='mouse_physio_2p')
-    df2 = utils.check_flexilims_names(flm_sess)
-    assert df2.shape[0] > df.shape[0]
+    assert df is None
+    df = utils.check_flexilims_names(flm_sess)
+    assert df is None
+    df = utils.check_flexilims_names(flm_sess, recursive=True)
+    assert df is None
+
+
+def test_add_genealogy(flm_sess):
+    utils.add_genealogy(flm_sess)
+    utils.add_genealogy(flm_sess, recursive=True)
+
+
+def test_add_missing_paths(flm_sess):
+    utils.add_missing_paths(flm_sess)

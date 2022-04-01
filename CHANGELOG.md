@@ -17,6 +17,12 @@
 - Add  `flz.utils.check_flexilims_path` to verify that defined paths actually exist.
 - Add `flz.utils.check_flexilims_names` to verify that entity names start with their 
   parent's name.
+- Add `flz.utils.add_genealogy` to add a `genealogy` field to flexilims entries. This 
+  field contains the list of parents ([mouse, session, recording] for instance) up to 
+  the short name of the current entity
+- Add `flz.utilis.add_missing_paths` to update flexilims to add `path` attribute to 
+  non-dataset entities that have a genealogy defined. The path is set to `project / 
+  Path(*genealogy)` if this folder exists in the processed or raw root directory.
 
 ### Bugfixes:
   - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`
