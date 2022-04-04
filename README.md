@@ -44,6 +44,15 @@ This will update the package as long as the version of the repository is higher 
 flexiznam config --update
 ```
 
+If you used `pip -e .` to install, updating can be done with:
+
+```
+cd flexiznam
+git pull 
+pip install -e . --upgrade
+flexiznam config --update
+```
+
 ## Configuration
 
 The default configuration settings can be created simply by running: `flexiznam config`. This will create a `~/.flexiznam` directory with a `config.yml` file.
