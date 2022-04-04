@@ -1,10 +1,9 @@
 import pytest
-import flexiznam
-
+from tests.tests_resources import flexilims_session
 
 @pytest.fixture
 def flm_sess():
-    return flexiznam.get_flexilims_session(project_id='test')
+    return flexilims_session
 
 
 def pytest_addoption(parser):

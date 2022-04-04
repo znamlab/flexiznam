@@ -2,17 +2,21 @@ import datetime
 import os
 import pathlib
 import re
+import warnings
+
 import pandas as pd
 from tifffile import TiffFile, TiffFileError
 from flexiznam.schema.datasets import Dataset
 import math
 
+
 class ScanimageData(Dataset):
     DATASET_TYPE = 'scanimage'
+    DEFAULT_STACK_TYPE = 'calcium'
 
     @staticmethod
     def from_folder(folder, verbose=True, mouse=None, session=None, recording=None,
-                    flm_session=None, project=None):
+                    flexilims_session=None, project=None):
         """Create a scanimage dataset by loading info from folder"""
         folder = pathlib.Path(folder)
         assert folder.is_dir()
@@ -39,7 +43,7 @@ class ScanimageData(Dataset):
             # remove matched files to not re-read metadata
             for file in this_acq:
                 tif_files.remove(file)
-            parsed_name['file_list'] = this_acq
+            parsed_name['tif_files'] = this_acq
             si_df[parsed_name['acq_uid']] = parsed_name
         if verbose:
             if non_si_tiff:
@@ -63,7 +67,7 @@ class ScanimageData(Dataset):
                 '_'): f for f in associated_csv}
 
             # get creation date from one tif
-            first_acq_tif = folder / sorted(acq['file_list'])[0]
+            first_acq_tif = folder / sorted(acq['tif_files'])[0]
             created = datetime.datetime.fromtimestamp(first_acq_tif.stat().st_mtime)
             extra_attributes = dict(acq)
             # remove file specific fields
@@ -74,7 +78,7 @@ class ScanimageData(Dataset):
             output[acq_id] = ScanimageData(path=folder,
                                            extra_attributes=extra_attributes,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'),
-                                           flm_session=flm_session,
+                                           flexilims_session=flexilims_session,
                                            project=project)
             for field in ('mouse', 'session', 'recording'):
                 setattr(output[acq_id], field, locals()[field])
@@ -89,32 +93,47 @@ class ScanimageData(Dataset):
                     print('    %s' % m)
         return output
 
-    def __init__(self, path, name=None, tif_files=None, csv_files=None,
-                 extra_attributes=None, created=None, project=None, is_raw=True,
-                 flm_session=None):
-        """Create a Scanimage dataset
+    def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flexilims_session=None):
+        """Create a ScanImage dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. When imported from folder,
-                  default to the acquisition name
-            path: Path to the folder containing all the files
-            extra_attributes: Other optional attributes (from or for flexilims)
-            created: Date of creation. Default to the creation date of a tif file
-            project: name of hexadecimal id of the project to which the dataset belongs
-            is_raw: default to True. Is it processed data or raw data?
-            flm_session: authentication session for connecting to flexilims
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
+            extra_attributes: dict, optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
+            flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             tif_files (optional): List of file names associated with this dataset
             csv_files (optional): Dictionary of csv files associated to the scanimage
                                   recording file. Keys are identifier provided for
                                   convenience, values are the full file name
-
+            stack_type (optional): Type of scanimage type. Expected values are in:
+                                   'calcium', 'zstack', 'multichannel-reference',
+                                   'motion-reference, 'overview'
         """
+        if 'stack_type' not in extra_attributes:
+            warnings.warn('No `stack_type` provided for SI dataset %s. '
+                          'Set to default: %s' % (name, self.DEFAULT_STACK_TYPE),
+                          stacklevel=2)
+            extra_attributes['stack_type'] = self.DEFAULT_STACK_TYPE
+
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session)
+                         project=project, flexilims_session=flexilims_session,
+                         origin_id=origin_id,
+                         project_id=project_id)
 
     @property
     def csv_files(self):
@@ -124,6 +143,16 @@ class ScanimageData(Dataset):
     @csv_files.setter
     def csv_files(self, value):
         self.extra_attributes['csv_files'] = value
+
+    @property
+    def stack_type(self):
+        """Type of scanimage stack.
+        See ScanImageData.__init__ docstring for valid values"""
+        return self.extra_attributes['stack_type']
+
+    @stack_type.setter
+    def stack_type(self, value):
+        self.extra_attributes['stack_type'] = value
 
     @property
     def tif_files(self):

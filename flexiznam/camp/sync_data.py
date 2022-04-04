@@ -1,4 +1,6 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
+import os
+import pathlib
 from pathlib import Path, PurePosixPath
 import re
 import copy
@@ -12,192 +14,78 @@ from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_dictionary_recursively
 
 
-def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
-                log_func=print, flexilims_session=None, conflicts='abort'):
-    """Upload data from one yaml to flexilims
+def create_yaml(root_folder, outfile=None, project='NOT SPECIFIED',
+                mouse='NOT SPECIFIED', overwrite=False):
+    """Automatically create a yaml file skeleton
+
+    Goes recursively in root folder and create a set of nested structure
 
     Args:
-        source_yaml (str): path to clean yaml
-        raw_data_folder (str): path to the folder containing the data. Default to
-            data_root['raw']
-        verbose (bool): print progress information
-        log_func: function to deal with warnings and messages
-        flexilims_session (Flexilims): session to avoid recreating a token
-        conflicts (str): `abort` to crash if there is a conflict, `skip` to ignore and proceed
+        root_folder (str or Path): base folder, usually a session but can be a sample
+        outfile (str or Path): target to write the yaml. Do not write file if `None`
+        project (str): name of the project
+        mouse (str): name of the mouse
+        overwrite (bool): overwrite outfile if it exists. Default False.
 
     Returns:
-        dictionary or flexilims ID
-
+        yaml_dict (dict): created structure
     """
-    # if there are errors, I cannot safely parse the yaml
-    errors = find_xxerrorxx(yml_file=source_yaml)
-    if errors:
-        raise SyncYmlError('The yaml file still contains error. Fix it')
-    session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
-    # parsing can created errors, check again
-    errors = find_xxerrorxx(yml_file=source_yaml)
-    if errors:
-        raise SyncYmlError('Invalid yaml. Use `parse_yaml` and fix errors manually.')
+    root_folder = pathlib.Path(root_folder)
+    assert root_folder.is_dir()
+    assert isinstance(project, str)
+    assert isinstance(mouse, str)
+    yaml_dict = dict(project=project, mouse=mouse)
+    yaml_dict['session'] = None
+    # check if we were given a session folder
+    if re.match('S\d*', root_folder.stem):
+        yaml_dict['session'] = root_folder.stem
 
-    # first find the mouse
-    if flexilims_session is None:
-        flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
-    mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'],
-                           flexilims_session=flexilims_session)
-    if mouse is None:
-        raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
+    _find_yaml_struct(root_folder, yaml_dict)
 
-    # deal with the session
-    if session_data['session'] is not None:
-        m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
+    if outfile is not None:
+        if outfile.is_file() and not overwrite:
+            raise IOError('File %s already exists. Use `overwrite` to replace.' % outfile)
+        with open(outfile, 'w') as writer:
+            yaml.dump(yaml_dict, writer)
+
+    return yaml_dict
+
+
+def _find_yaml_struct(path, current_dict):
+    """Parse one level of yaml structure for autogenerating yaml
+
+    Args:
+        path: path to the dir to parse
+        current_dict: current level
+
+    Returns:
+        current_dict (do changes in place)
+    """
+    path = Path(path)
+    for el in os.listdir(path):
+        if not (path / el).is_dir():
+            continue
+        # match known recording format
+        m = re.fullmatch('R\d\d\d\d\d\d_?(.*)?', el)
         if m:
-            date = '-'.join(m.groups())
+            el_type = 'recordings'
+            protocol = m[1] if m[1] is not None else 'PROTOCOL NOT SPECIFIED'
         else:
-            log_func('Cannot parse date for session %s.' % session_data['session'])
-            date = 'N/A'
-
-    session_data = trim_paths(session_data, raw_data_folder)
-
-    attributes = session_data.get('attributes', None)
-    if attributes is None:
-        attributes = {}
-    for field in ('path', 'notes'):
-        value = session_data.get(field, None)
-        if value is not None:
-            attributes[field] = value
-    # if session is not specified, then entries will be added directly as
-    # children of the mouse
-    if session_data['session'] is not None:
-        session = flz.add_experimental_session(
-            mouse_name=mouse['name'],
-            session_name=mouse['name'] + '_' + session_data['session'],
-            flexilims_session=flexilims_session,
-            date=date,
-            attributes=attributes,
-            conflicts=conflicts)
-        root_id = session['id']
-    else:
-        root_id = mouse.id
-
-    # session datasets
-    for ds_name, ds in session_data.get('datasets', {}).items():
-        ds.mouse = mouse.name
-        ds.project = session_data['project']
-        ds.session = session_data['session']
-        ds.origin_id = root_id
-        ds.flm_session = flexilims_session
-        ds.update_flexilims(mode='safe')
-
-    # now deal with recordings
-    for short_rec_name, rec_data in session_data.get('recordings', {}).items():
-        rec_name = session['name'] + '_' + short_rec_name
-        attributes = rec_data.get('attributes', None)
-        if attributes is None:
-            attributes = {}
-        for field in ['notes', 'path', 'timestamp']:
-            value = rec_data.get(field, '')
-            attributes[field] = value if value is not None else ''
-        rec_type = rec_data.get('recording_type', 'unspecified')
-        if not rec_type:
-            rec_type = 'unspecified'
-        rec_rep = flz.add_recording(
-            session_id=root_id,
-            recording_type=rec_type,
-            protocol=rec_data.get('protocol', ''),
-            attributes=attributes,
-            recording_name=rec_name,
-            other_relations=None,
-            flexilims_session=flexilims_session,
-            conflicts=conflicts
-        )
-
-        # now deal with recordings' datasets
-        for ds_name, ds in rec_data.get('datasets', {}).items():
-            ds.mouse = mouse.name
-            ds.project = session_data['project']
-            ds.session = session_data['session']
-            ds.recording = short_rec_name
-            ds.origin_id = rec_rep['id']
-            ds.flm_session = flexilims_session
-            ds.update_flexilims(mode='safe')
-
-    # now deal with samples
-    def add_samples(samples, parent, short_parent_name=None):
-        # we'll need a utility function to deal with recursion
-        for short_sample_name, sample_data in samples.items():
-            sample_name = parent['name'] + '_' + short_sample_name
-            if short_parent_name is not None:
-                short_sample_name = short_parent_name + '_' + short_sample_name
-            attributes = sample_data.get('attributes', None)
-            if attributes is None:
-                attributes = {}
-            # we always use `skip` to add samples
-            sample_rep = flz.add_sample(
-                parent['id'],
-                attributes=attributes,
-                sample_name=sample_name,
-                conflicts='skip',
-                flexilims_session=flexilims_session
-            )
-            # deal with datasets attached to this sample
-            for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.mouse = mouse.name
-                ds.project = session_data['project']
-                ds.sample = short_sample_name
-                ds.session = session_data['session']
-                ds.origin_id = sample_rep['id']
-                ds.flm_session = flexilims_session
-                ds.update_flexilims(mode='safe')
-            # now add child samples
-            add_samples(sample_data['samples'], sample_rep, short_sample_name)
-    # samples are attached to mice, not sessions
-    add_samples(session_data['samples'], mouse)
-
-
-def trim_paths(session_data, raw_data_folder):
-    """Parses paths to make them relative to `raw_data_folder`
-
-    Args:
-        session_data (dict): dictionary containing children of the session
-        raw_data_folder (str): part of the path to be omitted from on flexilims
-
-    Returns:
-        dict: `session_data` after trimming the paths
-
-    """
-
-    def trim_sample_paths(samples):
-        # utility function to recurse into samples
-        for sample_name, sample_data in samples.items():
-            samples[sample_name]['path'] = \
-                str(PurePosixPath(Path(samples[sample_name]['path'])
-                    .relative_to(raw_data_folder)))
-            for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
-            trim_sample_paths(sample_data['samples'])
-
-    if raw_data_folder is None:
-        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
-    if 'path' in session_data.keys():
-        session_data['path'] = \
-            str(PurePosixPath(Path(session_data['path']).relative_to(raw_data_folder)))
-    for ds_name, ds in session_data.get('datasets', {}).items():
-        ds.path = ds.path.relative_to(raw_data_folder)
-    for rec_name, rec_data in session_data['recordings'].items():
-        session_data['recordings'][rec_name]['path'] = \
-            str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
-                .relative_to(raw_data_folder)))
-        for ds_name, ds in rec_data.get('datasets', {}).items():
-            ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
-    trim_sample_paths(session_data['samples'])
-    return session_data
+            el_type = 'samples'
+        subdict = current_dict.get(el_type, {})
+        subdict[el] = dict()
+        if el_type == 'recordings':
+            subdict[el]['protocol'] = protocol
+        current_dict[el_type] = subdict
+        _find_yaml_struct(path / el, current_dict[el_type][el])
+    return current_dict
 
 
 def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     """Read an acquisition yaml and create corresponding datasets
 
     Args:
-        path_to_yaml (str): path to the file to parse
+        path_to_yaml (str or dict): path to the file to parse or dict of yaml contect
         raw_data_folder (str): root folder containing the mice folders
         verbose (bool): print info while looking for datasets
 
@@ -205,7 +93,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
         dict: A yaml dictionary with dataset classes
 
     """
-    session_data = clean_yaml(path_to_yaml)
+    session_data = _clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
         raw_data_folder = Path(PARAMETERS['data_root']['raw'])
@@ -240,7 +128,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
             error_handling='report'
         )
 
-    session_data['samples'] = create_sample_datasets(
+    session_data['samples'] = _create_sample_datasets(
         session_data,
         raw_data_folder
     )
@@ -250,33 +138,150 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     return session_data
 
 
-def create_sample_datasets(parent, raw_data_folder):
-    """Recursively index samples creating a nested dictionary and generate
-    corresponding datasets
+def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
+                log_func=print, flexilims_session=None, conflicts='abort'):
+    """Upload data from one yaml to flexilims
 
     Args:
-        parent (dict): Dictionary corresponding to the parent entity
+        source_yaml (str): path to clean yaml
+        raw_data_folder (str): path to the folder containing the data. Default to
+            data_root['raw']
+        verbose (bool): print progress information
+        log_func: function to deal with warnings and messages
+        flexilims_session (Flexilims): session to avoid recreating a token
+        conflicts (str): `abort` to crash if there is already a session or recording
+                         existing on flexilims, `skip` to ignore and proceed. Samples
+                         are always updated with `skip` and datasets always have
+                         mode=`safe`
 
-    Return:
-        dict: dictionary of child samples
+    Returns:
+        dictionary or flexilims ID
 
     """
-    if 'samples' not in parent:
-        return dict()
-    for sample_name, sample in parent['samples'].items():
-        sample['path'] = parent['path'] / sample_name
-        sample['datasets'] = create_dataset(
-            dataset_infos=sample['datasets'],
-            parent=sample,
-            raw_data_folder=raw_data_folder,
-            error_handling='report'
+    # if there are errors, I cannot safely parse the yaml
+    errors = find_xxerrorxx(yml_file=source_yaml)
+    if errors:
+        raise SyncYmlError('The yaml file still contains error. Fix it')
+    session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
+    # parsing can created errors, check again
+    errors = find_xxerrorxx(yml_file=source_yaml)
+    if errors:
+        raise SyncYmlError('Invalid yaml. Use `parse_yaml` and fix errors manually.')
+
+    # first find the mouse
+    if flexilims_session is None:
+        flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
+    mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'],
+                           flexilims_session=flexilims_session)
+    if mouse is None:
+        raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
+
+    # deal with the session
+    if session_data['session'] is not None:
+        m = re.match(r'S(\d{4})(\d\d)(\d\d)', session_data['session'])
+        if m:
+            date = '-'.join(m.groups())
+        else:
+            log_func('Cannot parse date for session %s.' % session_data['session'])
+            date = 'N/A'
+
+    session_data = _trim_paths(session_data, raw_data_folder)
+
+    attributes = session_data.get('attributes', None)
+    if attributes is None:
+        attributes = {}
+    for field in ('path', 'notes'):
+        value = session_data.get(field, None)
+        if value is not None:
+            attributes[field] = value
+    # if session is not specified, then entries will be added directly as
+    # children of the mouse
+    if session_data['session'] is not None:
+        session = flz.add_experimental_session(
+            parent_name=mouse['name'],
+            session_name=mouse['name'] + '_' + session_data['session'],
+            flexilims_session=flexilims_session,
+            date=date,
+            attributes=attributes,
+            conflicts=conflicts)
+        root_id = session['id']
+    else:
+        root_id = mouse.id
+
+    # session datasets
+    for ds_name, ds in session_data.get('datasets', {}).items():
+        ds.mouse = mouse.name
+        ds.project = session_data['project']
+        ds.session = session_data['session']
+        ds.origin_id = root_id
+        ds.flexilims_session = flexilims_session
+        ds.update_flexilims(mode='safe')
+
+    # now deal with recordings
+    for short_rec_name, rec_data in session_data.get('recordings', {}).items():
+        rec_name = session['name'] + '_' + short_rec_name
+        attributes = rec_data.get('attributes', None)
+        if attributes is None:
+            attributes = {}
+        for field in ['notes', 'path', 'timestamp']:
+            value = rec_data.get(field, '')
+            attributes[field] = value if value is not None else ''
+        rec_type = rec_data.get('recording_type', 'unspecified')
+        if not rec_type:
+            rec_type = 'unspecified'
+        rec_rep = flz.add_recording(
+            session_id=root_id,
+            recording_type=rec_type,
+            protocol=rec_data.get('protocol', ''),
+            attributes=attributes,
+            recording_name=rec_name,
+            other_relations=None,
+            flexilims_session=flexilims_session,
+            conflicts=conflicts
         )
 
-        # recurse into child samples
-        sample['samples'] = create_sample_datasets(sample, raw_data_folder)
-    # we update in place but we also return the dictionary of samples to make
-    # for more readable code
-    return parent['samples']
+        # now deal with recordings' datasets
+        for ds_name, ds in rec_data.get('datasets', {}).items():
+            ds.mouse = mouse.name
+            ds.project = session_data['project']
+            ds.session = session_data['session']
+            ds.recording = short_rec_name
+            ds.origin_id = rec_rep['id']
+            ds.flexilims_session = flexilims_session
+            ds.update_flexilims(mode='safe')
+
+    # now deal with samples
+    def add_samples(samples, parent, short_parent_name=None):
+        # we'll need a utility function to deal with recursion
+        for short_sample_name, sample_data in samples.items():
+            sample_name = parent['name'] + '_' + short_sample_name
+            if short_parent_name is not None:
+                short_sample_name = short_parent_name + '_' + short_sample_name
+            attributes = sample_data.get('attributes', None)
+            if attributes is None:
+                attributes = {}
+            # we always use `skip` to add samples
+            sample_rep = flz.add_sample(
+                parent['id'],
+                attributes=attributes,
+                sample_name=sample_name,
+                conflicts='skip',
+                flexilims_session=flexilims_session
+            )
+            # deal with datasets attached to this sample
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.mouse = mouse.name
+                ds.project = session_data['project']
+                ds.sample = short_sample_name
+                ds.session = session_data['session']
+                ds.origin_id = sample_rep['id']
+                ds.flexilims_session = flexilims_session
+                ds.update_flexilims(mode='safe')
+            # now add child samples
+            add_samples(sample_data['samples'], sample_rep, short_sample_name)
+
+    # samples are attached to mice, not sessions
+    add_samples(session_data['samples'], mouse)
 
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
@@ -357,9 +362,9 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
         # match by name
         if ds_name in ds:
             ds = ds[ds_name]
-        else:      # now we're in trouble.
+        else:  # now we're in trouble.
             err_msg = 'Could not find dataset "%s". Found "%s" instead' % (
-                       ds_name, ', '.join(ds.keys()))
+                ds_name, ', '.join(ds.keys()))
             if error_handling == 'crash':
                 raise SyncYmlError(err_msg)
             datasets[ds_name] = 'XXERRORXX!! ' + err_msg
@@ -372,43 +377,116 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
     return datasets
 
 
-def clean_yaml(path_to_yaml):
+def _trim_paths(session_data, raw_data_folder):
+    """Parses paths to make them relative to `raw_data_folder`
+
+    Args:
+        session_data (dict): dictionary containing children of the session
+        raw_data_folder (str): part of the path to be omitted from on flexilims
+
+    Returns:
+        dict: `session_data` after trimming the paths
+
+    """
+
+    def trim_sample_paths(samples):
+        # utility function to recurse into samples
+        for sample_name, sample_data in samples.items():
+            samples[sample_name]['path'] = \
+                str(PurePosixPath(Path(samples[sample_name]['path'])
+                                  .relative_to(raw_data_folder)))
+            for ds_name, ds in sample_data.get('datasets', {}).items():
+                ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
+            trim_sample_paths(sample_data['samples'])
+
+    if raw_data_folder is None:
+        raw_data_folder = Path(PARAMETERS['data_root']['raw'])
+    if 'path' in session_data.keys():
+        session_data['path'] = \
+            str(PurePosixPath(Path(session_data['path']).relative_to(raw_data_folder)))
+    for ds_name, ds in session_data.get('datasets', {}).items():
+        ds.path = ds.path.relative_to(raw_data_folder)
+    for rec_name, rec_data in session_data['recordings'].items():
+        session_data['recordings'][rec_name]['path'] = \
+            str(PurePosixPath(Path(session_data['recordings'][rec_name]['path'])
+                              .relative_to(raw_data_folder)))
+        for ds_name, ds in rec_data.get('datasets', {}).items():
+            ds.path = PurePosixPath(ds.path.relative_to(raw_data_folder))
+    trim_sample_paths(session_data['samples'])
+    return session_data
+
+
+def _create_sample_datasets(parent, raw_data_folder):
+    """Recursively index samples creating a nested dictionary and generate
+    corresponding datasets
+
+    Args:
+        parent (dict): Dictionary corresponding to the parent entity
+
+    Return:
+        dict: dictionary of child samples
+
+    """
+    if 'samples' not in parent:
+        return dict()
+    for sample_name, sample in parent['samples'].items():
+        sample['path'] = parent['path'] / sample_name
+        sample['datasets'] = create_dataset(
+            dataset_infos=sample['datasets'],
+            parent=sample,
+            raw_data_folder=raw_data_folder,
+            error_handling='report'
+        )
+
+        # recurse into child samples
+        sample['samples'] = _create_sample_datasets(sample, raw_data_folder)
+    # we update in place but we also return the dictionary of samples to make
+    # for more readable code
+    return parent['samples']
+
+
+def _clean_yaml(path_to_yaml):
     """Read a yaml file and check that it is correctly formatted
 
     This does not do any processing, just make sure that I can read the whole yaml and
     generate dictionary will all expected fields
 
     Args:
-        path_to_yaml (str): path to the YAML file
+        path_to_yaml (str): path to the YAML file, or dict of the yaml content
 
     Returns:
         dict: nested dictionary containing entries in the YAML file
 
     """
-    with open(path_to_yaml, 'r') as yml_file:
-        try:
-            yml_data = yaml.safe_load(yml_file)
-        except ParserError as e:
-            raise IOError("Invalid yaml. Parser returned an error: %s" % e)
 
-    session, nested_levels = read_level(yml_data)
+    if isinstance(path_to_yaml, dict):
+        yml_data = path_to_yaml
+    else:
+        with open(path_to_yaml, 'r') as yml_file:
+            try:
+                yml_data = yaml.safe_load(yml_file)
+            except ParserError as e:
+                raise IOError("Invalid yaml. Parser returned an error: %s" % e)
+
+    session, nested_levels = _read_level(yml_data)
 
     session['datasets'] = {}
     for dataset_name, dataset_dict in nested_levels['datasets'].items():
-        session['datasets'][dataset_name] = read_dataset(name=dataset_name, data=dataset_dict)
+        session['datasets'][dataset_name] = _read_dataset(name=dataset_name,
+                                                          data=dataset_dict)
 
     session['recordings'] = {}
     for rec_name, rec_dict in nested_levels['recordings'].items():
-        session['recordings'][rec_name] = read_recording(name=rec_name, data=rec_dict)
+        session['recordings'][rec_name] = _read_recording(name=rec_name, data=rec_dict)
 
     session['samples'] = {}
     for sample_name, sample_dict in nested_levels['samples'].items():
-        session['samples'][sample_name] = read_sample(name=sample_name, data=sample_dict)
+        session['samples'][sample_name] = _read_sample(name=sample_name, data=sample_dict)
 
     return session
 
 
-def read_sample(name, data):
+def _read_sample(name, data):
     """Read YAML information corresponding to a sample
 
     Args:
@@ -421,7 +499,7 @@ def read_sample(name, data):
     """
     if data is None:
         data = {}
-    sample, nested_levels = read_level(
+    sample, nested_levels = _read_level(
         data,
         mandatory_args=(),
         optional_args=('notes', 'attributes', 'path'),
@@ -431,14 +509,14 @@ def read_sample(name, data):
 
     sample['datasets'] = dict()
     for ds_name, ds_data in nested_levels['datasets'].items():
-        sample['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+        sample['datasets'][ds_name] = _read_dataset(name=ds_name, data=ds_data)
     sample['samples'] = dict()
     for sample_name, sample_data in nested_levels['samples'].items():
-        sample['samples'][sample_name] = read_sample(name=sample_name, data=sample_data)
+        sample['samples'][sample_name] = _read_sample(name=sample_name, data=sample_data)
     return sample
 
 
-def read_recording(name, data):
+def _read_recording(name, data):
     """Read YAML information corresponding to a recording
 
     Args:
@@ -449,7 +527,7 @@ def read_recording(name, data):
         dict: the recording read from the yaml
 
     """
-    recording, datasets = read_level(
+    recording, datasets = _read_level(
         data,
         mandatory_args=('protocol',),
         optional_args=('notes', 'attributes', 'path', 'recording_type', 'timestamp'),
@@ -466,12 +544,12 @@ def read_recording(name, data):
         recording['timestamp'] = m.groups()[0]
     recording['datasets'] = dict()
     for ds_name, ds_data in datasets['datasets'].items():
-        recording['datasets'][ds_name] = read_dataset(name=ds_name, data=ds_data)
+        recording['datasets'][ds_name] = _read_dataset(name=ds_name, data=ds_data)
 
     return recording
 
 
-def read_dataset(name, data):
+def _read_dataset(name, data):
     """Read YAML information corresponding to a dataset
 
     Args:
@@ -484,7 +562,7 @@ def read_dataset(name, data):
         'attributes' and 'name'
 
     """
-    level, _ = read_level(
+    level, _ = _read_level(
         data,
         mandatory_args=('dataset_type', 'path'),
         optional_args=('notes', 'attributes', 'created', 'is_raw', 'origin_id'),
@@ -494,9 +572,9 @@ def read_dataset(name, data):
     return level
 
 
-def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
-               optional_args=('path', 'notes', 'attributes'),
-               nested_levels=('recordings', 'datasets', 'samples')):
+def _read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
+                optional_args=('path', 'notes', 'attributes'),
+                nested_levels=('recordings', 'datasets', 'samples')):
     """Read one layer of the yml file (i.e. a dictionary)
 
     Args:
@@ -527,7 +605,7 @@ def read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
     # the rest is unexpected
     if len(yml_level):
         raise SyncYmlError('Got unexpected attribute(s): %s' % (
-                           ', '.join(yml_level.keys())))
+            ', '.join(yml_level.keys())))
     return level, nested_levels
 
 

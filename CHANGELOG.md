@@ -1,5 +1,41 @@
 # Change log
 
+##v0.3.0
+
+### Breaking changes:
+- All `flm_session` are now `flexilims_session` (harmonise with main functions)
+
+### Main changes
+- Compatible with flexilims v0.2. `None` and `''` can both be uploaded.
+- Dataset.is_raw can be autodetermined from path. If this fails, it **must** be 
+  manually set.
+- New function and CLI entry: `create_yaml` to create the skeleton of a yaml before 
+  parsing.
+- Extensions for microscopy datasets are now defined in the config file.
+- ScanImage datasets have a `stack_type` attribute, default to `calcium`.
+- Authorise `overwrite` when adding samples, sessions, recordings, or datasets.
+- Add  `flz.utils.check_flexilims_path` to verify that defined paths actually exist.
+- Add `flz.utils.check_flexilims_names` to verify that entity names start with their 
+  parent's name.
+- Add `flz.utils.add_genealogy` to add a `genealogy` field to flexilims entries. This 
+  field contains the list of parents ([mouse, session, recording] for instance) up to 
+  the short name of the current entity
+- Add `flz.utilis.add_missing_paths` to update flexilims to add `path` attribute to 
+  non-dataset entities that have a genealogy defined. The path is set to `project / 
+  Path(*genealogy)` if this folder exists in the processed or raw root directory.
+
+### Bugfixes:
+  - ScanImage datasets tif files were uploaded as `file_list` instead of `tif_files`
+  - ScanImage dataset are recognised as such and not as MicroscopyData
+
+
+### Misc and minor:
+  - `get_entity` and `get_id` can work without specifying `datatype`
+  - `get_children` works without specifying datatype
+  - Tests are now using real data and require CAMP being mounted and configured.
+  - Dataset project is set when setting `Dataset.flexilims_session`
+
+
 ## v0.2.2
 
 - Names of files associated with `CameraData`, `HarpData` and `ScanimageData` datasets are now stored as extra attributes on Flexilims and not passed as separate arguments to the class constructors.

@@ -10,7 +10,7 @@ class HarpData(Dataset):
     DATASET_TYPE = 'harp'
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flm_session=None, project=None):
+    def from_folder(cls, folder, verbose=True, flexilims_session=None, project=None):
         """Create a harp dataset by loading info from folder"""
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
         bin_files = [f for f in fnames if f.endswith('.bin')]
@@ -46,7 +46,7 @@ class HarpData(Dataset):
                                              extra_attributes=extra_attributes,
                                              created=created.strftime(
                                                  '%Y-%m-%d %H:%M:%S'),
-                                             flm_session=flm_session,
+                                             flexilims_session=flexilims_session,
                                              project=project)
         if verbose:
             unmatched = set(csv_files) - matched_files
@@ -56,19 +56,25 @@ class HarpData(Dataset):
                     print('    %s' % m)
         return output
 
-    def __init__(self, name, path, extra_attributes=None, created=None, project=None,
-                 is_raw=True, flm_session=None):
+    def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flexilims_session=None):
         """Create a Harp dataset
 
         Args:
-            name: Identifier. Unique name on flexilims. Import default to the file name of
-                  the binary file without the extension
-            path: Path to the folder containing all the files
-            extra_attributes: Other optional attributes (from or for flexilims)
-            created: Date of creation. Default to the creation date of the binary file
-            project: name of hexadecimal id of the project to which the dataset belongs
-            is_raw: default to True. Is it processed data or raw data?
-            flm_session: authentication session for connecting to flexilims
+            path: folder containing the dataset or path to file (valid only for single
+                  file datasets)
+            is_raw: bool, used to sort in raw and processed subfolders
+            name: name of the dataset as on flexilims. Is expected to include mouse,
+                  session etc...
+            extra_attributes: dict, optional attributes.
+            created: Creation date, in "YYYY-MM-DD HH:mm:SS"
+            project: name of the project. Must be in config, can be guessed from
+                     project_id
+            project_id: hexadecimal code for the project. Must be in config, can be
+                        guessed from project
+            origin_id: hexadecimal code for the origin on flexilims.
+            flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             binary_file: File name of the binary file.
@@ -82,7 +88,8 @@ class HarpData(Dataset):
         super().__init__(name=name, path=path, is_raw=is_raw,
                          dataset_type=HarpData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
-                         project=project, flm_session=flm_session)
+                         project=project, project_id=project_id,
+                         origin_id=origin_id, flexilims_session=flexilims_session)
 
     @property
     def binary_file(self):

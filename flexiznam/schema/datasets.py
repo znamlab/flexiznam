@@ -1,3 +1,4 @@
+import pathlib
 from pathlib import Path
 import re
 import numpy as np
@@ -53,12 +54,15 @@ class Dataset(object):
         return output
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flm_session=None, project=None):
+    def from_folder(cls, folder, verbose=True, flexilims_session=None, project=None):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not
         crash. If you know which dataset to expect, use the subclass directly
         """
+        folder = pathlib.Path(folder)
+        if not folder.is_dir():
+            raise IOError('%s is not a directory.' % folder)
         data = dict()
         if not cls.SUBCLASSES:
             raise IOError('Dataset subclasses not assigned')
@@ -67,7 +71,7 @@ class Dataset(object):
                 print('Looking for %s' % ds_type)
             try:
                 res = ds_class.from_folder(folder, verbose=verbose,
-                                           flm_session=flm_session, project=project)
+                                           flexilims_session=flexilims_session, project=project)
             except OSError:
                 continue
             if any(k in data for k in res):
@@ -76,7 +80,7 @@ class Dataset(object):
         return data
 
     @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None, flm_session=None):
+    def from_flexilims(project=None, name=None, data_series=None, flexilims_session=None):
         """Loads a dataset from flexilims.
 
         If the dataset_type attribute of the flexilims entry defined in
@@ -88,14 +92,14 @@ class Dataset(object):
             name: Unique name of the dataset on flexilims
             data_series: default to None. pd.Series as returned by flz.get_entities.
                          If provided, supersedes project and name
-            flm_session: authentication session to access flexilims
+            flexilims_session: authentication session to access flexilims
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
                 raise AttributeError('Specify either data_series OR project + name')
         else:
             data_series = flz.get_entity(project_id=project, datatype='dataset',
-                                         name=name, flexilims_session=flm_session)
+                                         name=name, flexilims_session=flexilims_session)
             if data_series is None:
                 raise FlexilimsError('No dataset named {} in project {}'.format(name,
                                                                                 project))
@@ -103,7 +107,7 @@ class Dataset(object):
 
         kwargs = Dataset._format_series_to_kwargs(data_series)
         name = kwargs.pop('name')
-        kwargs['flm_session'] = flm_session
+        kwargs['flexilims_session'] = flexilims_session
         if dataset_type in Dataset.SUBCLASSES:
             # dataset_type is already specified by subclass
             kwargs.pop('dataset_type')
@@ -120,7 +124,7 @@ class Dataset(object):
 
     @staticmethod
     def from_origin(project=None, origin_type=None, origin_id=None, origin_name=None,
-                    dataset_type=None, conflicts=None, flm_session=None):
+                    dataset_type=None, conflicts=None, flexilims_session=None):
         """Creates a dataset of a given type as a child of a parent entity
 
         Args:
@@ -141,7 +145,7 @@ class Dataset(object):
                     Return a Dataset corresponding to the existing entry if there
                     is exactly one existing entry, otherwise through a
                     :py:class:`flexiznam.errors.NameNotUniqueError`
-            flm_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims
+            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims
 
         Returns:
             :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
@@ -153,7 +157,7 @@ class Dataset(object):
             id=origin_id,
             name=origin_name,
             project_id=project,
-            flexilims_session=flm_session,
+            flexilims_session=flexilims_session,
         )
         if origin is None:
             raise FlexilimsError('Origin not found')
@@ -163,7 +167,7 @@ class Dataset(object):
             origin_id=origin['id'],
             query_key='dataset_type',
             query_value=dataset_type,
-            flexilims_session=flm_session,
+            flexilims_session=flexilims_session,
         )
         already_processed = len(processed) > 0
         if (not already_processed) or (conflicts == 'append'):
@@ -172,7 +176,7 @@ class Dataset(object):
                 'dataset',
                 dataset_root,
                 project_id=project,
-                flexilims_session=flm_session
+                flexilims_session=flexilims_session
             )
             dataset_path = str(Path(origin['path']) / Dataset.parse_dataset_name(dataset_name)['dataset'])
             return Dataset(
@@ -183,7 +187,7 @@ class Dataset(object):
                 created=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 project=project,
                 origin_id=origin['id'],
-                flm_session=flm_session
+                flexilims_session=flexilims_session
             )
         else:
             if (conflicts is None) or (conflicts == 'abort'):
@@ -222,7 +226,7 @@ class Dataset(object):
 
     def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
-                 flm_session=None):
+                 flexilims_session=None):
         """Construct a dataset manually. Is usually called through static methods
         'from_folder', 'from_flexilims', or 'from_origin'
 
@@ -240,7 +244,7 @@ class Dataset(object):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
-            flm_session: authentication session to connect to flexilims
+            flexilims_session: authentication session to connect to flexilims
         """
         self.mouse = None
         self.session = None
@@ -254,6 +258,7 @@ class Dataset(object):
         self.extra_attributes = extra_attributes if extra_attributes is not None else {}
         self.created = created
         self.origin_id = origin_id
+        self._flexilims_session = flexilims_session
         if project is not None:
             self.project = project
             if project_id is not None:
@@ -263,7 +268,7 @@ class Dataset(object):
         else:
             self._project = None
             self._project_id = None
-        self.flm_session = flm_session
+
 
     def is_valid(self):
         """
@@ -297,7 +302,7 @@ class Dataset(object):
         series = flz.get_entity(datatype='dataset',
                                 project_id=self.project_id,
                                 name=self.name,
-                                flexilims_session=self.flm_session)
+                                flexilims_session=self.flexilims_session)
         return series
 
     def update_flexilims(self, mode='safe'):
@@ -326,7 +331,8 @@ class Dataset(object):
         if status == 'different':
             if mode == 'safe':
                 raise FlexilimsError('Cannot change existing flexilims entry with '
-                                     'mode=`safe`')
+                                     'mode=`safe`. \nDifferences:%s' %
+                                     self.flexilims_report())
             if (mode == 'overwrite') or (mode == 'update'):
                 # I need to pack the dataset field in attributes
                 fmt = self.format()
@@ -346,7 +352,7 @@ class Dataset(object):
                     mode=mode,
                     attributes=attributes,
                     project_id=self.project_id,
-                    flexilims_session=self.flm_session
+                    flexilims_session=self.flexilims_session
                 )
             else:
                 raise IOError('`mode` must be `safe`, `overwrite` or `update`')
@@ -365,7 +371,7 @@ class Dataset(object):
             project_id=self.project_id,
             dataset_name=self.name,
             attributes=attributes,
-            flexilims_session=self.flm_session,
+            flexilims_session=self.flexilims_session,
             conflicts='abort',
         )
         # update the dataset name to reflex the potential new index due to append
@@ -418,7 +424,7 @@ class Dataset(object):
 
         differences = utils.compare_series(fmt, flm_data, series_name=('offline',
                                                                        'flexilims'))
-        # flexilims transforms empty structures into null. Consider that equal
+        # flexilims transforms empty structures into None. Consider that equal
         to_remove = []
         for what, series in differences.iterrows():
             if series.flexilims is not None:
@@ -427,8 +433,9 @@ class Dataset(object):
                 # we have a non-boolean that is False, flexilims will make it None on
                 # upload, it is not a real difference
                 to_remove.append(what)
-        print('\nWarning: %s is/are empty and will be uploaded as None on flexilims.\n' %
-              to_remove)
+        if len(to_remove):
+            print('\nWarning: %s is/are empty and will be uploaded as None on '
+                  'flexilims.\n' % to_remove)
         differences = differences.drop(to_remove)
         return differences
 
@@ -473,6 +480,10 @@ class Dataset(object):
         project = flz.main._lookup_project(value, flz.PARAMETERS)
         if project is None:
             raise IOError('Unknown project ID. Please update config file')
+        if self.flexilims_session is not None:
+            sp = self.flexilims_session.project_id
+            if (sp is not None) and (sp != value):
+                raise DatasetError('Project must match that of flexilims_session')
         self._project = project
         self._project_id = value
 
@@ -487,8 +498,29 @@ class Dataset(object):
             raise IOError('Unknown project name. Please update config file')
 
         proj_id = flz.PARAMETERS['project_ids'][value]
+        if self.flexilims_session is not None:
+            sp = self.flexilims_session.project_id
+            if (sp is not None) and (sp != proj_id):
+                raise DatasetError('Project must match that of flexilims_session')
         self._project_id = proj_id
         self._project = value
+
+    @property
+    def flexilims_session(self):
+        """Flexilims session. It's project must match self.project"""
+        return self._flexilims_session
+
+    @flexilims_session.setter
+    def flexilims_session(self, value):
+        self._flexilims_session = value
+        if value is None:
+            return
+        if hasattr(value, 'project_id'):
+            if self.project_id is None:
+                self.project_id = value.project_id
+            elif self.project_id != value.project_id:
+                raise DatasetError('Cannot use a flexilims_session from a different '
+                                   'project')
 
     @property
     def name(self):
@@ -500,6 +532,9 @@ class Dataset(object):
             return
         elements = [getattr(self, w) for w in ('mouse', 'sample', 'session', 'recording',
                                                'dataset_name')]
+        if isinstance(elements[1], list):
+            # sample is a list of samples
+            elements[1] = '_'.join(elements[1])
         name = '_'.join([e for e in elements if e is not None])
         return name
 
@@ -540,6 +575,18 @@ class Dataset(object):
 
     @is_raw.setter
     def is_raw(self, value):
+        """Set the `is_raw` flag.
+
+        Valid values are 'yes' and 'no'. If set to None, try to guess from path and
+        crash if it doesn't work"""
+        if value is None:
+            paths = PARAMETERS['data_root']
+            if Path(paths['raw']) in self.path.parents:
+                value = 'yes'
+            elif Path(paths['processed']) in self.path.parents:
+                value = 'no'
+            else:
+                raise IOError('Cannot create a dataset without setting `is_raw`')
         if isinstance(value, str):
             if value.lower() == 'yes':
                 value = True
@@ -556,6 +603,8 @@ class Dataset(object):
         """Get CAMP root path that should apply to this dataset"""
         if self.is_raw:
             return Path(flz.config.PARAMETERS['data_root']['raw'])
+        elif self.is_raw is None:
+            raise AttributeError('`is_raw` must be set to find path.')
         else:
             return Path(flz.config.PARAMETERS['data_root']['processed'])
 
