@@ -7,17 +7,27 @@ from flexiznam.schema import Dataset
 from flexiznam.errors import FlexilimsError
 
 
-def compare_series(first_series, second_series, series_name=('first', 'second')):
+def compare_series(first_series, second_series, series_name=('first', 'second'),
+                   tuples_as_list=True):
     """Compare two series and return a dataframe of differences
 
     Args:
         first_series: first :py:class:`pandas.Series`
         second_series: second :py:class:`pandas.Series`
         series_name: tuple of name for the two series.
+        tuples_as_list (bool): should tuples be compared as string (True by 
+                               default, useful as flexilims does not allow for tuples) 
 
     Returns:
         :py:class:`pandas.DataFrame`: DataFrame of differences
     """
+    if tuples_as_list:
+        first_series = pd.Series(data={k: v if not isinstance(v, tuple) else list(v) 
+                                       for k, v in first_series.items()},
+                                 name=first_series.name)
+        second_series = pd.Series(data={k: v if not isinstance(v, tuple) else list(v)
+                                       for k, v in second_series.items()},
+                                  name=second_series.name)
     second_index = set(second_series.index)
     first_index = set(first_series.index)
     intersection = second_index.intersection(first_index)
@@ -116,9 +126,9 @@ def check_flexilims_paths(flexilims_session, root_name=None, recursive=True,
 def _check_path(output, element, flexilims_session, recursive, error_only):
     """Subfunction to recurse path checking"""
     if 'path' not in element:
-        output.append([element.name, element.type, 'path not defined', '', 1])
+        output.append([element.full_name, element.type, 'path not defined', '', 1])
     elif not isinstance(element.path, str):
-        output.append([element.name, element.type, 'Path is not a string!', element.path,
+        output.append([element.full_name, element.type, 'Path is not a string!', element.path,
                        1])
     elif element.type != 'dataset':
         ok = []
@@ -126,17 +136,17 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
             if (Path(v) / element.path).is_dir():
                 ok.append(v)
         if not len(ok):
-            output.append([element.name, element.type, 'folder does not exist', '', 1])
+            output.append([element.full_name, element.type, 'folder does not exist', '', 1])
         elif not error_only:
-            output.append([element.name, element.type, 'Folder found', ' '.join(ok), 0])
+            output.append([element.full_name, element.type, 'Folder found', ' '.join(ok), 0])
     else:
         ds = Dataset.from_flexilims(flexilims_session=flexilims_session,
                                     data_series=element)
         if not ds.path_full.exists():
-            output.append([element.name, element.type, 'dataset path unvalid',
+            output.append([element.full_name, element.type, 'dataset path unvalid',
                            ds.path_full, 1])
         elif not error_only:
-            output.append([element.name, element.type, 'Data found', ds.path_full, 0])
+            output.append([element.full_name, element.type, 'Data found', ds.path_full, 0])
     if recursive:
         children = flz.get_children(element.id, flexilims_session=flexilims_session)
         for _, child in children.iterrows():
@@ -174,9 +184,9 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
 
 
 def _check_name(output, element, flexilims_session, parent_name, recursive):
-    if (parent_name is not None) and not element.name.startswith(parent_name):
-        output.append([element.name, parent_name])
-    parent_name = element.name
+    if (parent_name is not None) and not element.full_name.startswith(parent_name):
+        output.append([element.full_name, parent_name])
+    parent_name = element.full_name
     if recursive:
         children = flz.get_children(element.id, flexilims_session=flexilims_session)
         for _, child in children.iterrows():
@@ -235,7 +245,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False):
         if recursive:
             children = flz.get_children(entity.id, flexilims_session=flexilims_session)
             for _, child in children.iterrows():
-                add_genealogy(flexilims_session, root_name=child.name,
+                add_genealogy(flexilims_session, root_name=child.full_name,
                               recursive=recursive)
 
 

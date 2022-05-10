@@ -20,39 +20,6 @@ class Dataset(object):
     """
     SUBCLASSES = dict()
 
-    @staticmethod
-    def parse_dataset_name(name):
-        """Parse a name into mouse, session, recording, dataset_name
-
-        Args:
-            name (str): name of the Dataset
-
-        Returns:
-            dict or None: None if parsing fails, a dictionary otherwise
-        """
-        pattern = (r'(?P<mouse>.*?)_(?P<session>S\d{8})_?(?P<session_num>\d+)?'
-                   r'_?(?P<recording>R\d{6})?_?(?P<recording_num>\d+)?'
-                   r'_(?P<dataset>.*)')
-        match = re.match(pattern, name)
-        if not match:
-            raise DatasetError('No match in: `%s`. Must be '
-                               '`<MOUSE>_SXXXXXX[...]_<DATASET>`.' % name)
-        # group session num and recording num together
-        output = match.groupdict()
-        sess_num = output.pop('session_num')
-        if sess_num is not None:
-            if output['session'] is None:
-                raise DatasetError('Found session number but not session name in `%s`'
-                                   % name)
-            output['session'] += '_%s' % sess_num
-        rec_num = output.pop('recording_num')
-        if rec_num is not None:
-            if output['recording'] is None:
-                raise DatasetError('Found recording number but not recording name in `%s`'
-                                   % name)
-            output['recording'] += '_%s' % rec_num
-        return output
-
     @classmethod
     def from_folder(cls, folder, verbose=True, flexilims_session=None, project=None):
         """Try to load all datasets found in the folder.
@@ -80,7 +47,8 @@ class Dataset(object):
         return data
 
     @staticmethod
-    def from_flexilims(project=None, name=None, data_series=None, flexilims_session=None):
+    def from_flexilims(project=None, name=None, data_series=None, flexilims_session=None,
+                       ignore_name_error=False):
         """Loads a dataset from flexilims.
 
         If the dataset_type attribute of the flexilims entry defined in
@@ -93,6 +61,8 @@ class Dataset(object):
             data_series: default to None. pd.Series as returned by flz.get_entities.
                          If provided, supersedes project and name
             flexilims_session: authentication session to access flexilims
+            ignore_name_error (bool): If False (default) will raise an error if the
+                                      dataset name and genealogy cannot be set.
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
@@ -114,12 +84,10 @@ class Dataset(object):
             ds = Dataset.SUBCLASSES[dataset_type](**kwargs)
         else:
             ds = Dataset(**kwargs)
-        try:
-            ds.name = name
-        except DatasetError:
-            print('\n!!! Cannot parse the name !!!\nWill not set mouse, session '
-                  'or recording')
-            ds.dataset_name = name
+
+        if ds.full_name != name:
+            raise DatasetError('Genealogy does not correspond to flexilims name:' +
+                               '\n %s: %s' % (name, ds.genealogy))
         return ds
 
     @staticmethod
@@ -178,12 +146,24 @@ class Dataset(object):
                 project_id=project,
                 flexilims_session=flexilims_session
             )
-            dataset_path = str(Path(origin['path']) / Dataset.parse_dataset_name(dataset_name)['dataset'])
+            short_name = dataset_name[len(origin_name)+1 :]
+            genealogy = tuple(origin.genealogy) + (short_name,)
+            dataset_path = str(Path(origin['path']) / short_name)
+            ds = Dataset(
+                path=dataset_path,
+                is_raw='no',
+                dataset_type=dataset_type,
+                genealogy=genealogy,
+                created=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                project=project,
+                origin_id=origin['id'],
+                flexilims_session=flexilims_session
+            )
             return Dataset(
                 path=dataset_path,
                 is_raw='no',
                 dataset_type=dataset_type,
-                name=dataset_name,
+                genealogy=genealogy,
                 created=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 project=project,
                 origin_id=origin['id'],
@@ -218,15 +198,16 @@ class Dataset(object):
                       is_raw=attr.pop('is_raw', None),
                       dataset_type=attr.pop('dataset_type'),
                       created=attr.pop('created', None),
+                      genealogy=attr.pop('genealogy', None),
                       origin_id=flm_series.get('origin_id', None),
                       extra_attributes=attr,
                       project_id=flm_series.project,
                       name=flm_series.name)
         return kwargs
 
-    def __init__(self, path, is_raw, dataset_type, name=None, extra_attributes=None,
-                 created=None, project=None, project_id=None, origin_id=None,
-                 flexilims_session=None):
+    def __init__(self, path, is_raw, dataset_type, genealogy=None,
+                 extra_attributes=None, created=None, project=None, project_id=None,
+                 origin_id=None, flexilims_session=None):
         """Construct a dataset manually. Is usually called through static methods
         'from_folder', 'from_flexilims', or 'from_origin'
 
@@ -235,8 +216,8 @@ class Dataset(object):
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
             dataset_type: type of the dataset, must be in PARAMETERS['dataset_types']
-            name: name of the dataset as on flexilims. Is expected to include mouse,
-                  session etc...
+            genealogy (tuple): parents of this dataset from the project (excluded) down to
+                               the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
@@ -246,12 +227,7 @@ class Dataset(object):
             origin_id: hexadecimal code for the origin on flexilims.
             flexilims_session: authentication session to connect to flexilims
         """
-        self.mouse = None
-        self.session = None
-        self.sample = None
-        self.recording = None
-        self.dataset_name = None
-        self.name = name
+        self.genealogy = genealogy
         self.path = Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
@@ -297,11 +273,11 @@ class Dataset(object):
         """
         if self.project_id is None:
             raise IOError('You must specify the project to get flexilims status')
-        if self.name is None:
+        if self.full_name is None:
             raise IOError('You must specify the dataset name to get flexilims status')
         series = flz.get_entity(datatype='dataset',
                                 project_id=self.project_id,
-                                name=self.name,
+                                name=self.full_name,
                                 flexilims_session=self.flexilims_session)
         return series
 
@@ -336,7 +312,7 @@ class Dataset(object):
             if (mode == 'overwrite') or (mode == 'update'):
                 # I need to pack the dataset field in attributes
                 fmt = self.format()
-                for field in ['path', 'created', 'is_raw', 'dataset_type']:
+                for field in ['path', 'created', 'is_raw', 'dataset_type', 'genealogy']:
                     attributes[field] = fmt[field]
 
                 # resetting origin_id to null is not implemented. Specifically check
@@ -347,7 +323,7 @@ class Dataset(object):
 
                 resp = flz.update_entity(
                     datatype='dataset',
-                    name=self.name,
+                    name=self.full_name,
                     origin_id=self.origin_id,
                     mode=mode,
                     attributes=attributes,
@@ -369,16 +345,18 @@ class Dataset(object):
             path=str(self.path),
             is_raw='yes' if self.is_raw else 'no',
             project_id=self.project_id,
-            dataset_name=self.name,
+            dataset_name=self.full_name,
             attributes=attributes,
             flexilims_session=self.flexilims_session,
             conflicts='abort',
         )
         # update the dataset name to reflex the potential new index due to append
         online_name = resp['name']
-        root_name = '_'.join([e for e in [self.mouse, self.session, self.recording] if e
-                             is not None])
-        assert online_name.startswith(root_name)
+        if self.genealogy:
+            root_name = '_'.join(self.genealogy)
+            assert online_name.startswith(root_name)
+        else:
+            root_name = ''
         self.dataset_name = online_name[len(root_name) + 1:]
         return resp
 
@@ -410,7 +388,7 @@ class Dataset(object):
         if flm_data is None:
             flm_data = self.get_flexilims_entry()
             if flm_data is None:
-                raise IOError('No flexilims entry for dataset %s' % self.name)
+                raise IOError('No flexilims entry for dataset %s' % self.full_name)
 
         # remove the flexilims keywords that are not used by Dataset if they are present
         flm_data = flm_data.drop(['createdBy', 'objects', 'dateCreated', 'customEntities',
@@ -455,14 +433,15 @@ class Dataset(object):
                     created=self.created,
                     dataset_type=self.dataset_type,
                     is_raw='yes' if self.is_raw else 'no',
-                    name=self.name,
+                    name=self.full_name,
+                    genealogy=self.genealogy,
                     project=self.project_id,
                     origin_id=self.origin_id,
                     type='dataset')
 
         if mode.lower() == 'flexilims':
             data.update(self.extra_attributes)
-            series = pd.Series(data, name=self.name)
+            series = pd.Series(data, name=self.full_name)
             return series
         elif mode.lower() == 'yaml':
             data['extra_attributes'] = self.extra_attributes
@@ -523,39 +502,33 @@ class Dataset(object):
                                    'project')
 
     @property
-    def name(self):
+    def full_name(self):
         """Full name of the dataset as it would appear on Flexilims.
 
         Including mouse, sample, session and recording, whichever apply.
         """
-        if self.dataset_name is None:
-            return
-        elements = [getattr(self, w) for w in ('mouse', 'sample', 'session', 'recording',
-                                               'dataset_name')]
-        if isinstance(elements[1], list):
-            # sample is a list of samples
-            elements[1] = '_'.join(elements[1])
-        name = '_'.join([e for e in elements if e is not None])
+        if self.genealogy is not None:
+            name = '_'.join([e for e in self.genealogy if e is not None])
+        else:
+            name = None
         return name
 
-    @name.setter
-    def name(self, value):
-        """Set the name if it is correctly formatted"""
-        if value is None:
-            for w in ('mouse', 'session', 'recording', 'dataset_name'):
-                setattr(self, w, None)
-            return
-        try:
-            match = Dataset.parse_dataset_name(value)
-        except DatasetError as err:
-            raise DatasetError('Cannot parse dataset name. ' + err.args[0] +
-                               '\nSet self.mouse, self.session, self.recording, and '
-                               'self.dataset_name individually')
-        self.mouse = match['mouse']
-        self.dataset_name = match['dataset']
-        self.session = match['session']
-        self.recording = match['recording']
+    @full_name.setter
+    def full_name(self, value):
+        raise DatasetError('Full name cannot be set directly. Set self.genealogy instead')
 
+    @property
+    def dataset_name(self):
+        """Short name of the dataset
+        """
+        if self.genealogy is not None:
+            return self.genealogy[-1]
+        else:
+            return None
+
+    @full_name.setter
+    def full_name(self, value):
+        raise DatasetError('Full name cannot be set directly. Set self.genealogy instead')
     @property
     def dataset_type(self):
         """Type of the dataset. Must be in PARAMETERS['dataset_types']"""
@@ -567,6 +540,22 @@ class Dataset(object):
             raise IOError('dataset_type "%s" not valid. Valid types are: '
                           '%s' % (value, PARAMETERS['dataset_types']))
         self._dataset_type = value.lower()
+
+    @property
+    def genealogy(self):
+        """Parents of this dataset from the project (excluded) down to the dataset name
+        itself (included)"""
+        return self._genealogy
+    @genealogy.setter
+    def genealogy(self, value):
+        if value is None:
+            self._genealogy = value
+            return
+        if isinstance(value, list) or isinstance(value, tuple):
+            if all([isinstance(el, str) for el in value]):
+                self._genealogy = tuple(value)
+                return
+        raise DatasetError('Genealogy must be a tuple of strings.\n Got: %s'% value)
 
     @property
     def is_raw(self):
