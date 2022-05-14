@@ -172,7 +172,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     if flexilims_session is None:
         flexilims_session = flz.get_flexilims_session(project_id=session_data['project'])
     mouse = flz.get_entity(datatype='mouse', name=session_data['mouse'],
-                           flexilims_session=flexilims_session)
+                           flexilims_session=flexilims_session, format_reply=False)
     if mouse is None:
         raise SyncYmlError('Mouse not on flexilims. You must add it manually first')
 
@@ -194,6 +194,9 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         value = session_data.get(field, None)
         if value is not None:
             attributes[field] = value
+    # adding genealogy info (assuming session can only be only below mouse)
+    attributes['genealogy'] = mouse['attributes'].get('genealogy', [mouse['name']]) + [
+                              session_data['session']]
     # if session is not specified, then entries will be added directly as
     # children of the mouse
     if session_data['session'] is not None:
@@ -206,13 +209,12 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             conflicts=conflicts)
         root_id = session['id']
     else:
-        root_id = mouse.id
+        root_id = mouse['id']
 
     # session datasets
     for ds_name, ds in session_data.get('datasets', {}).items():
-        ds.mouse = mouse.name
+        ds.genealogy = [mouse['name'], session_data['session'], ds_name]
         ds.project = session_data['project']
-        ds.session = session_data['session']
         ds.origin_id = root_id
         ds.flexilims_session = flexilims_session
         ds.update_flexilims(mode='safe')
@@ -226,6 +228,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         for field in ['notes', 'path', 'timestamp']:
             value = rec_data.get(field, '')
             attributes[field] = value if value is not None else ''
+        attributes['genealogy'] = session['attributes']['genealogy'] + [short_rec_name]
         rec_type = rec_data.get('recording_type', 'unspecified')
         if not rec_type:
             rec_type = 'unspecified'
@@ -242,10 +245,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
 
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
-            ds.mouse = mouse.name
+            ds.genealogy = [mouse['name'], session_data['session'], short_rec_name, ds_name]
             ds.project = session_data['project']
-            ds.session = session_data['session']
-            ds.recording = short_rec_name
             ds.origin_id = rec_rep['id']
             ds.flexilims_session = flexilims_session
             ds.update_flexilims(mode='safe')
@@ -255,11 +256,18 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         # we'll need a utility function to deal with recursion
         for short_sample_name, sample_data in samples.items():
             sample_name = parent['name'] + '_' + short_sample_name
-            if short_parent_name is not None:
-                short_sample_name = short_parent_name + '_' + short_sample_name
             attributes = sample_data.get('attributes', None)
             if attributes is None:
                 attributes = {}
+
+            attributes['genealogy'] = parent['attributes']['genealogy'] + [
+                                      short_sample_name]
+            # put back into sample_data for recursion
+            sample_data['attributes'] = attributes
+
+            if short_parent_name is not None:
+                short_sample_name = short_parent_name + '_' + short_sample_name
+
             # we always use `skip` to add samples
             sample_rep = flz.add_sample(
                 parent['id'],
@@ -270,10 +278,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             )
             # deal with datasets attached to this sample
             for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.mouse = mouse.name
+                ds.genealogy = attributes['genealogy'] + [ds_name]
                 ds.project = session_data['project']
-                ds.sample = short_sample_name
-                ds.session = session_data['session']
                 ds.origin_id = sample_rep['id']
                 ds.flexilims_session = flexilims_session
                 ds.update_flexilims(mode='safe')
@@ -297,7 +303,8 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
 
     """
     out_dict = copy.deepcopy(session_data)
-    clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True)
+    clean_dictionary_recursively(out_dict, keys=['name'], format_dataset=True,
+                                 tuple_as_list=True)
     if target_file is not None:
         target_file = Path(target_file)
         if target_file.exists() and not overwrite:
@@ -338,7 +345,7 @@ def create_dataset(dataset_infos, parent, raw_data_folder, verbose=True,
     # check dataset_infos for extra datasets
     for ds_name, ds_data in dataset_infos.items():
         ds_path = Path(raw_data_folder) / ds_data['path']
-        # first deal with dataset that are not in parent path']
+        # first deal with dataset that are not in parent path
         ds_class = Dataset.SUBCLASSES.get(ds_data['dataset_type'], Dataset)
         if ds_path.is_dir() and (ds_path != parent['path']):
             ds = ds_class.from_folder(ds_path, verbose=verbose)
@@ -565,7 +572,8 @@ def _read_dataset(name, data):
     level, _ = _read_level(
         data,
         mandatory_args=('dataset_type', 'path'),
-        optional_args=('notes', 'attributes', 'created', 'is_raw', 'origin_id'),
+        optional_args=('notes', 'attributes', 'created', 'is_raw', 'origin_id',
+                       'genealogy'),
         nested_levels=()
     )
     level['name'] = name
@@ -573,7 +581,7 @@ def _read_dataset(name, data):
 
 
 def _read_level(yml_level, mandatory_args=('project', 'mouse', 'session'),
-                optional_args=('path', 'notes', 'attributes'),
+                optional_args=('path', 'notes', 'attributes', 'genealogy'),
                 nested_levels=('recordings', 'datasets', 'samples')):
     """Read one layer of the yml file (i.e. a dictionary)
 
