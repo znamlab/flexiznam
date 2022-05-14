@@ -156,7 +156,12 @@ def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     from flexiznam import camp, errors
     import pathlib
 
-
+    source_yaml = pathlib.Path(source_yaml)
+    try:
+        camp.sync_data.upload_yaml(source_yaml, raw_data_folder, conflicts=conflicts,
+                                   verbose=False)
+    except errors.SyncYmlError as err:
+        raise click.ClickException(err.args[0])
 
 @cli.command()
 @click.option('-p', '--project_id', prompt='Enter the project ID', help='Project ID.')
