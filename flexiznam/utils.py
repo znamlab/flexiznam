@@ -47,7 +47,7 @@ def compare_series(first_series, second_series, series_name=('first', 'second'),
 
 
 def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
-                                 format_dataset=False):
+                                 format_dataset=False, tuple_as_list=False):
     """Recursively clean a dictionary inplace
 
     Args:
@@ -57,6 +57,7 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
             string representation (default True)
         format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`
             instances by their yaml representation (default False)
+        tuple_as_list (bool): replace tuples by list (default False)
     """
 
     if isinstance(keys, str):
@@ -68,9 +69,12 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
         ds_classes.add(Dataset)
     for k, v in dictionary.items():
         if isinstance(v, dict):
-            clean_dictionary_recursively(v, keys, path2string, format_dataset)
+            clean_dictionary_recursively(v, keys, path2string, format_dataset,
+                                         tuple_as_list)
         if path2string and isinstance(v, pathlib.Path):
             dictionary[k] = str(PurePosixPath(v))
+        if tuple_as_list and isinstance(v, tuple):
+            dictionary[k] = list(v)
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
                 ds_dict = v.format(mode='yaml')
@@ -84,6 +88,8 @@ def clean_dictionary_recursively(dictionary, keys=(), path2string=True,
                 # the reference the output file has `*id001` instead of `{}`
                 ds_dict['attributes'] = dict(ds_dict.pop('extra_attributes', {}))
                 ds_dict['path'] = str(PurePosixPath(Path(ds_dict['path'])))
+                clean_dictionary_recursively(ds_dict, path2string=path2string,
+                                             tuple_as_list=tuple_as_list)
                 dictionary[k] = ds_dict
 
 
@@ -126,9 +132,9 @@ def check_flexilims_paths(flexilims_session, root_name=None, recursive=True,
 def _check_path(output, element, flexilims_session, recursive, error_only):
     """Subfunction to recurse path checking"""
     if 'path' not in element:
-        output.append([element.full_name, element.type, 'path not defined', '', 1])
+        output.append([element.name, element.type, 'path not defined', '', 1])
     elif not isinstance(element.path, str):
-        output.append([element.full_name, element.type, 'Path is not a string!', element.path,
+        output.append([element.name, element.type, 'Path is not a string!', element.path,
                        1])
     elif element.type != 'dataset':
         ok = []
@@ -136,17 +142,17 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
             if (Path(v) / element.path).is_dir():
                 ok.append(v)
         if not len(ok):
-            output.append([element.full_name, element.type, 'folder does not exist', '', 1])
+            output.append([element.name, element.type, 'folder does not exist', '', 1])
         elif not error_only:
-            output.append([element.full_name, element.type, 'Folder found', ' '.join(ok), 0])
+            output.append([element.name, element.type, 'Folder found', ' '.join(ok), 0])
     else:
         ds = Dataset.from_flexilims(flexilims_session=flexilims_session,
                                     data_series=element)
         if not ds.path_full.exists():
-            output.append([element.full_name, element.type, 'dataset path unvalid',
+            output.append([element.name, element.type, 'dataset path unvalid',
                            ds.path_full, 1])
         elif not error_only:
-            output.append([element.full_name, element.type, 'Data found', ds.path_full, 0])
+            output.append([element.name, element.type, 'Data found', ds.path_full, 0])
     if recursive:
         children = flz.get_children(element.id, flexilims_session=flexilims_session)
         for _, child in children.iterrows():
@@ -184,16 +190,16 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
 
 
 def _check_name(output, element, flexilims_session, parent_name, recursive):
-    if (parent_name is not None) and not element.full_name.startswith(parent_name):
-        output.append([element.full_name, parent_name])
-    parent_name = element.full_name
+    if (parent_name is not None) and not element.name.startswith(parent_name):
+        output.append([element.name, parent_name])
+    parent_name = element.name
     if recursive:
         children = flz.get_children(element.id, flexilims_session=flexilims_session)
         for _, child in children.iterrows():
             _check_name(output, child, flexilims_session, parent_name, recursive)
 
 
-def add_genealogy(flexilims_session, root_name=None, recursive=False):
+def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None):
     """Add genealogy info to properly named sections of database
 
     If the names of all entries are as expected (check_flexilims_names return None),
@@ -204,10 +210,13 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False):
         flexilims_session (flm.Session): flexilims session object, must define project
         root_name (str): optional, name of entity to check. If not provided, will check
                          all mice.
-        recursive (bool): do recursively on childer (default False)
+        recursive (bool): do recursively on children (default False)
+        added (None): holder for recursion. Do not use
     Returns:
-        None
+        list of entity names for which genealogy was added
     """
+    if added is None:
+        added = []
     ok = check_flexilims_names(flexilims_session=flexilims_session, root_name=root_name,
                                recursive=recursive)
     if ok is not None:
@@ -235,18 +244,23 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False):
             parts[i] = part.replace(cut, '')
             cut = part + '_'
 
-        if ('genealogy' in entity) and (entity.genealogy != parts):
-            raise FlexilimsError('%s genealogy does not match database: "%s" vs "%s"' % (
-                                 entity.name, parts, entity.genealogy))
+        if 'genealogy' in entity:
+            if entity.genealogy != parts:
+                raise FlexilimsError('%s genealogy does not match database: "%s" vs '
+                                     '"%s"' % (entity.name, parts, entity.genealogy))
+            else:
+                pass
         else:
             flz.update_entity(entity.type, flexilims_session=flexilims_session,
                               id=entity.id, mode='update',
                               attributes=dict(genealogy=parts))
+            added.append(entity.name)
         if recursive:
             children = flz.get_children(entity.id, flexilims_session=flexilims_session)
             for _, child in children.iterrows():
-                add_genealogy(flexilims_session, root_name=child.full_name,
-                              recursive=recursive)
+                add_genealogy(flexilims_session, root_name=child.name,
+                              recursive=recursive, added=added)
+    return added
 
 
 def add_missing_paths(flexilims_session, root_name=None):

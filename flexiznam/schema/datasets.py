@@ -227,11 +227,20 @@ class Dataset(object):
             origin_id: hexadecimal code for the origin on flexilims.
             flexilims_session: authentication session to connect to flexilims
         """
+        if extra_attributes is None:
+            extra_attributes = {}
+        else:
+            extra_attributes = dict(extra_attributes)
+            double_args = [kw for kw in ('path', 'is_raw', 'dataset_type', 'genealogy',
+                                         'created') if kw in extra_attributes]
+            if len(double_args):
+                raise DatasetError('Mandatory attribute(s) present in '
+                                   'extra_attributes: %s' % (double_args))
+        self.extra_attributes = extra_attributes
         self.genealogy = genealogy
         self.path = Path(path)
         self.is_raw = is_raw
         self.dataset_type = str(dataset_type)
-        self.extra_attributes = extra_attributes if extra_attributes is not None else {}
         self.created = created
         self.origin_id = origin_id
         self._flexilims_session = flexilims_session
@@ -294,15 +303,20 @@ class Dataset(object):
         Returns:
             Flexilims reply
         """
+        if self.genealogy is None:
+            raise DatasetError('Genealogy must be set to upload to flexilims')
+
         status = self.flexilims_status()
         attributes = self.extra_attributes.copy()
         # the following lines are necessary because pandas converts python types to numpy
-        # types, which JSON does not understand
+        # types, which JSON does not understand and because JSON doesn't like tuples
         for attribute in attributes:
             if isinstance(attributes[attribute], np.integer):
                 attributes[attribute] = int(attributes[attribute])
             if isinstance(attributes[attribute], np.bool_):
                 attributes[attribute] = bool(attributes[attribute])
+            if isinstance(attributes[attribute], tuple):
+                attributes[attribute] = list(attribute)
 
         if status == 'different':
             if mode == 'safe':
@@ -343,6 +357,7 @@ class Dataset(object):
             dataset_type=self.dataset_type,
             created=self.created,
             path=str(self.path),
+            genealogy=self.genealogy,
             is_raw='yes' if self.is_raw else 'no',
             project_id=self.project_id,
             dataset_name=self.full_name,
@@ -350,15 +365,13 @@ class Dataset(object):
             flexilims_session=self.flexilims_session,
             conflicts='abort',
         )
-        # update the dataset name to reflex the potential new index due to append
+
         online_name = resp['name']
-        if self.genealogy:
-            root_name = '_'.join(self.genealogy)
-            assert online_name.startswith(root_name)
-        else:
-            root_name = ''
-        self.dataset_name = online_name[len(root_name) + 1:]
+        assert online_name == self.full_name
+        root_name = '_'.join(self.genealogy)
+        assert online_name.startswith(root_name)
         return resp
+
 
     def flexilims_status(self):
         """Status of the dataset on flexilims
@@ -546,6 +559,7 @@ class Dataset(object):
         """Parents of this dataset from the project (excluded) down to the dataset name
         itself (included)"""
         return self._genealogy
+
     @genealogy.setter
     def genealogy(self, value):
         if value is None:

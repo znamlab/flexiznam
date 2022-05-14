@@ -55,7 +55,7 @@ def test_make_full_yaml(tmp_path):
     # read auto yaml
     with open(out_yml, 'r') as reader:
         auto_out = yaml.safe_load(reader)
-    assert len(auto_out) == 9
+    assert len(auto_out) == 10
     result = runner.invoke(cli.process_yaml, ['-s', path2yaml, '-t', out_yml])
     assert result.exit_code == 1
     result = runner.invoke(cli.process_yaml, ['-s', path2yaml, '-t', out_yml,
@@ -64,7 +64,7 @@ def test_make_full_yaml(tmp_path):
     # read auto yaml
     with open(out_yml, 'r') as reader:
         auto_out = yaml.safe_load(reader)
-    assert len(auto_out) == 9
+    assert len(auto_out) == 10
 
 
 @pytest.mark.integtest
@@ -96,3 +96,6 @@ def test_flm_issues(tmp_path):
     runner = CliRunner()
     result = runner.invoke(cli.check_flexilims_issues,
                            ['-t', out_csv, '-p', TEST_PROJECT])
+    assert result.exit_code == 0
+    assert out_csv.is_file()
+

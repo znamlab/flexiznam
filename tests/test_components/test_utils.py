@@ -68,8 +68,10 @@ def test_check_flexilims_names(flm_sess):
 
 
 def test_add_genealogy(flm_sess):
-    utils.add_genealogy(flm_sess)
-    utils.add_genealogy(flm_sess, recursive=True)
+    added = utils.add_genealogy(flm_sess)
+    assert added == []
+    added = utils.add_genealogy(flm_sess, recursive=True)
+    assert added == []
 
 
 def test_add_missing_paths(flm_sess):
