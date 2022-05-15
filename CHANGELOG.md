@@ -6,6 +6,18 @@
 - Add CLI function: `check_flexilims_issues` to check for ill-named entity and invalid 
   paths
 
+### Breaking changes:
+- `add_dataset` requires the genealogy argument
+- `from_folder` uses a `folder_genealogy` argument instead of the previous `mouse`, 
+  `session` and ` recording` arguments
+- `Dataset` creation requires `genealogy` instead of `name`
+- `Dataset` has now a `Dataset.full_name` and `Dataset.short_name` property instead 
+  of a `Dataset.name` 
+
+### Minor
+- `add_mouse` can be given a dictionary of info instead of reading them from MCMS (to 
+  allow for manual download)
+
 ## v0.3.0
 
 ### Breaking changes:
