@@ -16,6 +16,8 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+When installing `flexiznam` requirments, `flexilims` will be installed from our Crick github page. Make sure you have access to this repository by setting ssh keys as advised on the github [help page](https://docs.github.com/en/enterprise-server@3.0/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
+
 Don't forget to use the `-e` flag when installing flexiznam if you want to be able to edit the code.
 
 To check that the install is successful you can type `flexiznam --help` in a terminal. You can also start python and `import flexiznam`.
@@ -30,11 +32,26 @@ You can also install the develop branch:
 pip install git+ssh://git@github.com/znamlab/flexiznam.git@dev
 ```
 
+## Updating
+
 Once flexiznam is installed, you can also use pip to keep the package updated:
 ```
 pip install --upgrade git+ssh://git@github.com/znamlab/flexiznam.git
 ```
-This will update the package as long as the version of the repository is higher than the one you have installed.
+This will update the package as long as the version of the repository is higher than the one you have installed. After the update, it is advised to update the config file to create potentially new entries. This can be done with:
+
+```
+flexiznam config --update
+```
+
+If you used `pip -e .` to install, updating can be done with:
+
+```
+cd flexiznam
+git pull 
+pip install -e . --upgrade
+flexiznam config --update
+```
 
 ## Configuration
 
