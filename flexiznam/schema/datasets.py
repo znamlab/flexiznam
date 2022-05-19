@@ -146,7 +146,7 @@ class Dataset(object):
                 project_id=project,
                 flexilims_session=flexilims_session
             )
-            short_name = dataset_name[len(origin_name)+1 :]
+            short_name = dataset_name[len(origin['name'])+1 :]
             genealogy = tuple(origin.genealogy) + (short_name,)
             dataset_path = str(Path(origin['path']) / short_name)
             ds = Dataset(
