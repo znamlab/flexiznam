@@ -7,7 +7,7 @@ from flexiznam.errors import FlexilimsError, NameNotUniqueError
 # Test functions from main.py
 from flexiznam.schema import Dataset
 # this needs to change every time I reset flexlilims
-MOUSE_ID = '621bb04521d6217134881268'
+MOUSE_ID = '627e885ced576211cd55f50d'
 
 @pytest.mark.integtest
 def test_get_flexilims_session():
@@ -42,12 +42,13 @@ def test_get_experimental_sessions(flm_sess):
 def test_get_entities(flm_sess):
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', flexilims_session=flm_sess)
-    assert mice_df.shape == (3, 14)
+    assert mice_df.shape[0] > 1
+    assert hasattr(mice_df, 'birth_date')
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', format_reply=False,
                                flexilims_session=flm_sess)
     assert isinstance(mice_df, list)
-    assert len(mice_df) == 3
+    assert all(['sex' in m['attributes'] for m in mice_df])
 
 
 @pytest.mark.integtest
@@ -56,14 +57,16 @@ def test_get_entity(flm_sess):
                            project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse', flexilims_session=flm_sess)
     assert isinstance(mouse, pd.Series)
-    assert mouse.shape == (14,)
+    for k in ('sex', 'birth_date', 'id', 'dateCreated'):
+        assert hasattr(mouse, k)
     mouse = flz.get_entity(id=MOUSE_ID,
                            project_id=PARAMETERS['project_ids']['demo_project'],
                            datatype='mouse',
                            format_reply=False,
                            flexilims_session=flm_sess)
     assert isinstance(mouse, dict)
-    assert len(mouse) == 10
+    assert 'id' in mouse
+    assert 'birth_date' in mouse['attributes']
 
 
 @pytest.mark.integtest

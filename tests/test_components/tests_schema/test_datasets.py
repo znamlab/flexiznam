@@ -10,56 +10,15 @@ from tests.test_components.test_main import MOUSE_ID
 
 
 def test_dataset():
-    ds = Dataset(project='test', dataset_type='camera', is_raw=False, path='')
-    # test a bunch of names and check we have what expected
-    parts_label = ['mouse', 'session', 'recording', 'dataset_name']
-    names = [dict(mouse='mouse', session='S12345678', recording='R123456',
-                  dataset_name='name_with_underscore'),
-             dict(mouse='mouse', session='S12345678_00', recording='R123456_00',
-                  dataset_name='name_with_underscore'),
-             dict(mouse='mo_use', session='S12345678', recording='R123456',
-                  dataset_name='name_with_underscore'),
-             dict(mouse='mo_use', session='S12345678_123456', recording=None,
-                  dataset_name='name_with_underscore'),
-             # dict(mouse='mo_use', session='S12345678_123456',
-             #      recording='R123456wihttext',
-             #      dataset_name='name_with_underscore'),
-             # dict(mouse='mo_use', session='S12345678_123456',
-             #      recording='R123456_recording_with_underscore',
-             #      dataset_name='name_with_underscore'),
-             # dict(mouse='mo_use', session='S12345678_1',
-             #      recording='R123456_recording_with_underscore_12',
-             #      dataset_name='name_with_underscore'),
-             ]
-
-    for n in names:
-        parts = [n[k] for k in parts_label]
-        ds.name = '_'.join([p for p in parts if p is not None])
-        for p in parts_label:
-            assert getattr(ds, p) == n[p]
-
-    # test also a few unvalid datasets
-    bad_names = ['hopeles',
-                 'mo_use_S12345678_123456_000_norec',
-                 'mo_use_000_R123456_000_nosess']
-    msgs = [('Cannot parse dataset name. No match in: `hopeles`. Must be '
-             '`<MOUSE>_SXXXXXX[...]_<DATASET>`.\nSet self.mouse, self.session, '
-             'self.recording, and self.dataset_name individually'),
-            ('Cannot parse dataset name. Found recording number but not recording name '
-             'in `mo_use_S12345678_123456_000_norec`\nSet self.mouse, self.session, '
-             'self.recording, and self.dataset_name individually'),
-            ('Cannot parse dataset name. No match in: `mo_use_000_R123456_000_nosess`. '
-             'Must be `<MOUSE>_SXXXXXX[...]_<DATASET>`.\nSet self.mouse, self.session, '
-             'self.recording, and self.dataset_name individually')]
-    for name, err_msg in zip(bad_names, msgs):
-        with pytest.raises(DatasetError) as exc:
-            ds.name = name
-        assert exc.value.args[0] == err_msg
+    ds = Dataset(project='test', dataset_type='camera', is_raw=False, path='',
+                 genealogy=('a', 'parent', 'test'))
+    assert ds.full_name == 'a_parent_test'
+    assert ds.dataset_name == 'test'
 
 
 def test_constructor():
     """Make sure that all dataset subclass work with the same constructor"""
-    constructor = dict(path='none', is_raw=True, name=None,
+    constructor = dict(path='none', is_raw=True, genealogy=None,
                        extra_attributes=dict(p=2), created='random',
                        project='demo_project',
                        project_id=PARAMETERS['project_ids']['demo_project'],
@@ -79,8 +38,10 @@ def test_dataset_flexilims_integration(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     ds = Dataset(project='demo_project', path='fake/path', is_raw='no',
                  dataset_type='camera', extra_attributes={}, created='',
-                 flexilims_session=flm_sess)
-    ds.dataset_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
+                 flexilims_session=flm_sess, genealogy=('mouse_physio_2p',
+                                                        'S20211102',
+                                                        'R165821_SpheresPermTube',
+                                                        'wf_camera'))
     st = ds.flexilims_status()
     assert st == 'different'
     rep = ds.flexilims_report()
@@ -90,7 +51,6 @@ def test_dataset_flexilims_integration(flm_sess):
                                           'metadata_file': 'NA',
                                           'timestamp_file': 'NA',
                                           'video_file': 'NA',
-                                          'genealogy': 'NA'
                                           },
                                  flexilims={'is_raw': 'yes',
                                             'created': '2021-11-02 17:03:17',
@@ -100,17 +60,16 @@ def test_dataset_flexilims_integration(flm_sess):
                                             'timestamp_file': 'wf_camera_timestamps.csv',
                                             'video_file': 'wf_camera_data.bin',
                                             'metadata_file': 'wf_camera_metadata.txt',
-                                            'genealogy':  ['mouse_physio_2p',
-                                                           'S20211102',
-                                                           'R165821_SpheresPermTube',
-                                                           'wf_camera']
                                             }))
     assert all(rep.sort_index() == expected.sort_index())
     ds_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     fmt = {'path': 'fake/path', 'created': '', 'dataset_type': 'camera', 'is_raw': 'no',
-           'name': ds_name, 'project': '610989f9a651ff0b6237e0f6', 'type': 'dataset'}
+           'name': ds_name, 'project': '610989f9a651ff0b6237e0f6', 'type': 'dataset',
+           'genealogy': ('mouse_physio_2p', 'S20211102', 'R165821_SpheresPermTube',
+                         'wf_camera')}
     assert ds.format().name == ds_name
-    assert all(ds.format().drop('origin_id') == pd.Series(data=fmt, name=ds_name))
+    assert all(ds.format().drop('origin_id').sort_index() ==
+               pd.Series(data=fmt, name=ds_name).sort_index())
 
     # same with yaml mode
     fmt['extra_attributes'] = {}
@@ -139,7 +98,7 @@ def test_from_flexilims(flm_sess):
     ds = Dataset.from_flexilims(project, flexilims_session=flm_sess,
                                 name='mouse_physio_2p_S20211102_R165821_'
                                      'SpheresPermTube_wf_camera')
-    assert ds.name == 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
+    assert ds.full_name == 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     assert ds.flexilims_status() == 'up-to-date'
     assert ds.project == project
 

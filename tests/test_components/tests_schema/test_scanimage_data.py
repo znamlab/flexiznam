@@ -9,7 +9,7 @@ def test_scanimage(tmp_path):
     ds = ScanimageData.from_folder(data_dir, verbose=False)
     assert len(ds) == 1
     d = next(iter(ds.values()))
-    assert d.name == 'Ref_00001'
-    assert d.name == next(iter(ds.keys()))
+    assert d.full_name == 'Ref_Ref_00001'
+    assert d.dataset_name == 'Ref_00001'
     assert d.is_valid()
     assert len(d) == 5

@@ -1,9 +1,12 @@
+import warnings
 import pandas as pd
 import flexilims as flm
 from pathlib import Path
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import NameNotUniqueError, FlexilimsError
+
+warnings.simplefilter('always', DeprecationWarning)
 
 
 def _format_project(project_id, prm):
@@ -48,17 +51,21 @@ def get_flexilims_session(project_id, username=None, password=None):
     return session
 
 
-def add_mouse(mouse_name, project_id=None, flexilims_session=None, mcms_animal_name=None,
-              mcms_username=None, mcms_password=None, flexilims_username=None,
-              flexilims_password=None):
+def add_mouse(mouse_name, project_id=None, mouse_info=None, flexilims_session=None,
+              get_mcms_data=True, mcms_animal_name=None, mcms_username=None,
+              mcms_password=None,  flexilims_username=None, flexilims_password=None):
     """Check if a mouse is already in the database and add it if it isn't
 
     Args:
         mouse_name (str): name of the mouse for flexilims
         project_id (str): hexadecimal project id or project name (used only if
                           flexilims_session is None)
+        mouse_info (dict): a dictionary of mouse info that will be uploaded as
+                           attributes. It will be used to update info from MCMS.
         flexilims_session (:py:class:`flexilims.Flexilims`): [optional] a flexilims
                           session to reuse identification token
+        get_mcms_data (bool): Get the data from MCMS and add it to `mouse_info`? (
+                              default True)
         mcms_animal_name (str): [optional] name of the mouse on MCMS if different from
                                 flexilims name (not advised)
         mcms_username (str): [optional] username for MCMS. Will try to get it from
@@ -84,23 +91,35 @@ def add_mouse(mouse_name, project_id=None, flexilims_session=None, mcms_animal_n
         print("Mouse already online")
         return mice_df.loc[mouse_name]
 
-    if mcms_username is None:
-        mcms_username = PARAMETERS['mcms_username']
-    if mcms_animal_name is None:
-        mcms_animal_name = mouse_name
-    mouse_info = mcms.get_mouse_df(mouse_name=mcms_animal_name, username=mcms_username)
+    if mouse_info is None:
+        mouse_info = {}
+    else:
+        mouse_info = dict(mouse_info)
 
-    # add the data in flexilims, which requires a directory
-    mouse_info = dict(mouse_info)
-    for k, v in mouse_info.items():
-        if type(v) != str:
-            mouse_info[k] = float(v)
-        else:
-            mouse_info[k] = v.strip()
+    if get_mcms_data:
+        if mcms_username is None:
+            mcms_username = PARAMETERS['mcms_username']
+        if mcms_animal_name is None:
+            mcms_animal_name = mouse_name
+        mcms_info = dict(mcms.get_mouse_df(mouse_name=mcms_animal_name,
+                                           username=mcms_username,
+                                           mcms_password=mcms_password))
+        # format properly results
+        for k, v in mcms_info.items():
+            if type(v) != str:
+                mcms_info[k] = float(v)
+            else:
+                mcms_info[k] = v.strip()
+
+        # update mouse_info with mcms_info but prioritise mouse_info for conflicts
+        mouse_info = dict(mcms_info, **mouse_info)
+
+    # add the genealogy info, which is just [mouse_name]
+    mouse_info['genealogy'] = [mouse_name]
     resp = flexilims_session.post(
         datatype='mouse',
         name=mouse_name,
-        attributes=dict(mouse_info),
+        attributes=mouse_info,
         strict_validation=False,
     )
     return resp
@@ -149,8 +168,11 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
         attributes['path'] = str(Path(parent_name) / session_name)
     session_info.update(attributes)
 
+    if 'genealogy' not in attributes:
+        warnings.warn('Genealogy not provided for session %s' % session_name,
+                      DeprecationWarning, stacklevel=3)
     online_session = get_entity(datatype='session', name=session_name,
-                                flexilims_session=flexilims_session)
+                                flexilims_session=flexilims_session, format_reply=False)
     if online_session is not None:
         if conflicts.lower() == 'skip':
             print('A session named %s already exists' % session_name)
@@ -163,7 +185,7 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
                                  id=online_session['id'],
                                  origin_id=parent_id,
                                  mode=conflicts,
-                                 attributes=attributes,
+                                 attributes=session_info,
                                  other_relations=None,
                                  flexilims_session=flexilims_session)
             return resp
@@ -339,7 +361,8 @@ def add_sample(parent_id, attributes=None, sample_name=None,
     online_sample = get_entity(
         datatype='sample',
         name=sample_name,
-        flexilims_session=flexilims_session
+        flexilims_session=flexilims_session,
+        format_reply=False
     )
     if attributes is None:
         attributes = {}
@@ -369,9 +392,9 @@ def add_sample(parent_id, attributes=None, sample_name=None,
     return resp
 
 
-def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id=None,
-                flexilims_session=None, dataset_name=None, attributes=None,
-                strict_validation=False, conflicts='append'):
+def add_dataset(parent_id, dataset_type, created, path, genealogy, is_raw='yes',
+                project_id=None, flexilims_session=None, dataset_name=None,
+                attributes=None, strict_validation=False, conflicts='append'):
     """Add a dataset as a child of a recording, session, or sample
 
     Args:
@@ -379,6 +402,8 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
         dataset_type (str): dataset_type, must be a type define in the config file
         created (str): date of creation as text, usually in this format: '2021-05-24 14:56:41'
         path (str): path to the data relative to the project folder
+        genealogy (tuple): parents of this dataset from the project (excluded) down to
+                           the dataset name itself (included)
         is_raw (str): `yes` or `no`, used to find the root directory
         project_id (str): hexadecimal ID or name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): authentication
@@ -422,9 +447,10 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
         'dataset_type': dataset_type,
         'created': created,
         'path': path,
-        'is_raw': is_raw
+        'is_raw': is_raw,
+        'genealogy': genealogy
     }
-    reserved_attributes = ['dataset_type', 'created', 'path', 'is_raw']
+    reserved_attributes = ['dataset_type', 'created', 'path', 'is_raw', 'genealogy']
     if attributes is not None:
         for attribute in attributes:
             assert attribute not in reserved_attributes
@@ -464,7 +490,7 @@ def add_dataset(parent_id, dataset_type, created, path, is_raw='yes', project_id
 
 
 def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite',
-                  attributes={}, other_relations=None, flexilims_session=None,
+                  attributes=None, other_relations=None, flexilims_session=None,
                   project_id=None):
     """Update one entity identified with its datatype and name or id
 
@@ -490,6 +516,8 @@ def update_entity(datatype, name=None, id=None, origin_id=None, mode='overwrite'
         flexilims reply
 
     """
+    if attributes is None:
+        attributes = {}
     assert (name is not None) or (id is not None)
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:

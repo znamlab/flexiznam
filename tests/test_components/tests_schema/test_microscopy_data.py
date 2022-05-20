@@ -17,5 +17,6 @@ def test_from_folder():
     ds = MicroscopyData.from_folder(raw_folder, verbose=False)
     assert len(ds) == 1
     d = ds['wf_overview.PNG']
-    assert d.name == 'wf_overview.PNG'
+    assert d.full_name == 'mouse_physio_2p_wf_overview.PNG'
+    assert d.dataset_name == 'wf_overview.PNG'
     assert d.is_valid()

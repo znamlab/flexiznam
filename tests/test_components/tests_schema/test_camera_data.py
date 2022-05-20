@@ -12,7 +12,7 @@ def test_create_directly(flm_sess):
                             metadata_file='none',
                             video_file='none')
     data = CameraData(path='test_path',
-                      name=None,
+                      genealogy=None,
                       extra_attributes=extra_attributes,
                       created='now',
                       project=TEST_PROJECT,
@@ -20,7 +20,7 @@ def test_create_directly(flm_sess):
                       flexilims_session=flm_sess)
     assert str(data.path) == 'test_path'
     assert not data.is_valid()
-    assert data.name is None
+    assert data.full_name is None
     assert data.timestamp_file == 'camel.csv'
 
 
@@ -53,7 +53,7 @@ def test_create_from_flexilims(flm_sess):
     ds_name = 'mouse_physio_2p_S20211102_R173917_SpheresPermTube_face_camera'
     data = CameraData.from_flexilims(project=TEST_PROJECT, name=ds_name)
     data_dir = DATA_ROOT / 'mouse_physio_2p' / 'S20211102' / 'R173917_SpheresPermTube'
-    assert data.name == ds_name
+    assert data.full_name == ds_name
     assert str(data.path_full) == str(data_dir)
     assert data.timestamp_file == 'face_camera_timestamps.csv'
 
