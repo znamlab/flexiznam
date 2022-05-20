@@ -16,7 +16,7 @@ DEFAULT_CONFIG = dict(
     # a default username can be specified
     flexilims_username='yourusername',
     # Use for data dataset detection
-    data_root=dict(raw='/camp/lab/znamenskiyp/data/instruments/raw_data',
+    data_root=dict(raw='/camp/lab/znamenskiyp/data/instruments/raw_data/projects',
                    processed='/camp/lab/znamenskiyp/home/shared/projects'),
     # list of all datatypes
     datatypes=['mouse', 'session', 'recording', 'dataset', 'sample'],
