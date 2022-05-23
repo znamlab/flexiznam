@@ -37,7 +37,7 @@ def create_yaml(root_folder, outfile=None, project='NOT SPECIFIED',
     yaml_dict = dict(project=project, mouse=mouse)
     yaml_dict['session'] = None
     # check if we were given a session folder
-    if re.match('S\d*', root_folder.stem):
+    if re.match(r'S\d*', root_folder.stem):
         yaml_dict['session'] = root_folder.stem
 
     _find_yaml_struct(root_folder, yaml_dict)
@@ -66,7 +66,7 @@ def _find_yaml_struct(path, current_dict):
         if not (path / el).is_dir():
             continue
         # match known recording format
-        m = re.fullmatch('R\d\d\d\d\d\d_?(.*)?', el)
+        m = re.fullmatch(r'R\d\d\d\d\d\d_?(.*)?', el)
         if m:
             el_type = 'recordings'
             protocol = m[1] if m[1] is not None else 'PROTOCOL NOT SPECIFIED'
