@@ -17,7 +17,9 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 
     """Add a single mouse to a project."""
     click.echo('Trying to add %s in %s' % (mouse_name, project_id))
-    main.add_mouse(mouse_name, project_id, mcms_animal_name, flexilims_username, mcms_username)
+    main.add_mouse(mouse_name=mouse_name, project_id=project_id,
+                   mcms_animal_name=mcms_animal_name, mcms_username=mcms_username,
+                   flexilims_username=flexilims_username,)
 
 
 @cli.command()

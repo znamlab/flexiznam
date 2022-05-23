@@ -103,7 +103,7 @@ def add_mouse(mouse_name, project_id=None, mouse_info=None, flexilims_session=No
             mcms_animal_name = mouse_name
         mcms_info = dict(mcms.get_mouse_df(mouse_name=mcms_animal_name,
                                            username=mcms_username,
-                                           mcms_password=mcms_password))
+                                           password=mcms_password))
         # format properly results
         for k, v in mcms_info.items():
             if type(v) != str:
