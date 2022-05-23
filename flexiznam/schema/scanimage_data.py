@@ -254,9 +254,9 @@ def parse_si_filename(path2file):
     except KeyError:
         raise IOError('Could not find logFramesPerFile in metadata of %s' % fname)
     if math.isfinite(frames_per_file):
-        pattern = '(.*)_(\d*)_(\d*)(.*).tiff?'
+        pattern = r'(.*)_(\d*)_(\d*)(.*).tiff?'
     else:
-        pattern = '(.*)_(\d*)(.*).tiff?'
+        pattern = r'(.*)_(\d*)(.*).tiff?'
     parsed_name = re.match(pattern, fname)
     if parsed_name is None:
         raise IOError('Cannot parse file name %s with expected pattern %s' % (fname,
