@@ -80,9 +80,9 @@ class CameraData(Dataset):
                                              is_raw=is_raw)
         return output
 
-    def __init__(self, path, is_raw, genealogy=None,
-                 extra_attributes=None, created=None, project=None, project_id=None,
-                 origin_id=None, flexilims_session=None):
+    def __init__(self, path, is_raw, genealogy=None, extra_attributes=None,
+                 created=None, project=None, project_id=None, origin_id=None,
+                 flexilims_session=None):
         """Create a camera dataset
 
         Args:

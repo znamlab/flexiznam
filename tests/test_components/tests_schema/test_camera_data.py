@@ -13,9 +13,9 @@ def test_create_directly(flm_sess):
                             video_file='none')
     data = CameraData(path='test_path',
                       genealogy=None,
+                      project=TEST_PROJECT,
                       extra_attributes=extra_attributes,
                       created='now',
-                      project=TEST_PROJECT,
                       is_raw=True,
                       flexilims_session=flm_sess)
     assert str(data.path) == 'test_path'
