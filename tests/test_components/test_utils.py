@@ -1,4 +1,5 @@
 import os
+import pytest
 import tempfile
 from flexiznam.config import config_tools, DEFAULT_CONFIG
 from flexiznam import utils
@@ -76,3 +77,9 @@ def test_add_genealogy(flm_sess):
 
 def test_add_missing_paths(flm_sess):
     utils.add_missing_paths(flm_sess)
+
+
+@pytest.mark.slow
+def test_check_attribute(flm_sess):
+    attr = utils._check_attribute_case(flm_sess)
+    assert len(attr.attribute.unique()) == 10

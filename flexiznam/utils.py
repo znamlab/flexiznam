@@ -5,6 +5,7 @@ import pandas as pd
 import flexiznam as flz
 from flexiznam.schema import Dataset
 from flexiznam.errors import FlexilimsError
+from flexilims.main import SPECIAL_CHARACTERS
 
 
 def compare_series(first_series, second_series, series_name=('first', 'second'),
@@ -163,7 +164,7 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     """Check that names defined on flexilims match the hierarchy
 
     This will verify that the name of each entity starts with the names of all its
-    parent separated by underscores
+    parent separated by underscores.
 
     Args:
         flexilims_session (flm.Session): flexilims session object, must define project
@@ -297,3 +298,30 @@ def add_missing_paths(flexilims_session, root_name=None):
                           flexilims_session=flexilims_session,
                           attributes=dict(path=str(path)))
 
+
+def _check_attribute_case(flexilims_session):
+    """House cleaning function
+
+    Iterates on projects and check that all attributes are lower case
+
+    Args:
+        flexilims_session: a flexilims session for authentication
+
+    Returns:
+        bad_attr (pd.DataFrame): a dataframe of bad attributes and their parent name
+    """
+    projects = flexilims_session.get_project_info()
+    report = []
+    for project in projects:
+        proj_id = project['id']
+        proj_name = project['name']
+        flexilims_session.project_id = proj_id
+        for datatype in flz.PARAMETERS['datatypes']:
+            data = flexilims_session.get(datatype=datatype, project_id=proj_id)
+            for d in data:
+                for attr in d['attributes']:
+                    if (not attr.islower()) or (r'\s' in attr) or \
+                            (SPECIAL_CHARACTERS.search(attr) is not None):
+                        report.append([proj_name, d['name'], attr])
+
+    return pd.DataFrame(data=report, columns=['project', 'entity', 'attribute'])

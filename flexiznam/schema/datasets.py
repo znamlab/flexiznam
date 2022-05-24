@@ -172,7 +172,7 @@ class Dataset(object):
         else:
             if (conflicts is None) or (conflicts == 'abort'):
                 raise flz.errors.NameNotUniqueError(
-                    'Dataset {} already processed'.format(processed['name']))
+                    'Dataset {} already processed'.format(processed.loc[:,'name']))
             elif conflicts == 'skip' or conflicts == 'overwrite':
                 if len(processed) == 1:
                     return Dataset.from_flexilims(data_series=processed.iloc[0])

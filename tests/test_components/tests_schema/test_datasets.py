@@ -98,6 +98,7 @@ def test_from_flexilims(flm_sess):
     ds = Dataset.from_flexilims(project, flexilims_session=flm_sess,
                                 name='mouse_physio_2p_S20211102_R165821_'
                                      'SpheresPermTube_wf_camera')
+    assert ds.flexilims_session == flm_sess
     assert ds.full_name == 'mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera'
     assert ds.flexilims_status() == 'up-to-date'
     assert ds.project == project
@@ -109,13 +110,14 @@ def test_from_origin(flm_sess):
     project = 'demo_project'
     origin_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube'
     ds = Dataset.from_origin(
-        project,
         origin_type='recording',
         origin_name=origin_name,
         dataset_type='suite2p_rois',
         conflicts='skip',
         flexilims_session=flm_sess
     )
+    assert ds.flexilims_session == flm_sess
+    assert ds.genealogy[-1].startswith('suite2p_rois')
 
 
 @pytest.mark.integtest
