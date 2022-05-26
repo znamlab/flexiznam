@@ -3,11 +3,11 @@ import pytest
 import flexiznam.main as flz
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
-
+from tests.tests_resources.data_for_testing import MOUSE_ID
 # Test functions from main.py
 from flexiznam.schema import Dataset
 # this needs to change every time I reset flexlilims
-MOUSE_ID = '627e885ced576211cd55f50d'
+
 
 @pytest.mark.integtest
 def test_get_flexilims_session():

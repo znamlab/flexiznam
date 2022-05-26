@@ -68,6 +68,7 @@ def test_check_flexilims_names(flm_sess):
     assert df is None
 
 
+@pytest.mark.slow
 def test_add_genealogy(flm_sess):
     added = utils.add_genealogy(flm_sess)
     assert added == []
