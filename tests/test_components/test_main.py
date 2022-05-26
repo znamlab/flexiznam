@@ -101,7 +101,10 @@ def test_get_children(flm_sess):
     parent_id = MOUSE_ID
     res = flz.get_children(parent_id, flexilims_session=flm_sess)
     assert len(res) == 1
-
+    # test that it works also when there are no children
+    while len(res):
+        res = flz.get_children(parent_id=res.iloc[0].id, flexilims_session=flm_sess)
+    assert isinstance(res, pd.DataFrame)
 
 @pytest.mark.integtest
 def test_add_entity(flm_sess):
