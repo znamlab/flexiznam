@@ -236,6 +236,10 @@ class Dataset(object):
             if len(double_args):
                 raise DatasetError('Mandatory attribute(s) present in '
                                    'extra_attributes: %s' % (double_args))
+
+        self._project = None
+        self._project_id = None
+        self._flexilims_session = None
         self.extra_attributes = extra_attributes
         self.genealogy = genealogy
         self.path = Path(path)
@@ -243,16 +247,13 @@ class Dataset(object):
         self.dataset_type = str(dataset_type)
         self.created = created
         self.origin_id = origin_id
-        self._flexilims_session = flexilims_session
+        self.flexilims_session = flexilims_session
         if project is not None:
             self.project = project
             if project_id is not None:
                 assert self.project_id == project_id
         elif project_id is not None:
             self.project_id = project_id
-        else:
-            self._project = None
-            self._project_id = None
 
 
     def is_valid(self):
