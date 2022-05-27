@@ -9,7 +9,7 @@ from flexiznam.schema import Dataset
 # this needs to change every time I reset flexlilims
 
 
-@pytest.mark.integtest
+
 def test_get_flexilims_session():
     sess = flz.get_flexilims_session(project_id=PARAMETERS['project_ids']['test'])
     assert sess.username == PARAMETERS['flexilims_username']
@@ -28,7 +28,7 @@ def test_format_results():
     assert 'exmpl_attr' in res.columns
 
 
-@pytest.mark.integtest
+
 def test_get_experimental_sessions(flm_sess):
     proj_id = PARAMETERS['project_ids']['demo_project']
     exp_sess = flz.get_experimental_sessions(project_id=proj_id,
@@ -38,7 +38,7 @@ def test_get_experimental_sessions(flm_sess):
     assert len(exp_sess.origin_id.unique()) == 1
 
 
-@pytest.mark.integtest
+
 def test_get_entities(flm_sess):
     mice_df = flz.get_entities(project_id=PARAMETERS['project_ids']['demo_project'],
                                datatype='mouse', flexilims_session=flm_sess)
@@ -51,7 +51,7 @@ def test_get_entities(flm_sess):
     assert all(['sex' in m['attributes'] for m in mice_df])
 
 
-@pytest.mark.integtest
+
 def test_get_entity(flm_sess):
     mouse = flz.get_entity(id=MOUSE_ID,
                            project_id=PARAMETERS['project_ids']['demo_project'],
@@ -69,7 +69,7 @@ def test_get_entity(flm_sess):
     assert 'birth_date' in mouse['attributes']
 
 
-@pytest.mark.integtest
+
 def test_get_mouse_id(flm_sess):
     mid = flz.get_id(name='mouse_physio_2p',
                      project_id=PARAMETERS['project_ids']['demo_project'],
@@ -77,7 +77,7 @@ def test_get_mouse_id(flm_sess):
     assert mid == MOUSE_ID
 
 
-@pytest.mark.integtest
+
 def test_generate_name(flm_sess):
     name = flz.generate_name(datatype='dataset', name='test_iter',
                              flexilims_session=flm_sess)
@@ -96,7 +96,7 @@ def test_generate_name(flm_sess):
     assert name == '134241_0'
 
 
-@pytest.mark.integtest
+
 def test_get_children(flm_sess):
     parent_id = MOUSE_ID
     res = flz.get_children(parent_id, flexilims_session=flm_sess)
@@ -106,7 +106,7 @@ def test_get_children(flm_sess):
         res = flz.get_children(parent_id=res.iloc[0].id, flexilims_session=flm_sess)
     assert isinstance(res, pd.DataFrame)
 
-@pytest.mark.integtest
+
 def test_add_entity(flm_sess):
     dataset_name = 'mouse_physio_2p_S20211102_overview_zoom2_00001'
     with pytest.raises(FlexilimsError) as err:
@@ -124,7 +124,6 @@ def test_add_entity(flm_sess):
                           flexilims_session=flm_sess) is None
 
 
-@pytest.mark.integtest
 def test_update_entity(flm_sess):
     with pytest.raises(FlexilimsError) as err:
         flz.update_entity('dataset', name='gibberish', flexilims_session=flm_sess)

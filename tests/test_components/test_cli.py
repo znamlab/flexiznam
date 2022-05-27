@@ -36,7 +36,7 @@ def test_add_password(tmp_path):
                                   password_file=pwd_file)
     assert p == '1234'
 
-@pytest.mark.integtest
+
 def test_create_yaml(tmp_path):
     path2yaml = PROCESSED_ROOT / 'mouse_physio_2p'
     runner = CliRunner()
@@ -45,7 +45,7 @@ def test_create_yaml(tmp_path):
                            ['-s', path2yaml, '-t', out_yml])
     assert result.exit_code == 0
 
-@pytest.mark.integtest
+
 def test_make_full_yaml(tmp_path):
     path2yaml = PROCESSED_ROOT / 'mouse_physio_2p' / 'physio_acq_yaml.yml'
     runner = CliRunner()
@@ -68,7 +68,7 @@ def test_make_full_yaml(tmp_path):
     assert len(auto_out) == 10
 
 
-@pytest.mark.integtest
+
 def test_upload(tmp_path):
     path2yaml = PROCESSED_ROOT / 'mouse_physio_2p' / 'physio_acq_yaml_unvalid.yml'
     # first generate a yaml without and without error:
@@ -91,7 +91,7 @@ def test_upload(tmp_path):
     assert result.exit_code == 0
 
 
-@pytest.mark.integtest
+
 def test_flm_issues(tmp_path):
     out_csv = tmp_path / 'report.csv'
     runner = CliRunner()

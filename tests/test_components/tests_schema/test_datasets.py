@@ -9,11 +9,27 @@ from tests.test_components.test_main import MOUSE_ID
 # Test the generic dataset class.
 
 
-def test_dataset():
+def test_dataset(flm_sess):
     ds = Dataset(project='test', dataset_type='camera', is_raw=False, path='',
                  genealogy=('a', 'parent', 'test'))
     assert ds.full_name == 'a_parent_test'
     assert ds.dataset_name == 'test'
+    ds = Dataset(project='demo_project', dataset_type='camera', is_raw=False, path='',
+                 genealogy=('a', 'parent', 'test'), flexilims_session=flm_sess)
+    assert ds.project_id == ds.flexilims_session.project_id
+    Dataset(project_id=ds.project_id, dataset_type='camera', is_raw=False, path='',
+            genealogy=('a', 'parent', 'test'), flexilims_session=flm_sess)
+    Dataset(project_id=ds.project_id, project='demo_project',
+            dataset_type='camera',  is_raw=False, path='',
+            genealogy=('a', 'parent', 'test'), flexilims_session=flm_sess)
+    with pytest.raises(DatasetError) as err:
+        Dataset(project='test', dataset_type='camera', is_raw=False, path='',
+                genealogy=('a', 'parent', 'test'), flexilims_session=flm_sess)
+        assert err.value.args[0] == 'Project must match that of flexilims_session'
+    with pytest.raises(DatasetError) as err:
+        Dataset(project='test', dataset_type='camera', is_raw=False, path='',
+                genealogy=('a', 'parent', 'test'), project_id=ds.project_id)
+        assert err.value.args[0] == 'project_id does not correspond to project'
 
 
 def test_constructor():
@@ -33,7 +49,6 @@ def test_constructor():
         ds_subcls(**constructor)
 
 
-@pytest.mark.integtest
 def test_dataset_flexilims_integration(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     ds = Dataset(project='demo_project', path='fake/path', is_raw='no',
@@ -91,7 +106,6 @@ def test_dataset_flexilims_integration(flm_sess):
     assert ds.project == 'test'
 
 
-@pytest.mark.integtest
 def test_from_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = 'demo_project'
@@ -104,10 +118,8 @@ def test_from_flexilims(flm_sess):
     assert ds.project == project
 
 
-@pytest.mark.integtest
 def test_from_origin(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
-    project = 'demo_project'
     origin_name = 'mouse_physio_2p_S20211102_R165821_SpheresPermTube'
     ds = Dataset.from_origin(
         origin_type='recording',
@@ -120,7 +132,6 @@ def test_from_origin(flm_sess):
     assert ds.genealogy[-1].startswith('suite2p_rois')
 
 
-@pytest.mark.integtest
 def test_update_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = 'demo_project'
@@ -132,7 +143,8 @@ def test_update_flexilims(flm_sess):
         ds.update_flexilims()
     assert err.value.args[0].startswith("Cannot change existing flexilims entry with")
     ds.update_flexilims(mode='overwrite')
-    reloaded_ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
+    reloaded_ds = Dataset.from_flexilims(project, name=ds_name,
+                                         flexilims_session=flm_sess)
     assert str(reloaded_ds.path) == ds.path
     # undo changes:
     ds.path = original_path
@@ -152,7 +164,6 @@ def test_update_flexilims(flm_sess):
     assert err.value.args[0] == 'Cannot set origin_id to null'
 
 
-@pytest.mark.integtest
 def test_dataset_paths(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = 'demo_project'
@@ -164,7 +175,6 @@ def test_dataset_paths(flm_sess):
         str(pathlib.Path(PARAMETERS['data_root']['raw'] / ds.path))
 
 
-@pytest.mark.integtest
 def test_project_project_id(flm_sess):
     """Check that project, project_id and flm_sess.project are linked"""
     with pytest.raises(DatasetError) as err:
