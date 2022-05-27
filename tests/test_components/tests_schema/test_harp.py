@@ -4,7 +4,7 @@ from tests.tests_resources.data_for_testing import DATA_ROOT
 from pathlib import Path
 
 
-@pytest.mark.integtest
+
 def test_harp():
     folder_genealogy = ['mouse_physio_2p', 'S20211102', 'R165821_SpheresPermTube']
     data_dir = DATA_ROOT.joinpath(*folder_genealogy)

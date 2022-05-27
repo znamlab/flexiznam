@@ -251,7 +251,8 @@ class Dataset(object):
         if project is not None:
             self.project = project
             if project_id is not None:
-                assert self.project_id == project_id
+                if self.project_id != project_id:
+                    raise DatasetError('project_id does not correspond to project')
         elif project_id is not None:
             self.project_id = project_id
 

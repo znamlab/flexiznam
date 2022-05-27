@@ -4,7 +4,6 @@ from flexiznam.schema.datasets import Dataset
 from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
 
 
-@pytest.mark.integtest
 def test_create_directly(flm_sess):
     """Create by directly calling the function"""
     # first just make sure it can create an object without epic failure
@@ -24,7 +23,6 @@ def test_create_directly(flm_sess):
     assert data.timestamp_file == 'camel.csv'
 
 
-@pytest.mark.integtest
 def test_create_from_folder(flm_sess):
     """Test creation from folder
 
@@ -47,7 +45,6 @@ def test_create_from_folder(flm_sess):
     assert ds.flexilims_status() == 'not online'
 
 
-@pytest.mark.integtest
 def test_create_from_flexilims(flm_sess):
     """Create from the flexilims instance made in the test_create_directly"""
     ds_name = 'mouse_physio_2p_S20211102_R173917_SpheresPermTube_face_camera'

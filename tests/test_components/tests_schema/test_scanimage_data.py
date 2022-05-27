@@ -3,7 +3,7 @@ from flexiznam.schema.scanimage_data import ScanimageData
 from tests.tests_resources.data_for_testing import DATA_ROOT
 
 
-@pytest.mark.integtest
+
 def test_scanimage(tmp_path):
     data_dir = DATA_ROOT / 'mouse_physio_2p' / 'S20211102' / 'Ref'
     ds = ScanimageData.from_folder(data_dir, verbose=False)

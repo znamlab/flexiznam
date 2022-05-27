@@ -11,7 +11,7 @@ from tests.tests_resources.data_for_testing import DATA_ROOT
 # - Creating from_folder
 
 
-@pytest.mark.integtest
+
 def test_from_folder():
     raw_folder = DATA_ROOT / 'mouse_physio_2p'
     ds = MicroscopyData.from_folder(raw_folder, verbose=False)
