@@ -155,9 +155,10 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
                          mode=`safe`
 
     Returns:
-        dictionary or flexilims ID
+        list of names of entities created/updated
 
     """
+    output = []
     # if there are errors, I cannot safely parse the yaml
     errors = find_xxerrorxx(yml_file=source_yaml)
     if errors:
@@ -194,9 +195,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         value = session_data.get(field, None)
         if value is not None:
             attributes[field] = value
-    # adding genealogy info (assuming session can only be only below mouse)
-    attributes['genealogy'] = mouse['attributes'].get('genealogy', [mouse['name']]) + [
-                              session_data['session']]
+
     # if session is not specified, then entries will be added directly as
     # children of the mouse
     if session_data['session'] is not None:
@@ -208,6 +207,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             attributes=attributes,
             conflicts=conflicts)
         root_id = session['id']
+        output.append(session['name'])
     else:
         root_id = mouse['id']
 
@@ -218,6 +218,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
         ds.origin_id = root_id
         ds.flexilims_session = flexilims_session
         ds.update_flexilims(mode='safe')
+        output.append(ds.full_name)
 
     # now deal with recordings
     for short_rec_name, rec_data in session_data.get('recordings', {}).items():
@@ -242,6 +243,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             flexilims_session=flexilims_session,
             conflicts=conflicts
         )
+        output.append(rec_rep['name'])
 
         # now deal with recordings' datasets
         for ds_name, ds in rec_data.get('datasets', {}).items():
@@ -250,9 +252,10 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
             ds.origin_id = rec_rep['id']
             ds.flexilims_session = flexilims_session
             ds.update_flexilims(mode='safe')
+            output.append(ds.full_name)
 
     # now deal with samples
-    def add_samples(samples, parent, short_parent_name=None):
+    def add_samples(samples, parent, output=None):
         # we'll need a utility function to deal with recursion
         for short_sample_name, sample_data in samples.items():
 
@@ -264,6 +267,8 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
                 conflicts='skip',
                 flexilims_session=flexilims_session
             )
+            if output is not None:
+                output.append(sample_rep['name'])
             # deal with datasets attached to this sample
             for ds_name, ds in sample_data.get('datasets', {}).items():
                 ds.genealogy = sample_rep['attributes']['genealogy'] + [ds_name]
@@ -271,11 +276,14 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
                 ds.origin_id = sample_rep['id']
                 ds.flexilims_session = flexilims_session
                 ds.update_flexilims(mode='safe')
+                if output is not None:
+                    output.append(ds.full_name)
             # now add child samples
-            add_samples(sample_data['samples'], sample_rep)
+            add_samples(sample_data['samples'], sample_rep, output)
 
     # samples are attached to mice, not sessions
-    add_samples(session_data['samples'], mouse)
+    add_samples(session_data['samples'], mouse, output=output)
+    return output
 
 
 def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):

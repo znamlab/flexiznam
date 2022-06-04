@@ -4,6 +4,8 @@ Example file to upload a 2P dataset
 The example data is found in demo_project
 """
 import copy
+
+import pandas as pd
 import yaml
 
 from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
@@ -74,8 +76,15 @@ def test_flm():
         conflicts = 'skip'
     physio_mouse_exists()
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
-    upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
-                log_func=print, flexilims_session=flexilims_session, conflicts=conflicts)
+    created = upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
+                          log_func=print, flexilims_session=flexilims_session, conflicts=conflicts)
+    # check that I do not duplicate any part of the name (except for SI datasets)
+    for c in created:
+        parts = c.split('_')
+        v = pd.value_counts(parts)
+        if v.max() == 2:
+            assert 'Spheres' in c
+        assert v.max() <= 2
 
 
 def physio_mouse_exists():
