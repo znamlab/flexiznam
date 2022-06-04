@@ -8,7 +8,7 @@ import yaml
 from yaml.parser import ParserError
 
 import flexiznam as flz
-from flexiznam.errors import SyncYmlError
+from flexiznam.errors import SyncYmlError, FlexilimsError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_dictionary_recursively
@@ -202,7 +202,7 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     if session_data['session'] is not None:
         session = flz.add_experimental_session(
             parent_name=mouse['name'],
-            session_name=mouse['name'] + '_' + session_data['session'],
+            session_name=session_data['session'],
             flexilims_session=flexilims_session,
             date=date,
             attributes=attributes,
@@ -255,36 +255,24 @@ def upload_yaml(source_yaml, raw_data_folder=None, verbose=False,
     def add_samples(samples, parent, short_parent_name=None):
         # we'll need a utility function to deal with recursion
         for short_sample_name, sample_data in samples.items():
-            sample_name = parent['name'] + '_' + short_sample_name
-            attributes = sample_data.get('attributes', None)
-            if attributes is None:
-                attributes = {}
-
-            attributes['genealogy'] = parent['attributes']['genealogy'] + [
-                                      short_sample_name]
-            # put back into sample_data for recursion
-            sample_data['attributes'] = attributes
-
-            if short_parent_name is not None:
-                short_sample_name = short_parent_name + '_' + short_sample_name
 
             # we always use `skip` to add samples
             sample_rep = flz.add_sample(
                 parent['id'],
                 attributes=attributes,
-                sample_name=sample_name,
+                sample_name=short_sample_name,
                 conflicts='skip',
                 flexilims_session=flexilims_session
             )
             # deal with datasets attached to this sample
             for ds_name, ds in sample_data.get('datasets', {}).items():
-                ds.genealogy = attributes['genealogy'] + [ds_name]
+                ds.genealogy = sample_rep['attributes']['genealogy'] + [ds_name]
                 ds.project = session_data['project']
                 ds.origin_id = sample_rep['id']
                 ds.flexilims_session = flexilims_session
                 ds.update_flexilims(mode='safe')
             # now add child samples
-            add_samples(sample_data['samples'], sample_rep, short_sample_name)
+            add_samples(sample_data['samples'], sample_rep)
 
     # samples are attached to mice, not sessions
     add_samples(session_data['samples'], mouse)

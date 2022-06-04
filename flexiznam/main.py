@@ -1,3 +1,4 @@
+import re
 import warnings
 import pandas as pd
 import flexilims as flm
@@ -154,34 +155,44 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
     if conflicts.lower() not in ('skip', 'abort', 'overwrite', 'update'):
         raise AttributeError('conflicts must be `skip` or `abort`')
 
-    parent_id = get_id(parent_name, flexilims_session=flexilims_session)
+    parent_df = get_entity(name=parent_name, flexilims_session=flexilims_session)
+    parent_id = parent_df['id']
     if session_name is None:
-        session_name = parent_name + '_' + date + '_0'
+        parsed_date = re.fullmatch(r'(\d\d\d\d)-(\d\d)-(\d\d)', date)
+        if parsed_date:
+            session_name = 'S' + ''.join(parsed_date.groups())
+        else:
+            session_name = 'S%s' % date
+            warnings.warn('Cannot parse date `%s`. Session name will be: `%s`' 
+                          % (date, session_name))
 
     session_info = {'date': date}
     if attributes is None:
         attributes = {}
+    if 'genealogy' in attributes:
+        warnings.warn('Cannot set genealogy using attributes. Will be generated from '
+                      'parent', stacklevel=3)
+        
+    attributes['genealogy'] = list(parent_df['genealogy']) + [session_name]
+    
     if ('date' in attributes) and (date != attributes['date']):
         raise FlexilimsError(
             'Got two values for date: %s and %s' % (date, attributes['date']))
     if 'path' not in attributes:
         attributes['path'] = str(Path(parent_name) / session_name)
     session_info.update(attributes)
-
-    if 'genealogy' not in attributes:
-        warnings.warn('Genealogy not provided for session %s' % session_name,
-                      DeprecationWarning, stacklevel=3)
-    online_session = get_entity(datatype='session', name=session_name,
+    session_full_name = '_'.join(attributes['genealogy'])
+    online_session = get_entity(datatype='session', name=session_full_name,
                                 flexilims_session=flexilims_session, format_reply=False)
     if online_session is not None:
         if conflicts.lower() == 'skip':
-            print('A session named %s already exists' % session_name)
+            print('A session named %s already exists' % session_full_name)
             return online_session
         elif conflicts.lower() == 'abort':
-            raise FlexilimsError('A session named %s already exists' % session_name)
+            raise FlexilimsError('A session named %s already exists' % session_full_name)
         else:
             resp = update_entity(datatype='session',
-                                 name=session_name,
+                                 name=session_full_name,
                                  id=online_session['id'],
                                  origin_id=parent_id,
                                  mode=conflicts,
@@ -192,7 +203,7 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
 
     resp = flexilims_session.post(
         datatype='session',
-        name=session_name,
+        name=session_full_name,
         attributes=session_info,
         origin_id=parent_id,
         other_relations=other_relations,
@@ -345,37 +356,44 @@ def add_sample(parent_id, attributes=None, sample_name=None,
 
     if conflicts.lower() not in ('skip', 'abort', 'update', 'overwrite'):
         raise AttributeError('conflicts must be `skip` or `abort`')
+    if attributes is None:
+        attributes = {}
+
+    parent_df = get_entity(id=parent_id, flexilims_session=flexilims_session)
+    genealogy = list(parent_df['genealogy'])
 
     if sample_name is None:
-        parent_name = pd.concat([
-            get_entities(flexilims_session=flexilims_session,
-                         datatype='mouse',
-                         id=parent_id),
-            get_entities(flexilims_session=flexilims_session,
-                         datatype='sample',
-                         id=parent_id)
-        ])['name'][0]
-        sample_name = parent_name + '_sample_0'
-        sample_name = generate_name('sample', sample_name,
-                                    flexilims_session=flexilims_session)
+        sample_full_name = generate_name('sample', '_'.join(genealogy + ['sample_0']),
+                                         flexilims_session=flexilims_session)
+        sample_name = sample_full_name[len(parent_df['name']) + 1:]
+
+    genealogy.append(sample_name)
+
+    if 'genealogy' in attributes:
+        warnings.warn('Cannot set genealogy in add_sample `attributes`. It will be '
+                      'generated from parent genealogy', stacklevel=3)
+    attributes['genealogy'] = genealogy
+    sample_full_name = '_'.join(genealogy)
+
+    if 'path' not in attributes:
+        attributes['path'] = str(Path(parent_df['path']) / sample_name)
+
     online_sample = get_entity(
         datatype='sample',
-        name=sample_name,
+        name=sample_full_name,
         flexilims_session=flexilims_session,
         format_reply=False
     )
-    if attributes is None:
-        attributes = {}
     if online_sample is not None:
         if conflicts.lower() == 'skip':
-            print('A sample named %s already exists' % (sample_name))
+            print('A sample named %s already exists' % (sample_full_name))
             return online_sample
         elif conflicts.lower() == 'abort':
             raise FlexilimsError('A sample named %s already exists' %
-                                 sample_name)
+                                 sample_full_name)
         else:
-            resp = update_entity(datatype='sample', name=sample_name,
-                                 id=online_sample['id'], origin_id=parent_id,
+            resp = update_entity(datatype='sample', name=sample_full_name,
+                                 id=online_sample['id'], origin_id=parent_df['id'],
                                  mode=conflicts, attributes=attributes,
                                  other_relations=None,
                                  flexilims_session=flexilims_session)
@@ -383,9 +401,9 @@ def add_sample(parent_id, attributes=None, sample_name=None,
 
     resp = flexilims_session.post(
         datatype='sample',
-        name=sample_name,
+        name=sample_full_name,
         attributes=attributes,
-        origin_id=parent_id,
+        origin_id=parent_df['id'],
         other_relations=other_relations,
         strict_validation=False
     )

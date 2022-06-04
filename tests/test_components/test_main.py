@@ -96,7 +96,6 @@ def test_generate_name(flm_sess):
     assert name == '134241_0'
 
 
-
 def test_get_children(flm_sess):
     parent_id = MOUSE_ID
     res = flz.get_children(parent_id, flexilims_session=flm_sess)

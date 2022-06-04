@@ -24,6 +24,7 @@ class DatasetError(Exception):
     Cannot automatically deal with this dataset
     """
 
+
 class FlexilimsError(Exception):
     """
     I cannot do that on flexilims
