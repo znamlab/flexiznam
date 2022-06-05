@@ -179,7 +179,7 @@ def add_experimental_session(parent_name, date, attributes={}, session_name=None
         raise FlexilimsError(
             'Got two values for date: %s and %s' % (date, attributes['date']))
     if 'path' not in attributes:
-        attributes['path'] = str(Path(parent_name) / session_name)
+        attributes['path'] = str(Path(parent_df.path) / session_name)
     session_info.update(attributes)
     session_full_name = '_'.join(attributes['genealogy'])
     online_session = get_entity(datatype='session', name=session_full_name,

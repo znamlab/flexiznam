@@ -17,6 +17,8 @@
 ### Minor
 - `add_mouse` can be given a dictionary of info instead of reading them from MCMS (to 
   allow for manual download)
+- `add_experimental_session` uses parent path as base path. It means that parent must 
+  have a path
 
 ## v0.3.0
 

@@ -77,7 +77,6 @@ def test_get_mouse_id(flm_sess):
     assert mid == MOUSE_ID
 
 
-
 def test_generate_name(flm_sess):
     name = flz.generate_name(datatype='dataset', name='test_iter',
                              flexilims_session=flm_sess)
