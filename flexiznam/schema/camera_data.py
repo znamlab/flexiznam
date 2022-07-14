@@ -12,7 +12,8 @@ class CameraData(Dataset):
 
     @staticmethod
     def from_folder(folder, camera_name=None, folder_genealogy=None, is_raw=None,
-                    verbose=True, flexilims_session=None, project=None):
+                    verbose=True, flexilims_session=None, project=None,
+                    enforce_validity=True):
         """Create a Camera dataset by loading info from folder
 
         Args:
@@ -24,9 +25,12 @@ class CameraData(Dataset):
             verbose (bool=True): print info about what is found
             flexilims_session (flm.Session): session to interact with flexilims
             project (str): project ID or name
+            enforce_validity (bool): True by default. Refuse to create camera dataset
+                                     if they don't have a video, metadata and timestamp
+                                     file
 
         Returns:
-            dist of datasets (fzm.schema.camera_data.CameraData)
+            dict of datasets (fzm.schema.camera_data.CameraData)
 
         """
         if folder_genealogy is None:
@@ -34,28 +38,37 @@ class CameraData(Dataset):
         elif isinstance(folder_genealogy, list):
             folder_genealogy = tuple(folder_genealogy)
 
-        fnames = [f for f in os.listdir(folder) if f.endswith(tuple(CameraData.VALID_EXTENSIONS))]
+        fnames = [f for f in os.listdir(folder) if
+                  f.endswith(tuple(CameraData.VALID_EXTENSIONS))]
         metadata_files = [f for f in fnames if f.endswith('_metadata.txt')]
-        if not metadata_files:
+        if (not metadata_files) and enforce_validity:
             raise IOError('Cannot find metadata')
         timestamp_files = [f for f in fnames if f.endswith('_timestamps.csv')]
-        if not timestamp_files:
+        if (not timestamp_files) and enforce_validity:
             raise IOError('Cannot find timestamp')
         metadata_names = {'_'.join(fname.split('_')[:-1]) for fname in metadata_files}
         timestamp_names = {'_'.join(fname.split('_')[:-1]) for fname in timestamp_files}
         valid_names = metadata_names.intersection(timestamp_names)
-        if not valid_names:
+        if (not valid_names) and enforce_validity:
             raise IOError('Metadata do not correspond to timestamps')
         if verbose:
             print()
         video_files = [f for f in fnames if f.endswith(tuple(CameraData.VIDEO_EXTENSIONS))]
+
+        if not enforce_validity:
+            # add camera that are not already in valid_names
+            for vid in video_files:
+                if any([vid.startswith(vn) for vn in valid_names]):
+                    continue
+                valid_names.add(pathlib.Path(vid).stem)
 
         if camera_name is not None:
             if camera_name not in valid_names:
                 raise IOError('Camera %s not found. I have %s' % (camera_name, valid_names))
             valid_names = {camera_name}
         elif verbose:
-            print('Found metadata and timestamps for %d cameras: %s' % (len(valid_names), valid_names))
+            print('Found metadata and timestamps for %d cameras: %s' % (len(valid_names),
+                                                                        valid_names))
 
         output = dict()
         for camera_name in valid_names:
@@ -66,10 +79,20 @@ class CameraData(Dataset):
                 raise IOError('Found more than one potential video file for camera %s' % camera_name)
             video_path = pathlib.Path(folder) / vid[0]
             created = datetime.datetime.fromtimestamp(video_path.stat().st_mtime)
-            extra_attributes = dict(timestamp_file='%s_timestamps.csv' % camera_name,
-                                    metadata_file='%s_metadata.txt' % camera_name,
-                                    video_file=vid[0],
-)
+            extra_attributes = dict(video_file=vid[0],)
+            timestamp_file = '%s_timestamps.csv' % camera_name
+            if timestamp_file in timestamp_files:
+                extra_attributes['timestamp_file'] = timestamp_file
+            elif enforce_validity:
+                raise IOError('Error finding timestamp files. I should have it but I '
+                              'don''t')
+            metadata_file = '%s_metadata.txt' % camera_name
+            if metadata_file in metadata_files:
+                extra_attributes['metadata_file'] = metadata_file
+            elif enforce_validity:
+                raise IOError('Error finding metadata files. I should have it but I '
+                              'don''t')
+
             output[camera_name] = CameraData(path=folder,
                                              genealogy=folder_genealogy + (camera_name,),
                                              extra_attributes=extra_attributes,
