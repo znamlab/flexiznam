@@ -92,7 +92,8 @@ class Dataset(object):
 
     @staticmethod
     def from_origin(project=None, origin_type=None, origin_id=None, origin_name=None,
-                    dataset_type=None, conflicts=None, flexilims_session=None):
+                    dataset_type=None, base_name=None, conflicts=None,
+                    flexilims_session=None):
         """Creates a dataset of a given type as a child of a parent entity
 
         Args:
@@ -101,6 +102,8 @@ class Dataset(object):
             origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
             origin_name (str): name of the origin. This or origin_id must be provided
             dataset_type (str): type of dataset to create. Must be defined in the config file
+            base_name (str): How is this dataset name? Use dataset_type if root_name is
+                             None (default)
             conflicts (str): What to do if a dataset of this type already exists
                 as a child of the parent entity?
 
@@ -119,7 +122,10 @@ class Dataset(object):
             :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
 
         """
+        if base_name is None:
+            base_name = dataset_type
         assert (origin_id is not None) or (origin_name is not None)
+        assert dataset_type is not None  # not sure why it is not a mandatory argument
         origin = flz.get_entity(
             datatype=origin_type,
             id=origin_id,
@@ -137,9 +143,12 @@ class Dataset(object):
             query_value=dataset_type,
             flexilims_session=flexilims_session,
         )
+        if len(processed):
+            processed = processed[[g[-1].startswith(base_name) for g in
+                                   processed.genealogy]]
         already_processed = len(processed) > 0
         if (not already_processed) or (conflicts == 'append'):
-            dataset_root = '%s_%s' % (origin['name'], dataset_type)
+            dataset_root = '%s_%s' % (origin['name'], base_name)
             dataset_name = flz.generate_name(
                 'dataset',
                 dataset_root,
@@ -178,9 +187,11 @@ class Dataset(object):
                     return Dataset.from_flexilims(data_series=processed.iloc[0])
                 else:
                     raise flz.errors.NameNotUniqueError(
-                        '{} {} datasets exists for {}, which one to return?'.format(
+                        '{} {} datasets with name starting by {} exists for {}, '
+                        'which one to return?'.format(
                             len(processed),
                             dataset_type,
+                            base_name,
                             origin['name']
                         ))
 
