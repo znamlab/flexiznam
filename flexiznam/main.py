@@ -662,6 +662,7 @@ def get_entity(datatype=None, query_key=None, query_value=None, project_id=None,
             entity = get_entity(*args)
             if entity is not None:
                 return entity
+        return None
 
     entity = get_entities(
         datatype=datatype,
