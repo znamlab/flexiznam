@@ -14,11 +14,18 @@
 - `Dataset` has now a `Dataset.full_name` and `Dataset.short_name` property instead 
   of a `Dataset.name` 
 
+### Main changes
+- `from_origin` has a new `base_name` property to allow multiple datasets of the same 
+  `dataset_type` below the same origin.
+
 ### Minor
 - `add_mouse` can be given a dictionary of info instead of reading them from MCMS (to 
   allow for manual download)
 - `add_experimental_session` uses parent path as base path. It means that parent must 
   have a path
+- `CameraData.from_folder` has an option to detect partial datasets (i.e. without 
+  timestamps or metadata)
+- Reduce default verbosity of some functions
 
 ## v0.3.0
 
