@@ -39,7 +39,7 @@ def compare_series(first_series, second_series, series_name=('first', 'second'),
                                       name=series_name[1], dtype='object'),
                            first_series[only_in_first].rename(series_name[0], axis=0)])
     differences = pd.concat((differences, first_s.T))
-    only_in_second = second_index - first_index
+    only_in_second = list(second_index - first_index)
     second_s = pd.DataFrame([second_series[only_in_second].rename(series_name[1], axis=0),
                              pd.Series({k: 'NA' for k in only_in_second},
                                        name=series_name[0], dtype='object')])
