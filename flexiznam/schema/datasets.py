@@ -21,7 +21,7 @@ class Dataset(object):
     SUBCLASSES = dict()
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flexilims_session=None, project=None):
+    def from_folder(cls, folder, verbose=False, flexilims_session=None, project=None):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not

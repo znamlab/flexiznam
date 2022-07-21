@@ -62,7 +62,8 @@ class MicroscopyData(Dataset):
             else:
                 si_fnames.append(f)
         [fnames.remove(f) for f in si_fnames]
-        print('Ignored %d SI tif' % len(si_fnames))
+        if verbose:
+            print('Ignored %d SI tif' % len(si_fnames))
 
         output = dict()
         for fname in fnames:
