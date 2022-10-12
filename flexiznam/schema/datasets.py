@@ -582,7 +582,7 @@ class Dataset(object):
             if all([isinstance(el, str) for el in value]):
                 self._genealogy = tuple(value)
                 return
-        raise DatasetError('Genealogy must be a tuple of strings.\n Got: %s'% value)
+        raise DatasetError('Genealogy must be a tuple of strings.\n Got: %s' % value)
 
     @property
     def is_raw(self):

@@ -147,13 +147,18 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
         elif not error_only:
             output.append([element.name, element.type, 'Folder found', ' '.join(ok), 0])
     else:
-        ds = Dataset.from_flexilims(flexilims_session=flexilims_session,
-                                    data_series=element)
-        if not ds.path_full.exists():
-            output.append([element.name, element.type, 'dataset path unvalid',
-                           ds.path_full, 1])
-        elif not error_only:
-            output.append([element.name, element.type, 'Data found', ds.path_full, 0])
+        try:
+            ds = Dataset.from_flexilims(flexilims_session=flexilims_session,
+                                        data_series=element)
+            if not ds.path_full.exists():
+                output.append([element.name, element.type, 'dataset path unvalid',
+                               ds.path_full, 1])
+            elif not error_only:
+                output.append([element.name, element.type, 'Data found', ds.path_full, 0])
+        except OSError as err:
+            output.append([element.name, element.type, 'Cannot create dataset from '
+                                                       'flexilims',
+                           str(err), 0])
     if recursive:
         children = flz.get_children(element.id, flexilims_session=flexilims_session)
         for _, child in children.iterrows():
