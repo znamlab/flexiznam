@@ -29,7 +29,7 @@ def _lookup_project(project_id, prm):
         return None
 
 
-def get_flexilims_session(project_id, username=None, password=None):
+def get_flexilims_session(project_id=None, username=None, password=None):
     """ Open a new flexilims session by creating a new authentication token.
 
     Args:
@@ -43,7 +43,9 @@ def get_flexilims_session(project_id, username=None, password=None):
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
     """
-    project_id = _format_project(project_id, PARAMETERS)
+    if project_id is not None:
+        project_id = _format_project(project_id, PARAMETERS)
+        warnings.warn('Starting flexilims session without setting project_id.')
     if username is None:
         username = PARAMETERS['flexilims_username']
     if password is None:

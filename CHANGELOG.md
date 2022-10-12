@@ -26,6 +26,7 @@
 - `CameraData.from_folder` has an option to detect partial datasets (i.e. without 
   timestamps or metadata)
 - Reduce default verbosity of some functions
+- `get_flexilims_sessions` can get a session without setting the project_id
 
 ## v0.3.0
 

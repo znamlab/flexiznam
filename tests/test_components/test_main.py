@@ -9,9 +9,10 @@ from flexiznam.schema import Dataset
 # this needs to change every time I reset flexlilims
 
 
-
 def test_get_flexilims_session():
     sess = flz.get_flexilims_session(project_id=PARAMETERS['project_ids']['test'])
+    assert sess.username == PARAMETERS['flexilims_username']
+    sess = flz.get_flexilims_session(project_id=None)
     assert sess.username == PARAMETERS['flexilims_username']
 
 
