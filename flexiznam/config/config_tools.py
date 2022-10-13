@@ -2,9 +2,12 @@ import os.path
 from pathlib import Path
 import sys
 import yaml
+
+import flexiznam
 from flexiznam.errors import ConfigurationError
 from flexiznam.config.default_config import DEFAULT_CONFIG
 from getpass import getpass
+
 
 def _find_file(file_name, config_folder=None):
     """Find a file by looking at various places
@@ -88,7 +91,8 @@ def add_password(app, username, password, password_file=None):
     return password_file
 
 
-def update_config(param_file=None, config_folder=None, skip_checks=False, **kwargs):
+def update_config(param_file=None, config_folder=None,
+                  add_all_projects=True, skip_checks=False, **kwargs):
     """Update the current configuration
 
     You can give any keyword arguments. For nested levels, provide a dictionary (of
@@ -98,13 +102,34 @@ def update_config(param_file=None, config_folder=None, skip_checks=False, **kwar
     will add the new project into the project_ids dictionary without removing existing
     projects.
 
-    If you want to replace a nested field by a flat structure, use the skip_checks=True
-    flag
+    If you want
+
+    Args:
+        param_file (str): name of the param file.
+        config_folder (str): folder to save config. Usually `~/.flexiznam`
+        add_all_projects (bool): If True, will connect to flexilims to download project
+                                 IDs
+        skip_checks (bool): If True allow to replace a nested field by a flat structure
+        **kwargs: Parameters to change (see description above)
+
+    Returns:
+        None
     """
+
     if config_folder is not None:
         full_param_path = Path(config_folder) / param_file
     else:
         full_param_path = param_file
+    if add_all_projects:
+        flm_sess = flexiznam.get_flexilims_session()
+        projects = flm_sess.get_project_info()
+        project_ids = {}
+        for project in projects:
+            project_ids[project['name']] = project['id']
+        if 'project_ids' in kwargs:
+            project_ids.update(kwargs['project_ids'])
+        kwargs['project_ids'] = project_ids
+
     create_config(config_folder=config_folder, config_file=param_file, overwrite=True,
                   template=full_param_path, skip_checks=skip_checks, **kwargs)
 

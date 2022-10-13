@@ -5,6 +5,8 @@
 ### Main changes
 - Add CLI function: `check_flexilims_issues` to check for ill-named entity and invalid 
   paths
+- `update_config` now adds all project_ids to the default config (requires to have 
+  flexilims access)
 
 ### Breaking changes:
 - `add_dataset` requires the genealogy argument

@@ -24,16 +24,31 @@ def test_create_config():
 
 def test_update_config():
     with tempfile.TemporaryDirectory() as tmp:
-        config_tools.create_config(overwrite=True, config_folder=tmp, favorite_colour='dark')
-        config_tools.update_config(param_file='config.yml', config_folder=tmp, skip_checks=False, mcms_username='alfred',
-                                   project_ids=dict(new_project='test_id'))
+        config_tools.create_config(overwrite=True, config_folder=tmp,
+                                   favorite_colour='dark')
+        config_tools.update_config(param_file='config.yml', config_folder=tmp,
+                                   skip_checks=False, mcms_username='alfred',
+                                   project_ids=dict(new_project='test_id'),
+                                   add_all_projects=False)
         prm = config_tools.load_param(tmp)
         assert prm['mcms_username'] == 'alfred'
         assert prm['favorite_colour'] == 'dark'
         assert prm['project_ids']['new_project'] == 'test_id'
         assert prm['project_ids']['test'] == DEFAULT_CONFIG['project_ids']['test']
+        n_projs = len(prm['project_ids'])
         prm = config_tools.load_param()
         assert 'favorite_colour' not in prm
+        config_tools.update_config(param_file='config.yml', config_folder=tmp,
+                                   add_all_projects=True)
+        prm = config_tools.load_param(tmp)
+        assert len(prm['project_ids']) > n_projs
+        assert 'new_project' in prm['project_ids']
+        config_tools.update_config(param_file='config.yml',
+                                   config_folder=tmp,
+                                   add_all_projects=True,
+                                   project_ids=dict(new_project='update_id'))
+        prm = config_tools.load_param(tmp)
+        assert prm['project_ids']['new_project'] == 'update_id'
 
 
 def test_passwd_creation():
