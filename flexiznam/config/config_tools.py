@@ -91,7 +91,7 @@ def add_password(app, username, password, password_file=None):
     return password_file
 
 
-def update_config(param_file=None, config_folder=None,
+def update_config(param_file='config.yml', config_folder=None,
                   add_all_projects=True, skip_checks=False, **kwargs):
     """Update the current configuration
 
@@ -116,10 +116,10 @@ def update_config(param_file=None, config_folder=None,
         None
     """
 
-    if config_folder is not None:
-        full_param_path = Path(config_folder) / param_file
-    else:
-        full_param_path = param_file
+    if config_folder is None:
+        config_folder = Path.home() / '.flexiznam'
+
+    full_param_path = Path(config_folder) / param_file
     if add_all_projects:
         flm_sess = flexiznam.get_flexilims_session()
         projects = flm_sess.get_project_info()

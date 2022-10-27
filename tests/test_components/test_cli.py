@@ -21,6 +21,8 @@ def test_config(tmp_path):
     assert result.output.startswith('Configuration file currently used is:')
     str_cfg = yaml.dump(config_tools.DEFAULT_CONFIG) + '\n'
     assert result.output.endswith(str_cfg)
+    result = runner.invoke(cli.config, ['--update', '--config_folder', tmp_path])
+    assert result.exit_code == 0
 
 
 def test_add_password(tmp_path):

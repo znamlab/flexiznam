@@ -39,9 +39,12 @@ def config(template=None, config_folder=None, update=False):
         click.echo('Configuration file currently used is:\n%s' % fname)
         if update:
             click.echo('Updating file')
+            if template is not None:
+                click.ClickException('Template cannot be used in `--update` mode.')
             prm = config_tools.load_param(param_folder=config_folder)
-            config_tools.create_config(overwrite=True, template=template,
+            config_tools.update_config(param_file='config.yml',
                                        config_folder=config_folder,
+                                       add_all_projects=True,
                                        **prm)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
