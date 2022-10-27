@@ -28,7 +28,9 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 @click.option('--update/--no-update', default=False,
               help='Update the config file to include all fields present in the default '
                    'config. Will not change already defined fields.')
-def config(template=None, config_folder=None, update=False):
+@click.option('--add-projects/--no-add-projects', default=True,
+              help='Update also adds all new project IDs. Require flexilims access')
+def config(template=None, config_folder=None, update=False, add_projects=True):
     """Create a configuration file if none exists."""
     from flexiznam.config import config_tools
     from flexiznam import errors
@@ -44,7 +46,7 @@ def config(template=None, config_folder=None, update=False):
             prm = config_tools.load_param(param_folder=config_folder)
             config_tools.update_config(param_file='config.yml',
                                        config_folder=config_folder,
-                                       add_all_projects=True,
+                                       add_all_projects=add_projects,
                                        **prm)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')

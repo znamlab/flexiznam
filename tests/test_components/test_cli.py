@@ -21,8 +21,17 @@ def test_config(tmp_path):
     assert result.output.startswith('Configuration file currently used is:')
     str_cfg = yaml.dump(config_tools.DEFAULT_CONFIG) + '\n'
     assert result.output.endswith(str_cfg)
+    prm = config_tools.load_param(param_folder=tmp_path)
+    assert len(prm['project_ids']) == len(config_tools.DEFAULT_CONFIG['project_ids'])
+    result = runner.invoke(cli.config, ['--update', '--config_folder', tmp_path,
+                                        '--no-add-projects'])
+    assert result.exit_code == 0
+    prm = config_tools.load_param(param_folder=tmp_path)
+    assert len(prm['project_ids']) == len(config_tools.DEFAULT_CONFIG['project_ids'])
     result = runner.invoke(cli.config, ['--update', '--config_folder', tmp_path])
     assert result.exit_code == 0
+    prm = config_tools.load_param(param_folder=tmp_path)
+    assert len(prm['project_ids']) >= len(config_tools.DEFAULT_CONFIG['project_ids'])
 
 
 def test_add_password(tmp_path):
