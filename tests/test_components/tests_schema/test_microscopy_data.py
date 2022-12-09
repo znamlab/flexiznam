@@ -11,12 +11,11 @@ from tests.tests_resources.data_for_testing import DATA_ROOT
 # - Creating from_folder
 
 
-
 def test_from_folder():
-    raw_folder = DATA_ROOT / 'mouse_physio_2p'
+    raw_folder = DATA_ROOT / "mouse_physio_2p"
     ds = MicroscopyData.from_folder(raw_folder, verbose=False)
     assert len(ds) == 1
-    d = ds['wf_overview.PNG']
-    assert d.full_name == 'mouse_physio_2p_wf_overview.PNG'
-    assert d.dataset_name == 'wf_overview.PNG'
+    d = ds["wf_overview.PNG"]
+    assert d.full_name == "mouse_physio_2p_wf_overview.PNG"
+    assert d.dataset_name == "wf_overview.PNG"
     assert d.is_valid()

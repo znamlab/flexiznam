@@ -7,11 +7,18 @@ from flexiznam.schema.datasets import Dataset
 
 
 class HarpData(Dataset):
-    DATASET_TYPE = 'harp'
+    DATASET_TYPE = "harp"
 
     @classmethod
-    def from_folder(cls, folder, folder_genealogy=None, is_raw=None, verbose=True,
-                    flexilims_session=None, project=None):
+    def from_folder(
+        cls,
+        folder,
+        folder_genealogy=None,
+        is_raw=None,
+        verbose=True,
+        flexilims_session=None,
+        project=None,
+    ):
         """Create a harp dataset by loading info from folder
 
         Args:
@@ -27,11 +34,11 @@ class HarpData(Dataset):
             dict of dataset (flz.schema.harp_data.HarpData)
         """
 
-        fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
-        bin_files = [f for f in fnames if f.endswith('.bin')]
-        csv_files = [f for f in fnames if f.endswith('.csv')]
+        fnames = [f for f in os.listdir(folder) if f.endswith((".csv", ".bin"))]
+        bin_files = [f for f in fnames if f.endswith(".bin")]
+        csv_files = [f for f in fnames if f.endswith(".csv")]
         if not bin_files:
-            raise IOError('Cannot find binary file')
+            raise IOError("Cannot find binary file")
 
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)
@@ -40,46 +47,60 @@ class HarpData(Dataset):
         output = {}
         matched_files = set()
         for bin_file in bin_files:
-            m = re.match(r'(.*?)_?harpmessage_?(.*?).bin', bin_file)
+            m = re.match(r"(.*?)_?harpmessage_?(.*?).bin", bin_file)
             if not m:
                 if verbose:
-                    print('%s is not a binary harp file: `_harpmessage_` is not in '
-                          'file name.' % bin_file)
+                    print(
+                        "%s is not a binary harp file: `_harpmessage_` is not in "
+                        "file name." % bin_file
+                    )
                 continue
 
-            pattern = '(.*)'.join(m.groups()) + '.csv'
+            pattern = "(.*)".join(m.groups()) + ".csv"
             matches = [re.match(pattern, f) for f in csv_files]
-            associated_csv = {m.groups()[0].strip('_'): f for f, m in
-                              zip(csv_files, matches) if m}
+            associated_csv = {
+                m.groups()[0].strip("_"): f for f, m in zip(csv_files, matches) if m
+            }
             if matched_files.intersection(associated_csv.values()):
-                raise IOError('A csv file matched with multiple binary files.')
+                raise IOError("A csv file matched with multiple binary files.")
             matched_files.update(associated_csv.values())
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
-            extra_attributes = dict(binary_file=bin_file,
-                                    csv_files=associated_csv,
-                                    )
+            extra_attributes = dict(
+                binary_file=bin_file,
+                csv_files=associated_csv,
+            )
             genealogy = folder_genealogy + (bin_file[:-4],)
-            output[bin_file[:-4]] = HarpData(genealogy=genealogy,
-                                             is_raw=is_raw,
-                                             path=folder,
-                                             extra_attributes=extra_attributes,
-                                             created=created.strftime(
-                                                 '%Y-%m-%d %H:%M:%S'),
-                                             flexilims_session=flexilims_session,
-                                             project=project)
+            output[bin_file[:-4]] = HarpData(
+                genealogy=genealogy,
+                is_raw=is_raw,
+                path=folder,
+                extra_attributes=extra_attributes,
+                created=created.strftime("%Y-%m-%d %H:%M:%S"),
+                flexilims_session=flexilims_session,
+                project=project,
+            )
         if verbose:
             unmatched = set(csv_files) - matched_files
             if unmatched and verbose:
-                print('%d csv files did not match any binary file:' % len(unmatched))
+                print("%d csv files did not match any binary file:" % len(unmatched))
                 for m in unmatched:
-                    print('    %s' % m)
+                    print("    %s" % m)
         return output
 
-    def __init__(self, path, is_raw=None, genealogy=None, extra_attributes=None,
-                 created=None, project=None, project_id=None, origin_id=None,
-                 flexilims_session=None):
+    def __init__(
+        self,
+        path,
+        is_raw=None,
+        genealogy=None,
+        extra_attributes=None,
+        created=None,
+        project=None,
+        project_id=None,
+        origin_id=None,
+        flexilims_session=None,
+    ):
         """Create a Harp dataset
 
         Args:
@@ -103,31 +124,40 @@ class HarpData(Dataset):
                                   Keys are identifier provided for convenience,
                                   values are the full file name
         """
-        if 'binary_file' not in extra_attributes:
-            raise IOError('Harp dataset require `binary_file` in their extra_attributes')
+        if "binary_file" not in extra_attributes:
+            raise IOError(
+                "Harp dataset require `binary_file` in their extra_attributes"
+            )
 
-        super().__init__(genealogy=genealogy, path=path, is_raw=is_raw,
-                         dataset_type=HarpData.DATASET_TYPE,
-                         extra_attributes=extra_attributes, created=created,
-                         project=project, project_id=project_id,
-                         origin_id=origin_id, flexilims_session=flexilims_session)
+        super().__init__(
+            genealogy=genealogy,
+            path=path,
+            is_raw=is_raw,
+            dataset_type=HarpData.DATASET_TYPE,
+            extra_attributes=extra_attributes,
+            created=created,
+            project=project,
+            project_id=project_id,
+            origin_id=origin_id,
+            flexilims_session=flexilims_session,
+        )
 
     @property
     def binary_file(self):
-        return self.extra_attributes.get('binary_file', None)
-    
+        return self.extra_attributes.get("binary_file", None)
+
     @binary_file.setter
     def binary_file(self, value):
-        self.extra_attributes['binary_file'] = str(value)
-        
+        self.extra_attributes["binary_file"] = str(value)
+
     @property
     def csv_files(self):
-        return self.extra_attributes.get('csv_files', None)
-    
+        return self.extra_attributes.get("csv_files", None)
+
     @csv_files.setter
     def csv_files(self, value):
-        self.extra_attributes['csv_files'] = str(value)
-        
+        self.extra_attributes["csv_files"] = str(value)
+
     def is_valid(self):
         """Check that video, metadata and timestamps files exist"""
         if not (pathlib.Path(self.path) / self.binary_file).exists():

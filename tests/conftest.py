@@ -6,7 +6,7 @@ import flexiznam
 
 @pytest.fixture
 def flm_sess():
-    flexilims_session.project_id = flexiznam.PARAMETERS['project_ids'][TEST_PROJECT]
+    flexilims_session.project_id = flexiznam.PARAMETERS["project_ids"][TEST_PROJECT]
     return flexilims_session
 
 

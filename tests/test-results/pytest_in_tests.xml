@@ -1,1 +1,267 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="49" time="302.601" timestamp="2022-10-12T18:18:40.763363" hostname="C02Z85AULVDC"><testcase classname="tests.test_2p" name="test_create_yaml" time="3.440" /><testcase classname="tests.test_2p" name="test_parse_yaml" time="1.518" /><testcase classname="tests.test_2p" name="test_flm" time="5.008" /><testcase classname="tests.test_barseq" name="test_create_yaml" time="0.814" /><testcase classname="tests.test_barseq" name="test_parse_yaml" time="1.522" /><testcase classname="tests.test_barseq" name="test_flm" time="7.257" /><testcase classname="tests.test_brainsaw" name="test_create_yaml" time="0.002" /><testcase classname="tests.test_brainsaw" name="test_parse_yaml" time="0.001" /><testcase classname="tests.test_brainsaw" name="test_flm" time="0.001" /><testcase classname="tests.test_components.test_cli" name="test_config" time="0.024" /><testcase classname="tests.test_components.test_cli" name="test_add_password" time="0.019" /><testcase classname="tests.test_components.test_cli" name="test_create_yaml" time="0.235" /><testcase classname="tests.test_components.test_cli" name="test_make_full_yaml" time="3.535" /><testcase classname="tests.test_components.test_cli" name="test_upload" time="9.251" /><testcase classname="tests.test_components.test_cli" name="test_flm_issues" time="18.392" /><testcase classname="tests.test_components.test_main" name="test_get_flexilims_session" time="0.135" /><testcase classname="tests.test_components.test_main" name="test_format_results" time="0.004" /><testcase classname="tests.test_components.test_main" name="test_get_experimental_sessions" time="0.208" /><testcase classname="tests.test_components.test_main" name="test_get_entities" time="0.363" /><testcase classname="tests.test_components.test_main" name="test_get_entity" time="0.029" /><testcase classname="tests.test_components.test_main" name="test_get_mouse_id" time="0.124" /><testcase classname="tests.test_components.test_main" name="test_generate_name" time="0.578" /><testcase classname="tests.test_components.test_main" name="test_get_children" time="0.630" /><testcase classname="tests.test_components.test_main" name="test_add_entity" time="0.396" /><testcase classname="tests.test_components.test_main" name="test_update_entity" time="1.035" /><testcase classname="tests.test_components.test_mcms" name="test_download_mouse" time="26.152" /><testcase classname="tests.test_components.test_mcms" name="test_get_mouse_df" time="25.960" /><testcase classname="tests.test_components.test_utils" name="test_create_config" time="0.020" /><testcase classname="tests.test_components.test_utils" name="test_update_config" time="0.027" /><testcase classname="tests.test_components.test_utils" name="test_passwd_creation" time="0.020" /><testcase classname="tests.test_components.test_utils" name="test_check_flexilims_paths" time="21.970" /><testcase classname="tests.test_components.test_utils" name="test_check_flexilims_names" time="20.979" /><testcase classname="tests.test_components.test_utils" name="test_add_genealogy" time="122.669" /><testcase classname="tests.test_components.test_utils" name="test_add_missing_paths" time="9.161" /><testcase classname="tests.test_components.test_utils" name="test_check_attribute" time="15.113" /><testcase classname="tests.test_components.tests_schema.test_camera_data" name="test_create_directly" time="0.007" /><testcase classname="tests.test_components.tests_schema.test_camera_data" name="test_create_from_folder" time="0.231" /><testcase classname="tests.test_components.tests_schema.test_camera_data" name="test_create_from_flexilims" time="0.590" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_dataset" time="0.003" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_constructor" time="0.001" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_dataset_flexilims_integration" time="0.330" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_from_flexilims" time="0.271" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_from_origin" time="1.765" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_update_flexilims" time="2.126" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_dataset_paths" time="0.125" /><testcase classname="tests.test_components.tests_schema.test_datasets" name="test_project_project_id" time="0.002" /><testcase classname="tests.test_components.tests_schema.test_harp" name="test_harp" time="0.141" /><testcase classname="tests.test_components.tests_schema.test_microscopy_data" name="test_from_folder" time="0.033" /><testcase classname="tests.test_components.tests_schema.test_scanimage_data" name="test_scanimage" time="0.208" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="17" time="62.329" timestamp="2022-10-27T17:53:22.961174" hostname="C02Z85AULVDC"><testcase classname="tests.test_2p" name="test_create_yaml" time="0.002"><failure message="AssertionError">def test_create_yaml():
+        """Test automatic yaml creation
+    
+        We check that the acquisition yaml can also be created automatically
+        """
+        saved_skeleton = PROCESSED_ROOT / MOUSE / YAML.replace('.yml',
+                                                               '_automatic_skeletion.yml')
+        # To save the yaml the first time we add outfile:
+&gt;       automat = create_yaml(DATA_ROOT / MOUSE / SESSION, mouse=MOUSE, project=TEST_PROJECT)
+
+tests/test_2p.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root_folder = PosixPath('/Volumes/lab-znamenskiyp/data/instruments/raw_data/projects/demo_project/mouse_physio_2p/S20211102')
+outfile = None, project = 'demo_project', mouse = 'mouse_physio_2p', overwrite = False
+
+    def create_yaml(root_folder, outfile=None, project='NOT SPECIFIED',
+                    mouse='NOT SPECIFIED', overwrite=False):
+        """Automatically create a yaml file skeleton
+    
+        Goes recursively in root folder and create a set of nested structure
+    
+        Args:
+            root_folder (str or Path): base folder, usually a session but can be a sample
+            outfile (str or Path): target to write the yaml. Do not write file if `None`
+            project (str): name of the project
+            mouse (str): name of the mouse
+            overwrite (bool): overwrite outfile if it exists. Default False.
+    
+        Returns:
+            yaml_dict (dict): created structure
+        """
+        root_folder = pathlib.Path(root_folder)
+&gt;       assert root_folder.is_dir()
+E       AssertionError
+
+flexiznam/camp/sync_data.py:34: AssertionError</failure></testcase><testcase classname="tests.test_2p" name="test_parse_yaml" time="0.002"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml.yml'">def test_parse_yaml():
+        """Test that we can parse the acq yaml
+    
+        We check that we can parse the yaml and that the output is similar to a known copy
+        """
+&gt;       parsed = parse_yaml(path_to_yaml=PROCESSED_ROOT / MOUSE / YAML,
+                            raw_data_folder=DATA_ROOT)
+
+tests/test_2p.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+flexiznam/camp/sync_data.py:96: in parse_yaml
+    session_data = _clean_yaml(path_to_yaml)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_to_yaml = PosixPath('/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml.yml')
+
+    def _clean_yaml(path_to_yaml):
+        """Read a yaml file and check that it is correctly formatted
+    
+        This does not do any processing, just make sure that I can read the whole yaml and
+        generate dictionary will all expected fields
+    
+        Args:
+            path_to_yaml (str): path to the YAML file, or dict of the yaml content
+    
+        Returns:
+            dict: nested dictionary containing entries in the YAML file
+    
+        """
+    
+        if isinstance(path_to_yaml, dict):
+            yml_data = path_to_yaml
+        else:
+&gt;           with open(path_to_yaml, 'r') as yml_file:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml.yml'
+
+flexiznam/camp/sync_data.py:468: FileNotFoundError</failure></testcase><testcase classname="tests.test_2p" name="test_flm" time="1.949"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml_parsed.yml'">def test_flm():
+        """Check that we can upload to flexilims if the database is wiped"""
+        if FLM_IS_WIPED:
+            # there shouldn't be anything in the way, if there is we have an issue
+            conflicts = 'abort'
+        else:
+            # entries already exist, just skip them. Will still crash if there is dataset
+            # that has changed.
+            conflicts = 'skip'
+        physio_mouse_exists()
+        saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
+&gt;       created = upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
+                              log_func=print, flexilims_session=flexilims_session, conflicts=conflicts)
+
+tests/test_2p.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+flexiznam/camp/sync_data.py:163: in upload_yaml
+    errors = find_xxerrorxx(yml_file=source_yaml)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+yml_file = PosixPath('/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml_parsed.yml')
+yml_data = None, pattern = 'XXERRORXX', _output = None
+
+    def find_xxerrorxx(yml_file=None, yml_data=None, pattern='XXERRORXX', _output=None):
+        """Utility to find where things went wrong
+    
+        Look through a `yml_file` or the corresponding `yml_Data` dictionary recursively.
+        Returns a dictionary with all entries containing the error `pattern`
+    
+        _output is used for recursive calling.
+        """
+        if yml_file is not None:
+            if yml_data is not None:
+                raise IOError('Set either yml_file OR yml_data')
+&gt;           with open(yml_file, 'r') as reader:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p/physio_acq_yaml_parsed.yml'
+
+flexiznam/camp/sync_data.py:627: FileNotFoundError</failure></testcase><testcase classname="tests.test_barseq" name="test_create_yaml" time="0.002"><failure message="AssertionError">def test_create_yaml():
+        """Test automatic yaml creation
+    
+        We check that the acquisition yaml can also be created automatically
+        """
+        saved_skeleton = PROCESSED_ROOT / MOUSE / 'yaml_automatic_skeleton.yml'
+        # To save the yaml the first time we add outfile:
+&gt;       automat = create_yaml(DATA_ROOT / MOUSE, mouse=MOUSE, project=TEST_PROJECT)
+
+tests/test_barseq.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root_folder = PosixPath('/Volumes/lab-znamenskiyp/data/instruments/raw_data/projects/demo_project/mouse_barseq')
+outfile = None, project = 'demo_project', mouse = 'mouse_barseq', overwrite = False
+
+    def create_yaml(root_folder, outfile=None, project='NOT SPECIFIED',
+                    mouse='NOT SPECIFIED', overwrite=False):
+        """Automatically create a yaml file skeleton
+    
+        Goes recursively in root folder and create a set of nested structure
+    
+        Args:
+            root_folder (str or Path): base folder, usually a session but can be a sample
+            outfile (str or Path): target to write the yaml. Do not write file if `None`
+            project (str): name of the project
+            mouse (str): name of the mouse
+            overwrite (bool): overwrite outfile if it exists. Default False.
+    
+        Returns:
+            yaml_dict (dict): created structure
+        """
+        root_folder = pathlib.Path(root_folder)
+&gt;       assert root_folder.is_dir()
+E       AssertionError
+
+flexiznam/camp/sync_data.py:34: AssertionError</failure></testcase><testcase classname="tests.test_barseq" name="test_parse_yaml" time="0.002"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_barseq/yaml_automatic_skeleton.yml'">def test_parse_yaml():
+        """Test that we can parse the acq yaml
+    
+        We check that we can parse the yaml and that the output is similar to a known copy
+        """
+&gt;       parsed = parse_yaml(path_to_yaml=PROCESSED_ROOT / MOUSE / YAML,
+                            raw_data_folder=DATA_ROOT, verbose=False)
+
+tests/test_barseq.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+flexiznam/camp/sync_data.py:96: in parse_yaml
+    session_data = _clean_yaml(path_to_yaml)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path_to_yaml = PosixPath('/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_barseq/yaml_automatic_skeleton.yml')
+
+    def _clean_yaml(path_to_yaml):
+        """Read a yaml file and check that it is correctly formatted
+    
+        This does not do any processing, just make sure that I can read the whole yaml and
+        generate dictionary will all expected fields
+    
+        Args:
+            path_to_yaml (str): path to the YAML file, or dict of the yaml content
+    
+        Returns:
+            dict: nested dictionary containing entries in the YAML file
+    
+        """
+    
+        if isinstance(path_to_yaml, dict):
+            yml_data = path_to_yaml
+        else:
+&gt;           with open(path_to_yaml, 'r') as yml_file:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_barseq/yaml_automatic_skeleton.yml'
+
+flexiznam/camp/sync_data.py:468: FileNotFoundError</failure></testcase><testcase classname="tests.test_barseq" name="test_flm" time="2.894"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_barseq/yaml_automatic_skeleton_parsed.yml'">def test_flm():
+        """Check that we can upload to flexilims if the database is wiped"""
+        if FLM_IS_WIPED:
+            # there shouldn't be anything in the way, if there is we have an issue
+            conflicts = 'abort'
+        else:
+            # entries already exist, just skip them. Will still crash if there is dataset
+            # that has changed.
+            conflicts = 'skip'
+        # make sure we have the mouse
+        barseq_mouse_exists()
+        saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
+&gt;       created = upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
+                              log_func=print, flexilims_session=flexilims_session,
+                              conflicts=conflicts)
+
+tests/test_barseq.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+flexiznam/camp/sync_data.py:163: in upload_yaml
+    errors = find_xxerrorxx(yml_file=source_yaml)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+yml_file = PosixPath('/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_barseq/yaml_automatic_skeleton_parsed.yml')
+yml_data = None, pattern = 'XXERRORXX', _output = None
+
+    def find_xxerrorxx(yml_file=None, yml_data=None, pattern='XXERRORXX', _output=None):
+        """Utility to find where things went wrong
+    
+        Look through a `yml_file` or the corresponding `yml_Data` dictionary recursively.
+        Returns a dictionary with all entries containing the error `pattern`
+    
+        _output is used for recursive calling.
+        """
+        if yml_file is not None:
+            if yml_data is not None:
+                raise IOError('Set either yml_file OR yml_data')
+&gt;           with open(yml_file, 'r') as reader:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_barseq/yaml_automatic_skeleton_parsed.yml'
+
+flexiznam/camp/sync_data.py:627: FileNotFoundError</failure></testcase><testcase classname="tests.test_brainsaw" name="test_create_yaml" time="0.001" /><testcase classname="tests.test_brainsaw" name="test_parse_yaml" time="0.001" /><testcase classname="tests.test_brainsaw" name="test_flm" time="0.001" /><testcase classname="tests.test_components.test_cli" name="test_config" time="20.749" /><testcase classname="tests.test_components.test_cli" name="test_add_password" time="0.059" /><testcase classname="tests.test_components.test_cli" name="test_create_yaml" time="0.006"><failure message="AssertionError: assert 1 == 0&#10; +  where 1 = &lt;Result FileNotFoundError('source_dir /Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p is not a directory')&gt;.exit_code">tmp_path = PosixPath('/private/var/folders/fd/9ch9vbxn1n92jq1j6_1d0bwdsn5k17/T/pytest-of-blota/pytest-6/test_create_yaml0')
+
+    def test_create_yaml(tmp_path):
+        path2yaml = PROCESSED_ROOT / 'mouse_physio_2p'
+        runner = CliRunner()
+        out_yml = tmp_path / 'autogenerated.yml'
+        result = runner.invoke(cli.create_yaml,
+                               ['-s', path2yaml, '-t', out_yml])
+&gt;       assert result.exit_code == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = &lt;Result FileNotFoundError('source_dir /Volumes/lab-znamenskiyp/home/shared/projects/demo_project/mouse_physio_2p is not a directory')&gt;.exit_code
+
+tests/test_components/test_cli.py:57: AssertionError</failure></testcase><testcase classname="tests.test_components.test_cli" name="test_make_full_yaml" time="0.003"><failure message="assert 1 == 0&#10; +  where 1 = &lt;Result SystemExit(1)&gt;.exit_code">tmp_path = PosixPath('/private/var/folders/fd/9ch9vbxn1n92jq1j6_1d0bwdsn5k17/T/pytest-of-blota/pytest-6/test_make_full_yaml0')
+
+    def test_make_full_yaml(tmp_path):
+        path2yaml = PROCESSED_ROOT / 'mouse_physio_2p' / 'physio_acq_yaml.yml'
+        runner = CliRunner()
+        out_yml = tmp_path / 'autogenerated.yml'
+        result = runner.invoke(cli.process_yaml,
+                               ['-s', path2yaml, '-t', out_yml])
+&gt;       assert result.exit_code == 0
+E       assert 1 == 0
+E        +  where 1 = &lt;Result SystemExit(1)&gt;.exit_code
+
+tests/test_components/test_cli.py:66: AssertionError</failure></testcase><testcase classname="tests.test_components.test_cli" name="test_upload" time="0.004"><failure message="assert 1 == 0&#10; +  where 1 = &lt;Result SystemExit(1)&gt;.exit_code">tmp_path = PosixPath('/private/var/folders/fd/9ch9vbxn1n92jq1j6_1d0bwdsn5k17/T/pytest-of-blota/pytest-6/test_upload0')
+
+    def test_upload(tmp_path):
+        path2yaml = PROCESSED_ROOT / 'mouse_physio_2p' / 'physio_acq_yaml_unvalid.yml'
+        # first generate a yaml without and without error:
+        runner = CliRunner()
+        err_yml = tmp_path / 'with_error.yml'
+        result = runner.invoke(cli.process_yaml, ['-s', path2yaml, '-t', err_yml])
+&gt;       assert result.exit_code == 0
+E       assert 1 == 0
+E        +  where 1 = &lt;Result SystemExit(1)&gt;.exit_code
+
+tests/test_components/test_cli.py:89: AssertionError</failure></testcase><testcase classname="tests.test_components.test_cli" name="test_flm_issues" time="33.622"><failure message="assert 1 == 0&#10; +  where 1 = &lt;Result SystemExit(1)&gt;.exit_code">tmp_path = PosixPath('/private/var/folders/fd/9ch9vbxn1n92jq1j6_1d0bwdsn5k17/T/pytest-of-blota/pytest-6/test_flm_issues0')
+
+    def test_flm_issues(tmp_path):
+        out_csv = tmp_path / 'report.csv'
+        runner = CliRunner()
+        result = runner.invoke(cli.check_flexilims_issues,
+                               ['-t', out_csv, '-p', TEST_PROJECT])
+&gt;       assert result.exit_code == 0
+E       assert 1 == 0
+E        +  where 1 = &lt;Result SystemExit(1)&gt;.exit_code
+
+tests/test_components/test_cli.py:111: AssertionError</failure></testcase><testcase classname="tests.test_components.test_main" name="test_get_flexilims_session" time="1.257" /><testcase classname="tests.test_components.test_main" name="test_format_results" time="0.004" /><testcase time="0.001" /></testsuite></testsuites>
