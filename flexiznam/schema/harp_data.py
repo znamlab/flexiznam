@@ -10,14 +10,33 @@ class HarpData(Dataset):
     DATASET_TYPE = 'harp'
 
     @classmethod
-    def from_folder(cls, folder, verbose=True, flexilims_session=None, project=None):
-        """Create a harp dataset by loading info from folder"""
+    def from_folder(cls, folder, folder_genealogy=None, is_raw=None, verbose=True,
+                    flexilims_session=None, project=None):
+        """Create a harp dataset by loading info from folder
+
+        Args:
+            folder (str): path to the folder
+            folder_genealogy (tuple): genealogy of the folder, if None assume that
+                                      the genealogy is just (folder,), i.e. no parents
+            is_raw (bool): does this folder contain raw data?
+            verbose (bool=True): print info about what is found
+            flexilims_session (flm.Session): session to interact with flexilims
+            project (str): project ID or name
+
+        Returns:
+            dict of dataset (flz.schema.harp_data.HarpData)
+        """
+
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.bin'))]
         bin_files = [f for f in fnames if f.endswith('.bin')]
         csv_files = [f for f in fnames if f.endswith('.csv')]
         if not bin_files:
             raise IOError('Cannot find binary file')
 
+        if folder_genealogy is None:
+            folder_genealogy = (pathlib.Path(folder).stem,)
+        elif isinstance(folder_genealogy, list):
+            folder_genealogy = tuple(folder_genealogy)
         output = {}
         matched_files = set()
         for bin_file in bin_files:
@@ -41,7 +60,9 @@ class HarpData(Dataset):
             extra_attributes = dict(binary_file=bin_file,
                                     csv_files=associated_csv,
                                     )
-            output[bin_file[:-4]] = HarpData(name=bin_file[:-4],
+            genealogy = folder_genealogy + (bin_file[:-4],)
+            output[bin_file[:-4]] = HarpData(genealogy=genealogy,
+                                             is_raw=is_raw,
                                              path=folder,
                                              extra_attributes=extra_attributes,
                                              created=created.strftime(
@@ -56,7 +77,7 @@ class HarpData(Dataset):
                     print('    %s' % m)
         return output
 
-    def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
+    def __init__(self, path, is_raw=None, genealogy=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
                  flexilims_session=None):
         """Create a Harp dataset
@@ -65,8 +86,8 @@ class HarpData(Dataset):
             path: folder containing the dataset or path to file (valid only for single
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            name: name of the dataset as on flexilims. Is expected to include mouse,
-                  session etc...
+            genealogy (tuple): parents of this dataset from the project (excluded) down to
+                               the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
@@ -85,7 +106,7 @@ class HarpData(Dataset):
         if 'binary_file' not in extra_attributes:
             raise IOError('Harp dataset require `binary_file` in their extra_attributes')
 
-        super().__init__(name=name, path=path, is_raw=is_raw,
+        super().__init__(genealogy=genealogy, path=path, is_raw=is_raw,
                          dataset_type=HarpData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, project_id=project_id,

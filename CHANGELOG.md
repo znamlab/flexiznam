@@ -1,6 +1,36 @@
 # Change log
 
-##v0.3.0
+## v0.3.1
+
+### Main changes
+- Add CLI function: `check_flexilims_issues` to check for ill-named entity and invalid 
+  paths
+- `update_config` now adds all project_ids to the default config (requires to have 
+  flexilims access)
+
+### Breaking changes:
+- `add_dataset` requires the genealogy argument
+- `from_folder` uses a `folder_genealogy` argument instead of the previous `mouse`, 
+  `session` and ` recording` arguments
+- `Dataset` creation requires `genealogy` instead of `name`
+- `Dataset` has now a `Dataset.full_name` and `Dataset.short_name` property instead 
+  of a `Dataset.name` 
+
+### Main changes
+- `from_origin` has a new `base_name` property to allow multiple datasets of the same 
+  `dataset_type` below the same origin.
+
+### Minor
+- `add_mouse` can be given a dictionary of info instead of reading them from MCMS (to 
+  allow for manual download)
+- `add_experimental_session` uses parent path as base path. It means that parent must 
+  have a path
+- `CameraData.from_folder` has an option to detect partial datasets (i.e. without 
+  timestamps or metadata)
+- Reduce default verbosity of some functions
+- `get_flexilims_sessions` can get a session without setting the project_id
+
+## v0.3.0
 
 ### Breaking changes:
 - All `flm_session` are now `flexilims_session` (harmonise with main functions)

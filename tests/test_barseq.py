@@ -4,6 +4,8 @@ Example file to upload a barseq dataset
 The example data is found in demo_project
 """
 import copy
+
+import pandas as pd
 import yaml
 
 from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
@@ -48,10 +50,11 @@ def test_parse_yaml():
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
     # If the parsed has changed and you want to overwrite it, you can do:
     # fzn.camp.sync_data.write_session_data_as_yaml(parsed, target_file=saved_parsed_yaml,
-    #                                               overwrite=True, mouse=MOUSE, project=)
+    #                                               overwrite=True)
     # parsed contains datasets, we need to make them  into str to compare with saved data
     parsed_str = copy.deepcopy(parsed)
-    clean_dictionary_recursively(parsed_str, keys=['name'], format_dataset=True)
+    clean_dictionary_recursively(parsed_str, keys=['name'], format_dataset=True,
+                                 tuple_as_list=True)
 
     with open(saved_parsed_yaml, 'r') as fopen:
         saved = yaml.safe_load(fopen)
@@ -70,8 +73,21 @@ def test_flm():
     # make sure we have the mouse
     barseq_mouse_exists()
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace('.yml', '_parsed.yml')
-    upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
-                log_func=print, flexilims_session=flexilims_session, conflicts=conflicts)
+    created = upload_yaml(saved_parsed_yaml, raw_data_folder=None, verbose=False,
+                          log_func=print, flexilims_session=flexilims_session,
+                          conflicts=conflicts)
+    # check that I do not duplicate any part of the name (except for SI datasets)
+    for c in created:
+        parts = c.split('_')
+        v = pd.value_counts(parts)
+        if v.max() > 1:
+            if 'czi' in c:
+                continue
+            if c in ['mouse_barseq_brain_slide_001_slide_001_overview.tif',
+                     'mouse_barseq_brain_slide_001_section_01_cycle_01',
+                     'mouse_barseq_brain_slide_006_section_02_cycle_02']:
+                continue
+            raise ValueError('Name is weird: %s' % c)
 
 
 def barseq_mouse_exists():
@@ -81,13 +97,12 @@ def barseq_mouse_exists():
         # we need to add the mouse. If it was a real MCMS mouse we could do:
         # `fzn.add_mouse(project=test_data.TEST_PROJECT, mouse_name=MOUSE)`
         # but since it's a dummy mouse, I'll just add it manually:
-        resp = flexilims_session.post(datatype='mouse',
-                                name=MOUSE,
-                                strict_validation=False,
-                                attributes=dict(birth_date='01-Mar-2021',
-                                                sex='Female',
-                                                animal_name=MOUSE),
-                                )
+        mouse = fzn.add_mouse(flexilims_session=flexilims_session,
+                              mouse_info=dict(birth_date='01-Mar-2021',
+                                              sex='Female',
+                                              animal_name=MOUSE),
+                              mouse_name=MOUSE,
+                              get_mcms_data=False)
     else:
         assert mouse is not None
 

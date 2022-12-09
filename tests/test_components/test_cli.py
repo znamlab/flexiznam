@@ -4,7 +4,7 @@ import yaml
 from click.testing import CliRunner
 from flexiznam import cli
 from flexiznam.config import config_tools
-from tests.tests_resources.data_for_testing import PROCESSED_ROOT
+from tests.tests_resources.data_for_testing import PROCESSED_ROOT, TEST_PROJECT
 
 
 def test_config(tmp_path):
@@ -14,12 +14,24 @@ def test_config(tmp_path):
     assert result.output.startswith('No configuration file. Creating one.')
     assert pathlib.Path.exists(tmp_path / 'config.yml')
     prm = config_tools.load_param(param_folder=tmp_path)
-    assert prm['data_root']['raw'] == r'/camp/lab/znamenskiyp/data/instruments/raw_data'
+    assert prm['data_root']['raw'] == \
+           r'/camp/lab/znamenskiyp/data/instruments/raw_data/projects'
     result = runner.invoke(cli.config, ['--config_folder', tmp_path])
     assert result.exit_code == 0
     assert result.output.startswith('Configuration file currently used is:')
     str_cfg = yaml.dump(config_tools.DEFAULT_CONFIG) + '\n'
     assert result.output.endswith(str_cfg)
+    prm = config_tools.load_param(param_folder=tmp_path)
+    assert len(prm['project_ids']) == len(config_tools.DEFAULT_CONFIG['project_ids'])
+    result = runner.invoke(cli.config, ['--update', '--config_folder', tmp_path,
+                                        '--no-add-projects'])
+    assert result.exit_code == 0
+    prm = config_tools.load_param(param_folder=tmp_path)
+    assert len(prm['project_ids']) == len(config_tools.DEFAULT_CONFIG['project_ids'])
+    result = runner.invoke(cli.config, ['--update', '--config_folder', tmp_path])
+    assert result.exit_code == 0
+    prm = config_tools.load_param(param_folder=tmp_path)
+    assert len(prm['project_ids']) >= len(config_tools.DEFAULT_CONFIG['project_ids'])
 
 
 def test_add_password(tmp_path):
@@ -35,7 +47,7 @@ def test_add_password(tmp_path):
                                   password_file=pwd_file)
     assert p == '1234'
 
-@pytest.mark.integtest
+
 def test_create_yaml(tmp_path):
     path2yaml = PROCESSED_ROOT / 'mouse_physio_2p'
     runner = CliRunner()
@@ -44,7 +56,7 @@ def test_create_yaml(tmp_path):
                            ['-s', path2yaml, '-t', out_yml])
     assert result.exit_code == 0
 
-@pytest.mark.integtest
+
 def test_make_full_yaml(tmp_path):
     path2yaml = PROCESSED_ROOT / 'mouse_physio_2p' / 'physio_acq_yaml.yml'
     runner = CliRunner()
@@ -55,7 +67,7 @@ def test_make_full_yaml(tmp_path):
     # read auto yaml
     with open(out_yml, 'r') as reader:
         auto_out = yaml.safe_load(reader)
-    assert len(auto_out) == 9
+    assert len(auto_out) == 10
     result = runner.invoke(cli.process_yaml, ['-s', path2yaml, '-t', out_yml])
     assert result.exit_code == 1
     result = runner.invoke(cli.process_yaml, ['-s', path2yaml, '-t', out_yml,
@@ -64,10 +76,10 @@ def test_make_full_yaml(tmp_path):
     # read auto yaml
     with open(out_yml, 'r') as reader:
         auto_out = yaml.safe_load(reader)
-    assert len(auto_out) == 9
+    assert len(auto_out) == 10
 
 
-@pytest.mark.integtest
+
 def test_upload(tmp_path):
     path2yaml = PROCESSED_ROOT / 'mouse_physio_2p' / 'physio_acq_yaml_unvalid.yml'
     # first generate a yaml without and without error:
@@ -88,3 +100,14 @@ def test_upload(tmp_path):
 
     result = runner.invoke(cli.yaml_to_flexilims, ['-s', out_yml, '--conflicts', 'skip'])
     assert result.exit_code == 0
+
+
+
+def test_flm_issues(tmp_path):
+    out_csv = tmp_path / 'report.csv'
+    runner = CliRunner()
+    result = runner.invoke(cli.check_flexilims_issues,
+                           ['-t', out_csv, '-p', TEST_PROJECT])
+    assert result.exit_code == 0
+    assert out_csv.is_file()
+

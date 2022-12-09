@@ -15,11 +15,30 @@ class ScanimageData(Dataset):
     DEFAULT_STACK_TYPE = 'calcium'
 
     @staticmethod
-    def from_folder(folder, verbose=True, mouse=None, session=None, recording=None,
+    def from_folder(folder, folder_genealogy=None, is_raw=None, verbose=True,
                     flexilims_session=None, project=None):
-        """Create a scanimage dataset by loading info from folder"""
+        """Create a scanimage dataset by loading info from folder
+
+        Args:
+            folder (str): path to the folder
+            folder_genealogy (tuple): genealogy of the folder, if None assume that
+                                      the genealogy is just (folder,), i.e. no parents
+            is_raw (bool): does this folder contain raw data?
+            verbose (bool=True): print info about what is found
+            flexilims_session (flm.Session): session to interact with flexilims
+            project (str): project ID or name
+
+        Returns:
+            dist of datasets (fzm.schema.scanimage_data.ScanimageData)
+        """
         folder = pathlib.Path(folder)
         assert folder.is_dir()
+
+        if folder_genealogy is None:
+            folder_genealogy = (pathlib.Path(folder).stem,)
+        elif isinstance(folder_genealogy, list):
+            folder_genealogy = tuple(folder_genealogy)
+
         fnames = [f for f in os.listdir(folder) if f.endswith(('.csv', '.tiff', '.tif'))]
         tif_files = [f for f in fnames if f.endswith(('.tif', '.tiff'))]
         csv_files = [f for f in fnames if f.endswith('.csv')]
@@ -74,15 +93,14 @@ class ScanimageData(Dataset):
             for field in ['file_num', 'channel']:
                 extra_attributes.pop(field, None)
             extra_attributes.update(csv_files=associated_csv)
-
+            genealogy = folder_genealogy + (acq_id,)
             output[acq_id] = ScanimageData(path=folder,
+                                           genealogy=genealogy,
+                                           is_raw=is_raw,
                                            extra_attributes=extra_attributes,
                                            created=created.strftime('%Y-%m-%d %H:%M:%S'),
                                            flexilims_session=flexilims_session,
                                            project=project)
-            for field in ('mouse', 'session', 'recording'):
-                setattr(output[acq_id], field, locals()[field])
-            output[acq_id].dataset_name = acq_id
 
         if verbose:
             unmatched = set(csv_files) - matched_csv
@@ -93,7 +111,7 @@ class ScanimageData(Dataset):
                     print('    %s' % m)
         return output
 
-    def __init__(self, path, is_raw=None, name=None, extra_attributes=None,
+    def __init__(self, path, is_raw=None, genealogy=None, extra_attributes=None,
                  created=None, project=None, project_id=None, origin_id=None,
                  flexilims_session=None):
         """Create a ScanImage dataset
@@ -102,8 +120,8 @@ class ScanimageData(Dataset):
             path: folder containing the dataset or path to file (valid only for single
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            name: name of the dataset as on flexilims. Is expected to include mouse,
-                  session etc...
+            genealogy (tuple): parents of this dataset from the project (excluded) down to
+                               the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
@@ -124,11 +142,11 @@ class ScanimageData(Dataset):
         """
         if 'stack_type' not in extra_attributes:
             warnings.warn('No `stack_type` provided for SI dataset %s. '
-                          'Set to default: %s' % (name, self.DEFAULT_STACK_TYPE),
+                          'Set to default: %s' % (genealogy, self.DEFAULT_STACK_TYPE),
                           stacklevel=2)
             extra_attributes['stack_type'] = self.DEFAULT_STACK_TYPE
 
-        super().__init__(name=name, path=path, is_raw=is_raw,
+        super().__init__(genealogy=genealogy, path=path, is_raw=is_raw,
                          dataset_type=ScanimageData.DATASET_TYPE,
                          extra_attributes=extra_attributes, created=created,
                          project=project, flexilims_session=flexilims_session,
@@ -236,9 +254,9 @@ def parse_si_filename(path2file):
     except KeyError:
         raise IOError('Could not find logFramesPerFile in metadata of %s' % fname)
     if math.isfinite(frames_per_file):
-        pattern = '(.*)_(\d*)_(\d*)(.*).tiff?'
+        pattern = r'(.*)_(\d*)_(\d*)(.*).tiff?'
     else:
-        pattern = '(.*)_(\d*)(.*).tiff?'
+        pattern = r'(.*)_(\d*)(.*).tiff?'
     parsed_name = re.match(pattern, fname)
     if parsed_name is None:
         raise IOError('Cannot parse file name %s with expected pattern %s' % (fname,

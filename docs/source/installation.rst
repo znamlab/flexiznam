@@ -39,7 +39,11 @@ Configuration
 -------------
 
 The default configuration settings can be created simply by running:
-``flexiznam config``. This will create a ``~/.flexiznam`` directory with a ``config.yml`` file.
+``flexiznam config``. This will create a ``~/.flexiznam`` directory with a ``config.yml``
+file.
+
+After creation, set the ``flexilims`` parameters (see *Password management* below) and run
+``flexiznam config --update`` to automatically add the list of existing projects.
 
 To add newly defined configuration field and set them to their default value,
 you can run ``flexiznam config --update``. This will not change any existing

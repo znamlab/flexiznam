@@ -4,7 +4,6 @@ from flexiznam.schema.datasets import Dataset
 from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
 
 
-@pytest.mark.integtest
 def test_create_directly(flm_sess):
     """Create by directly calling the function"""
     # first just make sure it can create an object without epic failure
@@ -12,19 +11,18 @@ def test_create_directly(flm_sess):
                             metadata_file='none',
                             video_file='none')
     data = CameraData(path='test_path',
-                      name=None,
+                      genealogy=None,
+                      project=TEST_PROJECT,
                       extra_attributes=extra_attributes,
                       created='now',
-                      project=TEST_PROJECT,
                       is_raw=True,
                       flexilims_session=flm_sess)
     assert str(data.path) == 'test_path'
     assert not data.is_valid()
-    assert data.name is None
+    assert data.full_name is None
     assert data.timestamp_file == 'camel.csv'
 
 
-@pytest.mark.integtest
 def test_create_from_folder(flm_sess):
     """Test creation from folder
 
@@ -47,13 +45,12 @@ def test_create_from_folder(flm_sess):
     assert ds.flexilims_status() == 'not online'
 
 
-@pytest.mark.integtest
 def test_create_from_flexilims(flm_sess):
     """Create from the flexilims instance made in the test_create_directly"""
     ds_name = 'mouse_physio_2p_S20211102_R173917_SpheresPermTube_face_camera'
     data = CameraData.from_flexilims(project=TEST_PROJECT, name=ds_name)
     data_dir = DATA_ROOT / 'mouse_physio_2p' / 'S20211102' / 'R173917_SpheresPermTube'
-    assert data.name == ds_name
+    assert data.full_name == ds_name
     assert str(data.path_full) == str(data_dir)
     assert data.timestamp_file == 'face_camera_timestamps.csv'
 

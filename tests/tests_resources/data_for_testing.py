@@ -4,6 +4,7 @@ import datetime
 from flexiznam.config import PARAMETERS
 
 
+MOUSE_ID = '628f8cf4527421769cdd4bfb'
 TEST_PROJECT = 'demo_project'
 DATA_ROOT = Path(PARAMETERS['data_root']['raw']) / TEST_PROJECT
 PROCESSED_ROOT = Path(PARAMETERS['data_root']['processed']) / TEST_PROJECT

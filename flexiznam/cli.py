@@ -17,7 +17,9 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 
     """Add a single mouse to a project."""
     click.echo('Trying to add %s in %s' % (mouse_name, project_id))
-    main.add_mouse(mouse_name, project_id, mcms_animal_name, flexilims_username, mcms_username)
+    main.add_mouse(mouse_name=mouse_name, project_id=project_id,
+                   mcms_animal_name=mcms_animal_name, mcms_username=mcms_username,
+                   flexilims_username=flexilims_username,)
 
 
 @cli.command()
@@ -26,7 +28,9 @@ def add_mouse(project_id, mouse_name, mcms_animal_name=None, flexilims_username=
 @click.option('--update/--no-update', default=False,
               help='Update the config file to include all fields present in the default '
                    'config. Will not change already defined fields.')
-def config(template=None, config_folder=None, update=False):
+@click.option('--add-projects/--no-add-projects', default=True,
+              help='Update also adds all new project IDs. Require flexilims access')
+def config(template=None, config_folder=None, update=False, add_projects=True):
     """Create a configuration file if none exists."""
     from flexiznam.config import config_tools
     from flexiznam import errors
@@ -37,9 +41,12 @@ def config(template=None, config_folder=None, update=False):
         click.echo('Configuration file currently used is:\n%s' % fname)
         if update:
             click.echo('Updating file')
+            if template is not None:
+                click.ClickException('Template cannot be used in `--update` mode.')
             prm = config_tools.load_param(param_folder=config_folder)
-            config_tools.create_config(overwrite=True, template=template,
+            config_tools.update_config(param_file='config.yml',
                                        config_folder=config_folder,
+                                       add_all_projects=add_projects,
                                        **prm)
     except errors.ConfigurationError:
         click.echo('No configuration file. Creating one.')
@@ -156,10 +163,46 @@ def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     from flexiznam import camp, errors
     import pathlib
 
-
     source_yaml = pathlib.Path(source_yaml)
     try:
         camp.sync_data.upload_yaml(source_yaml, raw_data_folder, conflicts=conflicts,
                                    verbose=False)
     except errors.SyncYmlError as err:
         raise click.ClickException(err.args[0])
+
+@cli.command()
+@click.option('-p', '--project_id', prompt='Enter the project ID', help='Project ID.')
+@click.option('-t', '--target_file', default=None, help='Path to write csv output.')
+@click.option('-r', '--root_name', default=None, help='Root entity to start the check.')
+@click.option('--flexilims_username', default=None, help='Your username on flexilims.')
+def check_flexilims_issues(project_id, target_file, root_name, flexilims_username):
+    """Check that database is properly formatted
+
+    This will check recursively all mice if `root_name` is not provided. Elements that
+    are not descendent of mice will NOT be check if root_name is not selected
+    appropriately.
+    """
+    from flexiznam.main import get_flexilims_session
+    from flexiznam import utils
+    import pathlib
+    import pandas as pd
+    flexilims_session = get_flexilims_session(project_id=project_id,
+                                              username=flexilims_username)
+    ndf = utils.check_flexilims_names(flexilims_session, root_name=root_name,
+                                      recursive=True)
+    pdf = utils.check_flexilims_paths(flexilims_session)
+    pdf.set_index('name', inplace=True)
+    pdf['error_type'] = 'path'
+    if ndf is not None:
+        ndf.set_index('name', inplace=True)
+        ndf['error_type'] = 'name'
+        # check for non-unique names
+        bad = ndf.index.value_counts()
+        bad = bad[bad > 1].index
+        if len(bad):
+            ndf['name_is_not_unique'] = 0
+            ndf.loc[ndf.index.isin(bad.index), 'name_is_not_unique'] = 1
+        df = pd.concat([pdf, ndf], axis=0)
+    else:
+        df = pdf
+    df.to_csv(target_file)

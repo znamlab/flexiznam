@@ -22,7 +22,7 @@ DEFAULT_CONFIG = dict(
     datatypes=['mouse', 'session', 'recording', 'dataset', 'sample'],
     # list of valid dataset type
     dataset_types=['scanimage', 'camera', 'ephys', 'suite2p_rois', 'suite2p_traces',
-                     'harp', 'microscopy'],
+                   'harp', 'microscopy'],
 
     # list of extensions accepted as `MicroscopyData`
     microscopy_extensions=['.czi', '.png', '.gif', '.tif', '.tiff']
