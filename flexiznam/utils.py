@@ -216,11 +216,13 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
     """
     if added is None:
         added = []
-    ok = check_flexilims_names(
-        flexilims_session=flexilims_session, root_name=root_name, recursive=recursive
-    )
-    if ok is not None:
-        raise IOError("check_flexilims_names must return None to add genealogy")
+        ok = check_flexilims_names(
+            flexilims_session=flexilims_session,
+            root_name=root_name,
+            recursive=recursive,
+        )
+        if ok is not None:
+            raise IOError("check_flexilims_names must return None to add genealogy")
 
     if root_name is None:
         to_check = flz.get_entities(
@@ -245,11 +247,11 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
                 id=parent.origin_id, flexilims_session=flexilims_session
             )
             parts.append(parent["name"])
-        # transform parts in genealogy by cutting begining
         parts = parts[::-1]
         cut = ""
+        # transform parts in genealogy by cutting begining
         for i, part in enumerate(parts):
-            parts[i] = part.replace(cut, "")
+            parts[i] = part[len(cut):]
             cut = part + "_"
 
         if "genealogy" in entity:

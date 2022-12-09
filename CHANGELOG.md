@@ -2,6 +2,12 @@
 
 ## v0.3.2
 
+### Bugfixes
+- `add_genealogy` now works with scanimage datasets
+
+### Minor
+- switch to `black` formatter
+
 ## v0.3.1
 
 ### Main changes
