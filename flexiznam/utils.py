@@ -130,41 +130,6 @@ def check_flexilims_paths(flexilims_session, root_name=None, recursive=True,
     return output
 
 
-def _check_path(output, element, flexilims_session, recursive, error_only):
-    """Subfunction to recurse path checking"""
-    if 'path' not in element:
-        output.append([element.name, element.type, 'path not defined', '', 1])
-    elif not isinstance(element.path, str):
-        output.append([element.name, element.type, 'Path is not a string!', element.path,
-                       1])
-    elif element.type != 'dataset':
-        ok = []
-        for k, v in flz.PARAMETERS['data_root'].items():
-            if (Path(v) / element.path).is_dir():
-                ok.append(v)
-        if not len(ok):
-            output.append([element.name, element.type, 'folder does not exist', '', 1])
-        elif not error_only:
-            output.append([element.name, element.type, 'Folder found', ' '.join(ok), 0])
-    else:
-        try:
-            ds = Dataset.from_flexilims(flexilims_session=flexilims_session,
-                                        data_series=element)
-            if not ds.path_full.exists():
-                output.append([element.name, element.type, 'dataset path unvalid',
-                               ds.path_full, 1])
-            elif not error_only:
-                output.append([element.name, element.type, 'Data found', ds.path_full, 0])
-        except OSError as err:
-            output.append([element.name, element.type, 'Cannot create dataset from '
-                                                       'flexilims',
-                           str(err), 0])
-    if recursive:
-        children = flz.get_children(element.id, flexilims_session=flexilims_session)
-        for _, child in children.iterrows():
-            _check_path(output, child, flexilims_session, recursive, error_only)
-
-
 def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     """Check that names defined on flexilims match the hierarchy
 
@@ -193,16 +158,6 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     if not len(output):
         return None
     return pd.DataFrame(data=output, columns=['name', 'parent_name'])
-
-
-def _check_name(output, element, flexilims_session, parent_name, recursive):
-    if (parent_name is not None) and not element.name.startswith(parent_name):
-        output.append([element.name, parent_name])
-    parent_name = element.name
-    if recursive:
-        children = flz.get_children(element.id, flexilims_session=flexilims_session)
-        for _, child in children.iterrows():
-            _check_name(output, child, flexilims_session, parent_name, recursive)
 
 
 def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None):
@@ -330,3 +285,48 @@ def _check_attribute_case(flexilims_session):
                         report.append([proj_name, d['name'], attr])
 
     return pd.DataFrame(data=report, columns=['project', 'entity', 'attribute'])
+
+
+def _check_path(output, element, flexilims_session, recursive, error_only):
+    """Subfunction to recurse path checking"""
+    if 'path' not in element:
+        output.append([element.name, element.type, 'path not defined', '', 1])
+    elif not isinstance(element.path, str):
+        output.append([element.name, element.type, 'Path is not a string!', element.path,
+                       1])
+    elif element.type != 'dataset':
+        ok = []
+        for k, v in flz.PARAMETERS['data_root'].items():
+            if (Path(v) / element.path).is_dir():
+                ok.append(v)
+        if not len(ok):
+            output.append([element.name, element.type, 'folder does not exist', '', 1])
+        elif not error_only:
+            output.append([element.name, element.type, 'Folder found', ' '.join(ok), 0])
+    else:
+        try:
+            ds = Dataset.from_flexilims(flexilims_session=flexilims_session,
+                                        data_series=element)
+            if not ds.path_full.exists():
+                output.append([element.name, element.type, 'dataset path unvalid',
+                               ds.path_full, 1])
+            elif not error_only:
+                output.append([element.name, element.type, 'Data found', ds.path_full, 0])
+        except OSError as err:
+            output.append([element.name, element.type, 'Cannot create dataset from '
+                                                       'flexilims',
+                           str(err), 0])
+    if recursive:
+        children = flz.get_children(element.id, flexilims_session=flexilims_session)
+        for _, child in children.iterrows():
+            _check_path(output, child, flexilims_session, recursive, error_only)
+
+
+def _check_name(output, element, flexilims_session, parent_name, recursive):
+    if (parent_name is not None) and not element.name.startswith(parent_name):
+        output.append([element.name, parent_name])
+    parent_name = element.name
+    if recursive:
+        children = flz.get_children(element.id, flexilims_session=flexilims_session)
+        for _, child in children.iterrows():
+            _check_name(output, child, flexilims_session, parent_name, recursive)
