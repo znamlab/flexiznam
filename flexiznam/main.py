@@ -45,6 +45,7 @@ def get_flexilims_session(project_id=None, username=None, password=None):
     """
     if project_id is not None:
         project_id = _format_project(project_id, PARAMETERS)
+    else:
         warnings.warn("Starting flexilims session without setting project_id.")
     if username is None:
         username = PARAMETERS["flexilims_username"]
