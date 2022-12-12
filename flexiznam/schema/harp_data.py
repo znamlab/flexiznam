@@ -55,15 +55,17 @@ class HarpData(Dataset):
                         "file name." % bin_file
                     )
                 continue
-
-            pattern = "(.*)".join(m.groups()) + ".csv"
-            matches = [re.match(pattern, f) for f in csv_files]
-            associated_csv = {
-                m.groups()[0].strip("_"): f for f, m in zip(csv_files, matches) if m
-            }
-            if matched_files.intersection(associated_csv.values()):
-                raise IOError("A csv file matched with multiple binary files.")
-            matched_files.update(associated_csv.values())
+            if any(m.groups()):  # do not match csv if the bin is just "harpmessage"
+                pattern = "(.*)".join(m.groups()) + ".csv"
+                matches = [re.match(pattern, f) for f in csv_files]
+                associated_csv = {
+                    m.groups()[0].strip("_"): f for f, m in zip(csv_files, matches) if m
+                }
+                if matched_files.intersection(associated_csv.values()):
+                    raise IOError("A csv file matched with multiple binary files.")
+                matched_files.update(associated_csv.values())
+            else:
+                associated_csv = {}
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
