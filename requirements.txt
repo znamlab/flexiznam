@@ -9,3 +9,4 @@ tifffile
 sphinx
 sphinx-rtd-theme
 sphinx-click
+black

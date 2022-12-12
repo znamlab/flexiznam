@@ -16,17 +16,26 @@ class MicroscopyData(Dataset):
     Extensions added to VALID_EXTENSIONS are considered as single file datasets
     """
 
-    DATASET_TYPE = 'microscopy'
+    DATASET_TYPE = "microscopy"
     try:
-        VALID_EXTENSIONS = PARAMETERS['microscopy_extensions']
+        VALID_EXTENSIONS = PARAMETERS["microscopy_extensions"]
     except KeyError:
-        VALID_EXTENSIONS = {'.czi', '.png', '.gif', '.tif', '.tiff'}
-        warnings.warn('Could not find `microscopy_extensions` in config. Please update '
-                      'config file', stacklevel=2)
+        VALID_EXTENSIONS = {".czi", ".png", ".gif", ".tif", ".tiff"}
+        warnings.warn(
+            "Could not find `microscopy_extensions` in config. Please update "
+            "config file",
+            stacklevel=2,
+        )
 
     @staticmethod
-    def from_folder(folder, folder_genealogy=None, is_raw=None, verbose=True,
-                    flexilims_session=None, project=None):
+    def from_folder(
+        folder,
+        folder_genealogy=None,
+        is_raw=None,
+        verbose=True,
+        flexilims_session=None,
+        project=None,
+    ):
         """Create Microscopy datasets by loading info from folder
 
         Args:
@@ -43,9 +52,12 @@ class MicroscopyData(Dataset):
         """
         folder = pathlib.Path(folder)
         if not folder.is_dir():
-            raise IOError('%s is not a folder' % folder)
-        fnames = [f for f in os.listdir(folder) if
-                  f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))]
+            raise IOError("%s is not a folder" % folder)
+        fnames = [
+            f
+            for f in os.listdir(folder)
+            if f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))
+        ]
 
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)
@@ -55,7 +67,7 @@ class MicroscopyData(Dataset):
         # filter out SI tifs
         si_fnames = []
         for f in fnames:
-            if not(f.lower().endswith('tif') or f.lower().endswith('tiff')):
+            if not (f.lower().endswith("tif") or f.lower().endswith("tiff")):
                 continue
             if parse_si_filename(folder / f) is None:
                 continue
@@ -63,7 +75,7 @@ class MicroscopyData(Dataset):
                 si_fnames.append(f)
         [fnames.remove(f) for f in si_fnames]
         if verbose:
-            print('Ignored %d SI tif' % len(si_fnames))
+            print("Ignored %d SI tif" % len(si_fnames))
 
         output = dict()
         for fname in fnames:
@@ -74,15 +86,24 @@ class MicroscopyData(Dataset):
                 genealogy=genealogy,
                 is_raw=is_raw,
                 path=dataset_path,
-                created=created.strftime('%Y-%m-%d %H:%M:%S'),
+                created=created.strftime("%Y-%m-%d %H:%M:%S"),
                 flexilims_session=flexilims_session,
-                project=project
+                project=project,
             )
         return output
 
-    def __init__(self, path, is_raw=None, genealogy=None, extra_attributes=None,
-                 created=None, project=None, project_id=None, origin_id=None,
-                 flexilims_session=None):
+    def __init__(
+        self,
+        path,
+        is_raw=None,
+        genealogy=None,
+        extra_attributes=None,
+        created=None,
+        project=None,
+        project_id=None,
+        origin_id=None,
+        flexilims_session=None,
+    ):
         """Create a Microscopy dataset
 
         Args:
@@ -103,11 +124,18 @@ class MicroscopyData(Dataset):
         Expected extra_attributes:
             None
         """
-        super().__init__(genealogy=genealogy, path=path, is_raw=is_raw,
-                         dataset_type=MicroscopyData.DATASET_TYPE,
-                         extra_attributes=extra_attributes, created=created,
-                         project=project, project_id=project_id,
-                         origin_id=origin_id, flexilims_session=flexilims_session)
+        super().__init__(
+            genealogy=genealogy,
+            path=path,
+            is_raw=is_raw,
+            dataset_type=MicroscopyData.DATASET_TYPE,
+            extra_attributes=extra_attributes,
+            created=created,
+            project=project,
+            project_id=project_id,
+            origin_id=origin_id,
+            flexilims_session=flexilims_session,
+        )
 
     def is_valid(self):
         """Check that the file exist"""
