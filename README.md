@@ -66,3 +66,9 @@ The configuration file can be edited manually or using `flexiznam.config.update_
 To simplify the interaction with MCSM and flexilims, you can store a copy of you passwords in `~/.flexiznam/secret_password.yml`. This file can be created and edited manualy. It needs to be a yml file formatted like the template in `flexiznam.config`. Alternatively on can use the CLI:
 
 `flexiznam add-password --app mcms --username myname --password uniquepassword`
+
+# Known issues
+
+## Selenium drivers do not update
+
+When updating chromium, `get_mouse_df` and `add_mouse` can stop working. Updating `webbot` does not solve the issue. The selenirum drivers must manually be [downloaded](https://chromedriver.chromium.org/downloads) and put in the `webbot` install folder. You can `import webbot` and check `webbot.__file__` to find where is that folder. See https://github.com/nateshmbhat/webbot/issues/87
