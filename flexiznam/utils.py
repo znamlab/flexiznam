@@ -66,6 +66,45 @@ def compare_series(
     return differences
 
 
+def compare_dictionaries_recursively(first_dict, second_dict, output=None):
+    """Compare two dictionnaries recursively
+
+    Will return a dictionnary with only fields that have are different
+
+    Args:
+        first_dict (dict): First dictionary
+        second_dict (dict): Second dictionary
+        output (dict, optional): Output used for recursion. Defaults to None.
+    """
+    if output is None:
+        output = dict()
+
+    if first_dict == second_dict:
+        return output
+
+    diff_keys = [k for k in second_dict if k not in first_dict]
+    for k in diff_keys:
+        output[k] = ("NOT PRESENT", second_dict[k])
+    diff_keys = [k for k in first_dict if k not in second_dict]
+    for k in diff_keys:
+        output[k] = (first_dict[k], "NOT PRESENT")
+
+    for k in first_dict:
+        if k in diff_keys:
+            continue
+        elif first_dict[k] == second_dict[k]:
+            continue
+        fv = first_dict[k]
+        sv = second_dict[k]
+        if isinstance(fv, dict) and isinstance(sv, dict):
+            output[k] = dict()
+            compare_dictionaries_recursively(fv, sv, output[k])
+        else:
+            output[k] = (fv, sv)
+
+    return output
+
+
 def clean_dictionary_recursively(
     dictionary, keys=(), path2string=True, format_dataset=False, tuple_as_list=False
 ):
@@ -251,7 +290,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
         cut = ""
         # transform parts in genealogy by cutting begining
         for i, part in enumerate(parts):
-            parts[i] = part[len(cut):]
+            parts[i] = part[len(cut) :]
             cut = part + "_"
 
         if "genealogy" in entity:

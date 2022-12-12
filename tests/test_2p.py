@@ -9,7 +9,10 @@ import pandas as pd
 import yaml
 
 from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
-from flexiznam.utils import clean_dictionary_recursively
+from flexiznam.utils import (
+    clean_dictionary_recursively,
+    compare_dictionaries_recursively,
+)
 from tests.tests_resources import flexilims_session
 from tests.tests_resources.data_for_testing import (
     DATA_ROOT,
@@ -73,7 +76,11 @@ def test_parse_yaml():
 
     with open(saved_parsed_yaml, "r") as fopen:
         saved = yaml.safe_load(fopen)
-    assert saved == parsed_str
+
+    # to check for individual differences
+    out = compare_dictionaries_recursively(saved, parsed_str, output=None)
+    if out:
+        raise IOError("Saved and parsed yaml are different:\n%s" % out)
 
 
 def test_flm():
