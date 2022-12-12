@@ -29,7 +29,7 @@ def download_mouse_info(
 
     request = "RepAllMice"
     web.go_to("%scustom_query.do?queryUid=%s" % (BASE_URL, request))
-    web.click(xpath="/html/body/div[3]/form/div[3]/div/div/div/div/button")
+    # web.click(xpath="/html/body/div[2]/form/div[3]/div/div/div/div/button")
     time.sleep(0.5)  # seconds
     web.click("Animal Name")
     # web.click(xpath="/html/body/div[3]/form/div[2]/div/div/div[3]/table/tbody/tr/td[2]/span/select")

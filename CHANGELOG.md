@@ -6,6 +6,7 @@
 - `add_genealogy` now works with scanimage datasets
 - `HarpData` does not match csv if the file name is only `harpmessage.bin`. 
   See issue #93
+- Adapt `add_mouse` to new MCMS page layout
 
 ### Minor
 - add `compare_dictionaries_recursively` in `utils`
