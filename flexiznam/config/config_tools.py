@@ -54,7 +54,10 @@ def load_param(param_folder=None, config_file="config.yml"):
 def get_password(username, app, password_file=None):
     """Read the password yaml"""
     if password_file is None:
-        password_file = _find_file("secret_password.yml")
+        try:
+            password_file = _find_file("secret_password.yml")
+        except ConfigurationError:
+            return getpass(prompt=f"Enter {app} password: ")
     with open(password_file, "r") as yml_file:
         pwd = yaml.safe_load(yml_file) or {}
     try:
