@@ -17,6 +17,7 @@ setup(
         "pyyaml",
         "flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims",
         "tifffile",
+        "pathlib",
     ],
     entry_points="""
         [console_scripts]

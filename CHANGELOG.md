@@ -11,6 +11,7 @@
 ### Minor
 - add `compare_dictionaries_recursively` in `utils`
 - switch to `black` formatter
+- add `pathlib` to requirement
 
 ## v0.3.1
 
