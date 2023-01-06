@@ -179,6 +179,8 @@ def create_yaml(
         overwrite=overwrite,
     )
     click.echo("Created yml skeleton in %s" % target_yaml)
+    if process:
+        raise NotImplementedError
 
 
 @cli.command()
