@@ -126,7 +126,7 @@ class Dataset(object):
             origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
             origin_name (str): name of the origin. This or origin_id must be provided
             dataset_type (str): type of dataset to create. Must be defined in the config file
-            base_name (str): How is this dataset name? Use dataset_type if root_name is
+            base_name (str): How is this dataset name? Use dataset_type if base_name is
                              None (default)
             conflicts (str): What to do if a dataset of this type already exists
                 as a child of the parent entity?
@@ -633,11 +633,12 @@ class Dataset(object):
 
     @dataset_type.setter
     def dataset_type(self, value):
-        if value.lower() not in PARAMETERS["dataset_types"]:
-            raise IOError(
-                'dataset_type "%s" not valid. Valid types are: '
-                "%s" % (value, PARAMETERS["dataset_types"])
-            )
+        if PARAMETERS["enforce_dataset_types"]:
+            if (value.lower() not in PARAMETERS["dataset_types"]):
+                raise DatasetError(
+                    'dataset_type "%s" not valid. Valid types are: '
+                    "%s" % (value, PARAMETERS["dataset_types"])
+                )
         self._dataset_type = value.lower()
 
     @property

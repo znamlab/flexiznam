@@ -284,3 +284,43 @@ def test_project_project_id(flm_sess):
     assert ds.project == TEST_PROJECT
     # now I can change flm_sess
     ds.flexilims_session = flm_sess
+
+
+def test_dataset_type_enforcer():
+    orignal_value = PARAMETERS['enforce_dataset_types']
+    PARAMETERS['enforce_dataset_types'] = True
+    valid_dstype = PARAMETERS['dataset_types'][0]
+    ds = Dataset(
+        path="fake/path",
+        is_raw="no",
+        dataset_type=valid_dstype,
+        extra_attributes={},
+        created="",
+        project="test",
+        flexilims_session=None,
+    )
+    with pytest.raises(DatasetError) as err:
+        ds = Dataset(
+            path="fake/path",
+            is_raw="no",
+            dataset_type="badtypeJJJJJ",
+            extra_attributes={},
+            created="",
+            project="test",
+            flexilims_session=None,
+        )
+    assert (
+        err.value.args[0].startswith("dataset_type \"badtypeJJJJJ\" not valid. Valid types are:")
+    )
+    PARAMETERS['enforce_dataset_types'] = False
+    ds = Dataset(
+            path="fake/path",
+            is_raw="no",
+            dataset_type="badtypeJJJJJ",
+            extra_attributes={},
+            created="",
+            project="test",
+            flexilims_session=None,
+        )
+    PARAMETERS['enforce_dataset_types'] = orignal_value
+    

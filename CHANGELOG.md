@@ -2,6 +2,10 @@
 
 ## v0.3.2
 
+### Main changes
+- add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
+  dataset type must be defined in the config file or can be freely changed.
+
 ### Bugfixes
 - `add_genealogy` now works with scanimage datasets
 - `HarpData` does not match csv if the file name is only `harpmessage.bin`. 
