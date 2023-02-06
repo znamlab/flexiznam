@@ -250,6 +250,7 @@ def test_dataset_paths(flm_sess):
     assert str(ds.path_full) == str(
         pathlib.Path(PARAMETERS["data_root"]["raw"] / ds.path)
     )
+    assert str(ds.path_relative) == str(ds.path)
 
 
 def test_project_project_id(flm_sess):
