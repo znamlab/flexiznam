@@ -125,6 +125,11 @@ def update_config(
         config_folder = Path.home() / ".flexiznam"
 
     full_param_path = Path(config_folder) / param_file
+
+    # get all existing params and add the kwargs
+    prm = load_param(config_file=full_param_path)
+    kwargs = _recursive_update(prm, kwargs, skip_checks=skip_checks)
+
     if add_all_projects:
         flm_sess = flexiznam.get_flexilims_session()
         projects = flm_sess.get_project_info()
@@ -135,11 +140,12 @@ def update_config(
             project_ids.update(kwargs["project_ids"])
         kwargs["project_ids"] = project_ids
 
+    # run create_config with template=None to append new keys
     create_config(
         config_folder=config_folder,
         config_file=param_file,
         overwrite=True,
-        template=full_param_path,
+        template=None,
         skip_checks=skip_checks,
         **kwargs,
     )
