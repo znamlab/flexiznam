@@ -5,8 +5,6 @@
 ### Main changes
 - add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
   dataset type must be defined in the config file or can be freely changed.
-- add `self.path_relative` to Dataset that is always the path relative to the projects 
-  folder.
 
 ### Bugfixes
 - `add_genealogy` now works with scanimage datasets
@@ -14,8 +12,6 @@
   See issue #93
 - Adapt `add_mouse` to new MCMS page layout
 - `config --update` adds fields that are new in the default config to the current config
-- update flexilims should upload the `path_relative` for dataset, even if `self.path` 
-  has wrongly been set to absolute path
 
 ### Minor
 - add `compare_dictionaries_recursively` in `utils`

@@ -182,7 +182,6 @@ class Dataset(object):
             )
             short_name = dataset_name[len(origin["name"]) + 1 :]
             genealogy = tuple(origin.genealogy) + (short_name,)
-            
             dataset_path = str(Path(origin["path"]) / short_name)
             ds = Dataset(
                 path=dataset_path,
@@ -521,7 +520,7 @@ class Dataset(object):
             mode: 'flexilims' or 'yaml'
         """
         data = dict(
-            path=str(self.path_relative),
+            path=str(self.path),
             created=self.created,
             dataset_type=self.dataset_type,
             is_raw="yes" if self.is_raw else "no",
@@ -703,8 +702,3 @@ class Dataset(object):
     def path_full(self):
         """Get full path including the CAMP root"""
         return self.path_root / self.path
-
-    @property
-    def path_relative(self):
-        """Get the relative path, i.e. without self.path_root"""
-        return self.path_full.relative_to(self.path_root)
