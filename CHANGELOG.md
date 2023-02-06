@@ -12,6 +12,7 @@
 ### Minor
 - add `compare_dictionaries_recursively` in `utils`
 - switch to `black` formatter
+- `Dataset` can now be imported from `flexiznam`
 
 ## v0.3.1
 
