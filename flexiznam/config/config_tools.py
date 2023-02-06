@@ -2,7 +2,7 @@ import os.path
 from pathlib import Path
 import sys
 import yaml
-
+from copy import deepcopy
 import flexiznam
 from flexiznam.errors import ConfigurationError
 from flexiznam.config.default_config import DEFAULT_CONFIG
@@ -173,7 +173,7 @@ def create_config(
             with open(template, "r") as tpl_file:
                 cfg = yaml.safe_load(tpl_file)
     else:
-        cfg = DEFAULT_CONFIG
+        cfg = deepcopy(DEFAULT_CONFIG)
     cfg = _recursive_update(cfg, kwargs, skip_checks=skip_checks)
 
     if config_folder is None:
