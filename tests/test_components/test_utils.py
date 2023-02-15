@@ -29,6 +29,8 @@ def test_update_config():
         config_tools.create_config(
             overwrite=True, config_folder=tmp, favorite_colour="dark"
         )
+        prm = config_tools.load_param(tmp)
+        assert len(prm['project_ids']) == len(DEFAULT_CONFIG["project_ids"])
         config_tools.update_config(
             param_file="config.yml",
             config_folder=tmp,
@@ -43,12 +45,16 @@ def test_update_config():
         assert prm["project_ids"]["new_project"] == "test_id"
         assert prm["project_ids"]["test"] == DEFAULT_CONFIG["project_ids"]["test"]
         n_projs = len(prm["project_ids"])
+        assert n_projs == (len(DEFAULT_CONFIG["project_ids"]) + 1)
         prm = config_tools.load_param()
         assert "favorite_colour" not in prm
         config_tools.update_config(
             param_file="config.yml", config_folder=tmp, add_all_projects=True
         )
         prm = config_tools.load_param(tmp)
+        if n_projs != 5:
+            print(n_projs)
+        print(prm['project_ids'])
         assert len(prm["project_ids"]) > n_projs
         assert "new_project" in prm["project_ids"]
         config_tools.update_config(
@@ -116,4 +122,5 @@ def test_add_missing_paths(flm_sess):
 @pytest.mark.slow
 def test_check_attribute(flm_sess):
     attr = utils._check_attribute_case(flm_sess)
-    assert len(attr.attribute.unique()) == 10
+    for att in attr.attribute.unique():
+        assert att.lower() != att

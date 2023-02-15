@@ -2,3 +2,4 @@
 
 from .main import *
 from . import utils
+from .schema import Dataset
