@@ -237,7 +237,7 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     return pd.DataFrame(data=output, columns=["name", "parent_name"])
 
 
-def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None):
+def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None, verbose=True):
     """Add genealogy info to properly named sections of database
 
     If the names of all entries are as expected (check_flexilims_names return None),
@@ -250,6 +250,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
                          all mice.
         recursive (bool): do recursively on children (default False)
         added (None): holder for recursion. Do not use
+        verbose (bool,optional): show progress. Default True.
     Returns:
         list of entity names for which genealogy was added
     """
@@ -302,6 +303,8 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
             else:
                 pass
         else:
+            if verbose:
+                print(f'Updating {entity.name}', flush=True)
             flz.update_entity(
                 entity.type,
                 flexilims_session=flexilims_session,

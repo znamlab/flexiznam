@@ -122,4 +122,5 @@ def test_add_missing_paths(flm_sess):
 @pytest.mark.slow
 def test_check_attribute(flm_sess):
     attr = utils._check_attribute_case(flm_sess)
-    assert len(attr.attribute.unique()) == 10
+    for att in attr.attribute.unique():
+        assert att.lower() != att
