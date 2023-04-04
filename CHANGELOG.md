@@ -1,8 +1,9 @@
 # Change log
 
-## v0.3.2
+## v0.3.3
 
 ### Main changes
+- New entry point: `add_genealogy` to add the genealogy field to existing entries.
 - add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
   dataset type must be defined in the config file or can be freely changed.
 
@@ -18,7 +19,7 @@
 - switch to `black` formatter
 - `Dataset` can now be imported from `flexiznam`
 
-## v0.3.1
+## v0.3.2
 
 ### Main changes
 - Add CLI function: `check_flexilims_issues` to check for ill-named entity and invalid 

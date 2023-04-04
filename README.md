@@ -3,8 +3,6 @@ Znam lab tool to interact with flexilims. Detailed documentation at https://flex
 
 # Getting started
 
-In brief, you can follow the `setup.sh`. For clarifications see below.
-
 ## Installation
 
 To create a standalone installation, in you favorite `conda` or `venv`, clone the repository and `pip` install:
@@ -32,6 +30,38 @@ You can also install the develop branch:
 pip install git+ssh://git@github.com/znamlab/flexiznam.git@dev
 ```
 
+## Initial configuration
+
+To set up the flexilims and mcms integration, the config file must be edited. First create the default config by running:
+
+```
+flexiznam config
+```
+
+This should create a `~/.flexiznam/config.yml` file. Edit it with your favorite text editor to change `flexilims_username`, `mcms_username` and, 
+if neeed `data_root`.
+
+You can then add passwords to make it simpler by running (one by one):
+
+```
+flexiznam add-password -a mcms
+flexiznam add-password -a flexilims
+```
+
+This will prompt you for a username and a password and create a `~/.flexiznam/secret_password.yml` file. This is not very secure. You can marginally
+improve that by running:
+
+```
+chmod 700 ~/.flexiznam/secret_password.yml
+```
+
+Then you can run:
+
+```
+flexiznam config --update
+```
+
+Flexiznam should now be able to log in to flexilims automatically and find the project ids to add them to the config file.
 ## Updating
 
 Once flexiznam is installed, you can also use pip to keep the package updated:
