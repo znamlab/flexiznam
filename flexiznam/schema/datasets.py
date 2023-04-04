@@ -84,7 +84,10 @@ class Dataset(object):
                 name=name,
                 flexilims_session=flexilims_session,
             )
+            
             if data_series is None:
+                if project is None:
+                    project = flexilims_session.project_id
                 raise FlexilimsError(
                     "No dataset named {} in project {}".format(name, project)
                 )
