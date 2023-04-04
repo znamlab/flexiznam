@@ -1,6 +1,5 @@
 import pathlib
 from pathlib import Path, PurePosixPath
-
 import pandas as pd
 import flexiznam as flz
 from flexiznam.schema import Dataset
@@ -293,7 +292,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
             parts[i] = part[len(cut) :]
             cut = part + "_"
 
-        if "genealogy" in entity:
+        if "genealogy" in entity and isinstance(entity.genealogy, list):
             if entity.genealogy != parts:
                 raise FlexilimsError(
                     '%s genealogy does not match database: "%s" vs '
