@@ -13,6 +13,7 @@
   See issue #93
 - Adapt `add_mouse` to new MCMS page layout
 - `config --update` adds fields that are new in the default config to the current config
+- `clean_dictionary_recursively` replaces ndarray by list, which are JSON-compatible
 
 ### Minor
 - add `compare_dictionaries_recursively` in `utils`

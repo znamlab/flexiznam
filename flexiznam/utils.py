@@ -1,10 +1,13 @@
 import pathlib
 from pathlib import Path, PurePosixPath
+
+import numpy as np
 import pandas as pd
-import flexiznam as flz
-from flexiznam.schema import Dataset
-from flexiznam.errors import FlexilimsError
 from flexilims.main import SPECIAL_CHARACTERS
+
+import flexiznam as flz
+from flexiznam.errors import FlexilimsError
+from flexiznam.schema import Dataset
 
 
 def compare_series(
@@ -105,7 +108,12 @@ def compare_dictionaries_recursively(first_dict, second_dict, output=None):
 
 
 def clean_dictionary_recursively(
-    dictionary, keys=(), path2string=True, format_dataset=False, tuple_as_list=False
+    dictionary,
+    keys=(),
+    path2string=True,
+    array2list=True,
+    format_dataset=False,
+    tuple_as_list=False,
 ):
     """Recursively clean a dictionary inplace
 
@@ -114,6 +122,8 @@ def clean_dictionary_recursively(
         keys (list): list of keys to pop from the dictionary
         path2string (bool): replace :py:class:`pathlib.Path` object by their
             string representation (default True)
+        array2list (bool): replace :py:class:`numpy.ndarray` object by the equivalent
+            list (default True)
         format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`
             instances by their yaml representation (default False)
         tuple_as_list (bool): replace tuples by list (default False)
@@ -135,6 +145,9 @@ def clean_dictionary_recursively(
             dictionary[k] = str(PurePosixPath(v))
         if tuple_as_list and isinstance(v, tuple):
             dictionary[k] = list(v)
+        if array2list and isinstance(v, np.ndarray):
+            dictionary[k] = v.tolist()
+
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
                 ds_dict = v.format(mode="yaml")
@@ -236,7 +249,9 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     return pd.DataFrame(data=output, columns=["name", "parent_name"])
 
 
-def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None, verbose=True):
+def add_genealogy(
+    flexilims_session, root_name=None, recursive=False, added=None, verbose=True
+):
     """Add genealogy info to properly named sections of database
 
     If the names of all entries are as expected (check_flexilims_names return None),
@@ -303,7 +318,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
                 pass
         else:
             if verbose:
-                print(f'Updating {entity.name}', flush=True)
+                print(f"Updating {entity.name}", flush=True)
             flz.update_entity(
                 entity.type,
                 flexilims_session=flexilims_session,
