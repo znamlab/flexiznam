@@ -1,0 +1,26 @@
+import re
+import time
+from pymcms.main import McmsSession
+from flexiznam.config import PARAMETERS, get_password
+
+
+def get_mouse_df(mouse_name, username, password=None):
+    """Load mouse info from mcms in a dataframe"""
+    if password is None:
+        password = get_password(username=username, app="mcms")
+    mcms_sess = McmsSession(username=username, password=password)
+    original_data = mcms_sess.get_animal(name=mouse_name)
+    # convert to camel case for flexlilims
+    mouse_data = {}
+    pattern = re.compile(r"(?<!^)(?=[A-Z])")
+    for k, v in original_data.items():
+        if k == "id":  # id is a reserved word in flexilims
+            mouse_data["mcms_id"] = v
+        elif k == "name":
+            mouse_data["animal_name"] = v
+        else:
+            mouse_data[pattern.sub("_", k).lower()] = v
+
+    if not mouse_name:
+        raise IOError("Failed to download mouse info")
+    return mouse_data

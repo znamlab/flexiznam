@@ -115,20 +115,13 @@ def add_mouse(
             mcms_username = PARAMETERS["mcms_username"]
         if mcms_animal_name is None:
             mcms_animal_name = mouse_name
-        mcms_info = dict(
-            mcms.get_mouse_df(
-                mouse_name=mcms_animal_name,
-                username=mcms_username,
-                password=mcms_password,
-            )
+        mcms_info = mcms.get_mouse_df(
+            mouse_name=mcms_animal_name,
+            username=mcms_username,
+            password=mcms_password,
         )
-        # format properly results
-        for k, v in mcms_info.items():
-            if type(v) != str:
-                mcms_info[k] = float(v)
-            else:
-                mcms_info[k] = v.strip()
-
+        if not mcms_info:
+            raise IOError(f"Could not get info for mouse {mouse_name} from MCMS")
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
         mouse_info = dict(mcms_info, **mouse_info)
 
@@ -984,7 +977,7 @@ def get_datasets(
             flexilims_session=flexilims_session,
         )
         datapaths = []
-        for (dataset_path, is_raw) in zip(datasets["path"], datasets["is_raw"]):
+        for dataset_path, is_raw in zip(datasets["path"], datasets["is_raw"]):
             prefix = (
                 PARAMETERS["data_root"]["raw"]
                 if is_raw == "yes"
