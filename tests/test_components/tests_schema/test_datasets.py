@@ -191,6 +191,9 @@ def test_from_flexilims(flm_sess):
     assert ds.full_name == "mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera"
     assert ds.flexilims_status() == "up-to-date"
     assert ds.project == project
+    ds_by_id = Dataset.from_flexilims(flexilims_session=flm_sess, id=ds.id)
+    assert ds_by_id.full_name == ds.full_name
+    assert ds_by_id.project == project
 
 
 def test_from_origin(flm_sess):
@@ -287,9 +290,9 @@ def test_project_project_id(flm_sess):
 
 
 def test_dataset_type_enforcer():
-    orignal_value = PARAMETERS['enforce_dataset_types']
-    PARAMETERS['enforce_dataset_types'] = True
-    valid_dstype = PARAMETERS['dataset_types'][0]
+    orignal_value = PARAMETERS["enforce_dataset_types"]
+    PARAMETERS["enforce_dataset_types"] = True
+    valid_dstype = PARAMETERS["dataset_types"][0]
     ds = Dataset(
         path="fake/path",
         is_raw="no",
@@ -309,18 +312,17 @@ def test_dataset_type_enforcer():
             project="test",
             flexilims_session=None,
         )
-    assert (
-        err.value.args[0].startswith("dataset_type \"badtypeJJJJJ\" not valid. Valid types are:")
+    assert err.value.args[0].startswith(
+        'dataset_type "badtypeJJJJJ" not valid. Valid types are:'
     )
-    PARAMETERS['enforce_dataset_types'] = False
+    PARAMETERS["enforce_dataset_types"] = False
     ds = Dataset(
-            path="fake/path",
-            is_raw="no",
-            dataset_type="badtypeJJJJJ",
-            extra_attributes={},
-            created="",
-            project="test",
-            flexilims_session=None,
-        )
-    PARAMETERS['enforce_dataset_types'] = orignal_value
-    
+        path="fake/path",
+        is_raw="no",
+        dataset_type="badtypeJJJJJ",
+        extra_attributes={},
+        created="",
+        project="test",
+        flexilims_session=None,
+    )
+    PARAMETERS["enforce_dataset_types"] = orignal_value

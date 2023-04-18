@@ -6,6 +6,7 @@
 - New entry point: `add_genealogy` to add the genealogy field to existing entries.
 - add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
   dataset type must be defined in the config file or can be freely changed.
+- `Dataset.from_flexilims` accepts `id` or `name`.
 
 ### Bugfixes
 - `add_genealogy` now works with scanimage datasets

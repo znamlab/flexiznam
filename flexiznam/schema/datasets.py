@@ -55,9 +55,9 @@ class Dataset(object):
     def from_flexilims(
         project=None,
         name=None,
+        id=None,
         data_series=None,
         flexilims_session=None,
-        ignore_name_error=False,
     ):
         """Loads a dataset from flexilims.
 
@@ -68,23 +68,23 @@ class Dataset(object):
         Args:
             project: Name of the project or hexadecimal project_id
             name: Unique name of the dataset on flexilims
+            id: Hexadecimal id of the dataset on flexilims
             data_series: default to None. pd.Series as returned by flz.get_entities.
-                         If provided, supersedes project and name
+                If provided, supersedes project, name and id.
             flexilims_session: authentication session to access flexilims
-            ignore_name_error (bool): If False (default) will raise an error if the
-                                      dataset name and genealogy cannot be set.
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
-                raise AttributeError("Specify either data_series OR project + name")
+                raise AttributeError("Specify either data_series OR project + name/id")
         else:
             data_series = flz.get_entity(
                 project_id=project,
                 datatype="dataset",
                 name=name,
+                id=id,
                 flexilims_session=flexilims_session,
             )
-            
+
             if data_series is None:
                 if project is None:
                     project = flexilims_session.project_id
@@ -251,6 +251,7 @@ class Dataset(object):
             extra_attributes=attr,
             project_id=flm_series.project,
             name=flm_series.name,
+            id=flm_series.id,
         )
         return kwargs
 
@@ -265,6 +266,7 @@ class Dataset(object):
         project=None,
         project_id=None,
         origin_id=None,
+        id=None,
         flexilims_session=None,
     ):
         """Construct a dataset manually. Is usually called through static methods
@@ -272,18 +274,19 @@ class Dataset(object):
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
-                  file datasets)
+                file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
             dataset_type: type of the dataset, must be in PARAMETERS['dataset_types']
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
+            id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
         """
         if extra_attributes is None:
@@ -312,6 +315,7 @@ class Dataset(object):
         self.created = created
         self.origin_id = origin_id
         self.flexilims_session = flexilims_session
+        self.id = id
         if project is not None:
             self.project = project
             if project_id is not None:
@@ -348,14 +352,19 @@ class Dataset(object):
         """
         if self.project_id is None:
             raise IOError("You must specify the project to get flexilims status")
-        if self.full_name is None:
-            raise IOError("You must specify the dataset name to get flexilims status")
+        if (self.id is None) and (self.full_name is None):
+            raise IOError(
+                "You must specify the dataset name or id to get flexilims status"
+            )
         series = flz.get_entity(
             datatype="dataset",
             project_id=self.project_id,
             name=self.full_name,
+            id=self.id,
             flexilims_session=self.flexilims_session,
         )
+        if (series is not None) and (self.id is None):
+            self.id = series.id
         return series
 
     def update_flexilims(self, mode="safe"):
@@ -406,6 +415,7 @@ class Dataset(object):
 
                 resp = flz.update_entity(
                     datatype="dataset",
+                    id=self.id,
                     name=self.full_name,
                     origin_id=self.origin_id,
                     mode=mode,
@@ -439,6 +449,7 @@ class Dataset(object):
         assert online_name == self.full_name
         root_name = "_".join(self.genealogy)
         assert online_name.startswith(root_name)
+        self.id = resp["id"]
         return resp
 
     def flexilims_status(self):
@@ -637,7 +648,7 @@ class Dataset(object):
     @dataset_type.setter
     def dataset_type(self, value):
         if PARAMETERS["enforce_dataset_types"]:
-            if (value.lower() not in PARAMETERS["dataset_types"]):
+            if value.lower() not in PARAMETERS["dataset_types"]:
                 raise DatasetError(
                     'dataset_type "%s" not valid. Valid types are: '
                     "%s" % (value, PARAMETERS["dataset_types"])

@@ -140,6 +140,7 @@ class ScanimageData(Dataset):
         project=None,
         project_id=None,
         origin_id=None,
+        id=None,
         flexilims_session=None,
     ):
         """Create a ScanImage dataset
@@ -157,6 +158,7 @@ class ScanimageData(Dataset):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
+            id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
@@ -186,6 +188,7 @@ class ScanimageData(Dataset):
             project=project,
             flexilims_session=flexilims_session,
             origin_id=origin_id,
+            id=id,
             project_id=project_id,
         )
 
