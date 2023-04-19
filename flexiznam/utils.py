@@ -6,7 +6,7 @@ import pandas as pd
 from flexilims.main import SPECIAL_CHARACTERS
 
 import flexiznam as flz
-from flexiznam.errors import FlexilimsError
+from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.schema import Dataset
 
 
@@ -139,7 +139,12 @@ def clean_dictionary_recursively(
     for k, v in dictionary.items():
         if isinstance(v, dict):
             clean_dictionary_recursively(
-                v, keys, path2string, format_dataset, tuple_as_list
+                v,
+                keys=keys,
+                path2string=path2string,
+                array2list=array2list,
+                format_dataset=format_dataset,
+                tuple_as_list=tuple_as_list,
             )
         if path2string and isinstance(v, pathlib.Path):
             dictionary[k] = str(PurePosixPath(v))
@@ -365,9 +370,7 @@ def add_missing_paths(flexilims_session, root_name=None):
             name=element["name"],
             flexilims_session=flexilims_session,
         )
-        project = flz.main._lookup_project(
-            prm=flz.PARAMETERS, project_id=entity.project
-        )
+        project = flz.main.lookup_project(prm=flz.PARAMETERS, project_id=entity.project)
         if "genealogy" not in entity:
             raise FlexilimsError(
                 "Attribute genealogy not defined for %s", entity["name"]
@@ -457,7 +460,17 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
                 [
                     element.name,
                     element.type,
-                    "Cannot create dataset from " "flexilims",
+                    "Cannot create dataset from flexilims",
+                    str(err),
+                    0,
+                ]
+            )
+        except DatasetError as err:
+            output.append(
+                [
+                    element.name,
+                    element.type,
+                    "Genealogy might not be set",
                     str(err),
                     0,
                 ]

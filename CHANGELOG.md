@@ -6,6 +6,9 @@
 - New entry point: `add_genealogy` to add the genealogy field to existing entries.
 - add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
   dataset type must be defined in the config file or can be freely changed.
+- `Dataset.from_flexilims` accepts `id` or `name`.
+- Use `pymcms` to get mouse data from MCMS
+- Make `_lookup_project` non private. It is now `flz.utils.lookup_project`
 
 ### Bugfixes
 - `add_genealogy` now works with scanimage datasets

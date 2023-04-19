@@ -101,6 +101,7 @@ class HarpData(Dataset):
         project=None,
         project_id=None,
         origin_id=None,
+        id=None,
         flexilims_session=None,
     ):
         """Create a Harp dataset
@@ -118,6 +119,7 @@ class HarpData(Dataset):
             project_id: hexadecimal code for the project. Must be in config, can be
                         guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
+            id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
@@ -141,6 +143,7 @@ class HarpData(Dataset):
             project=project,
             project_id=project_id,
             origin_id=origin_id,
+            id=id,
             flexilims_session=flexilims_session,
         )
 
