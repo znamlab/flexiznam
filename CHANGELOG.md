@@ -8,6 +8,7 @@
   dataset type must be defined in the config file or can be freely changed.
 - `Dataset.from_flexilims` accepts `id` or `name`.
 - Use `pymcms` to get mouse data from MCMS
+- Make `_lookup_project` non private. It is now `flz.utils.lookup_project`
 
 ### Bugfixes
 - `add_genealogy` now works with scanimage datasets

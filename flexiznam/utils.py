@@ -370,9 +370,7 @@ def add_missing_paths(flexilims_session, root_name=None):
             name=element["name"],
             flexilims_session=flexilims_session,
         )
-        project = flz.main._lookup_project(
-            prm=flz.PARAMETERS, project_id=entity.project
-        )
+        project = flz.main.lookup_project(prm=flz.PARAMETERS, project_id=entity.project)
         if "genealogy" not in entity:
             raise FlexilimsError(
                 "Attribute genealogy not defined for %s", entity["name"]

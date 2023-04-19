@@ -562,7 +562,7 @@ class Dataset(object):
 
     @project_id.setter
     def project_id(self, value):
-        project = flz.main._lookup_project(value, flz.PARAMETERS)
+        project = flz.main.lookup_project(value, flz.PARAMETERS)
         if project is None:
             raise IOError("Unknown project ID. Please update config file")
         if self.flexilims_session is not None:

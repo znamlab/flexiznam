@@ -18,7 +18,7 @@ def _format_project(project_id, prm):
     return project_id
 
 
-def _lookup_project(project_id, prm):
+def lookup_project(project_id, prm):
     """
     Look up project name by hexadecimal id
     """
@@ -115,19 +115,19 @@ def add_mouse(
             mcms_username = PARAMETERS["mcms_username"]
         if mcms_animal_name is None:
             mcms_animal_name = mouse_name
-        mcms_info = mcms.get_mouse_df(
+        mcms_info = mcms.get_mouse_info(
             mouse_name=mcms_animal_name,
             username=mcms_username,
             password=mcms_password,
         )
         # flatten alleles and colony
-        alleles = mcms_info.pop('alleles')
+        alleles = mcms_info.pop("alleles")
         for gene in alleles:
-            gene_name = gene['allele']['shortAlleleSymbol'].replace(' ', '_')
-            mcms_info[gene_name] = gene['genotype']['name']
-        colony = mcms_info.pop('colony')
-        mcms_info['colony'] = colony['name']
-        mcms_info['colony_prefix'] = colony['colonyPrefix']
+            gene_name = gene["allele"]["shortAlleleSymbol"].replace(" ", "_")
+            mcms_info[gene_name] = gene["genotype"]["name"]
+        colony = mcms_info.pop("colony")
+        mcms_info["colony"] = colony["name"]
+        mcms_info["colony_prefix"] = colony["colonyPrefix"]
         if not mcms_info:
             raise IOError(f"Could not get info for mouse {mouse_name} from MCMS")
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
@@ -135,6 +135,8 @@ def add_mouse(
 
     # add the genealogy info, which is just [mouse_name]
     mouse_info["genealogy"] = [mouse_name]
+    project_name = lookup_project(flexilims_session.project_id, PARAMETERS)
+    mouse_info["path"] = str(Path(project_name) / mouse_name)
     resp = flexilims_session.post(
         datatype="mouse",
         name=mouse_name,
@@ -965,7 +967,7 @@ def get_datasets(
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     else:
-        project_id = _lookup_project(flexilims_session.project_id, PARAMETERS)
+        project_id = lookup_project(flexilims_session.project_id, PARAMETERS)
     recordings = get_entities(
         datatype="recording",
         origin_id=origin_id,
