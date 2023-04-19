@@ -97,6 +97,10 @@ def test_get_mouse_id(flm_sess):
 
 
 def test_add_mouse(flm_sess):
+    mouse_name = "PZAA1.1a"
+    rep = flm_sess.get(datatype='mouse', name=mouse_name)
+    if rep:
+        flm_sess.delete(rep[0]['id'])
     rep = flz.add_mouse(
         "PZAA1.1a",
         project_id=None,

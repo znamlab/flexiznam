@@ -120,6 +120,14 @@ def add_mouse(
             username=mcms_username,
             password=mcms_password,
         )
+        # flatten alleles and colony
+        alleles = mcms_info.pop('alleles')
+        for gene in alleles:
+            gene_name = gene['allele']['shortAlleleSymbol'].replace(' ', '_')
+            mcms_info[gene_name] = gene['genotype']['name']
+        colony = mcms_info.pop('colony')
+        mcms_info['colony'] = colony['name']
+        mcms_info['colony_prefix'] = colony['colonyPrefix']
         if not mcms_info:
             raise IOError(f"Could not get info for mouse {mouse_name} from MCMS")
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
