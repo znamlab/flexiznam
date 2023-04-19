@@ -756,6 +756,7 @@ def get_entity(
     If multiple entities on the database match the query, raise a
     :py:class:`flexiznam.errors.NameNotUniqueError`, if nothing matches returns `None`.
 
+    For best performance, provide the `id` of the entity and/or the `datatype`.
     Args:
         datatype (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
             'recording', or 'dataset'. If None, will iterate on all datatype until the
@@ -781,6 +782,10 @@ def get_entity(
     """
 
     if datatype is None:
+        if id is None:
+            warnings.warn(
+                "No datatype specified, trying everything. Will be slow", UserWarning
+            )
         # datatype is not specify, try everything
         args = [
             datatype,
