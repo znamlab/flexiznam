@@ -97,19 +97,19 @@ def test_get_mouse_id(flm_sess):
 
 
 def test_add_mouse(flm_sess):
-    mouse_name = "PZAA1.1a"
+    mouse_name = "PZAA15.1a"
     rep = flm_sess.get(datatype='mouse', name=mouse_name)
     if rep:
         flm_sess.delete(rep[0]['id'])
     rep = flz.add_mouse(
-        "PZAA1.1a",
+        mouse_name,
         project_id=None,
         mouse_info=None,
         flexilims_session=flm_sess,
         get_mcms_data=True,
         mcms_animal_name=None,
     )
-    assert rep["name"] == "PZAA1.1a"
+    assert rep["name"] == mouse_name
 
 
 def test_generate_name(flm_sess):

@@ -52,18 +52,17 @@ def get_procedures(mouse_name, username, password=None):
     procedures = mcms_sess.get_procedures(mouse_name)
     out = []
     for proc in procedures:
-        if proc["procedure"]["name"] == "Administration of substances into the brain under recovery anaesthesia":
-            break
         proc_dict = {}
-        animal = proc.pop("animal")
-        assert animal["name"] == mouse_name
-        proc_dict["start_date"] = proc.pop("startDate")
-        prot = proc.pop("protocol")
-        if prot:
-            proc_dict["project_licence"] = prot.pop("projectLicence")
-            proc_dict["protocol_code"] = prot.pop("protocolCode")
-        proc = proc.pop("procedure")
-        proc_dict["procedure_name"] = proc["name"]
-        proc_dict["description"] = proc["description"]
+        for k, v in proc.items():
+            if k == "animal":
+                assert v["name"] == mouse_name
+            elif (k == "protocol"):
+                if v is not None:
+                    proc_dict["protocol_code"] = v["protocolCode"]
+                    proc_dict["project_licence"] = v["projectLicence"]
+            elif k == "procedure":
+                proc_dict["procedure_name"] = v["name"]
+            else:
+                proc_dict[k] = v
         out.append(proc_dict)
     return pd.DataFrame(out)
