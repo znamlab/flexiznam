@@ -208,8 +208,9 @@ class Dataset(object):
             )
         else:
             if (conflicts is None) or (conflicts == "abort"):
-                raise flz.errors.NameNotUniqueError(
-                    "Dataset {} already processed".format(processed.loc[:, "name"])
+                raise flz.errors.DatasetError(
+                    f"Dataset(s) of type {dataset_type} already exist(s):"
+                    + " {processed.loc[:, 'name']}"
                 )
             elif conflicts == "skip" or conflicts == "overwrite":
                 if len(processed) == 1:
