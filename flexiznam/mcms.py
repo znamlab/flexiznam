@@ -56,7 +56,7 @@ def get_procedures(mouse_name, username, password=None):
         for k, v in proc.items():
             if k == "animal":
                 assert v["name"] == mouse_name
-            elif (k == "protocol"):
+            elif k == "protocol":
                 if v is not None:
                     proc_dict["protocol_code"] = v["protocolCode"]
                     proc_dict["project_licence"] = v["projectLicence"]

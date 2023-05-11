@@ -30,7 +30,7 @@ def test_update_config():
             overwrite=True, config_folder=tmp, favorite_colour="dark"
         )
         prm = config_tools.load_param(tmp)
-        assert len(prm['project_ids']) == len(DEFAULT_CONFIG["project_ids"])
+        assert len(prm["project_ids"]) == len(DEFAULT_CONFIG["project_ids"])
         config_tools.update_config(
             param_file="config.yml",
             config_folder=tmp,
@@ -54,7 +54,7 @@ def test_update_config():
         prm = config_tools.load_param(tmp)
         if n_projs != 5:
             print(n_projs)
-        print(prm['project_ids'])
+        print(prm["project_ids"])
         assert len(prm["project_ids"]) > n_projs
         assert "new_project" in prm["project_ids"]
         config_tools.update_config(
