@@ -18,10 +18,12 @@ def _format_project(project_id, prm):
     return project_id
 
 
-def lookup_project(project_id, prm):
+def lookup_project(project_id, prm=None):
     """
     Look up project name by hexadecimal id
     """
+    if prm is None:
+        prm = PARAMETERS
     try:
         proj = next(proj for proj, id in prm["project_ids"].items() if id == project_id)
         return proj

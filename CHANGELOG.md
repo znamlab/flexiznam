@@ -1,5 +1,10 @@
 # Change log
 
+## v0.3.4
+
+### Minor
+- `flz.lookup_project` uses `PARAMETERS` as default project source.
+
 ## v0.3.3
 
 ### Main changes
