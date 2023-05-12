@@ -1,5 +1,8 @@
 import os
 import pytest
+import numpy as np
+from pathlib import Path
+import pandas as pd
 import tempfile
 from flexiznam.config import config_tools, DEFAULT_CONFIG
 from flexiznam import utils
@@ -113,6 +116,24 @@ def test_add_genealogy(flm_sess):
     assert added == []
     added = utils.add_genealogy(flm_sess, recursive=True)
     assert added == []
+
+
+def test_clean_recursively():
+    out = utils.clean_recursively(
+        {
+            "a": (1, 2),
+            "b": np.array([1, 2]),
+            "c": [1, (1, 2)],
+            "d": Path("/this/is/a/path"),
+        }
+    )
+    assert out["a"] == [1, 2]
+    assert out["b"] == [1, 2]
+    assert out["c"] == [1, [1, 2]]
+    assert out["d"] == "/this/is/a/path"
+
+    out = utils.clean_recursively(dict(nested=[dict(a=[np.inf])]))
+    assert out["nested"][0]["a"][0] == "inf"
 
 
 def test_add_missing_paths(flm_sess):

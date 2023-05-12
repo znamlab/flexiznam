@@ -2,6 +2,9 @@
 
 ## v0.3.5
 
+### Main changes
+- More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It 
+  handle more complex nesting and replaces non finite float by their string repr.
 
 ## v0.3.4
 

@@ -431,7 +431,7 @@ class Dataset(object):
             print("Already up to date, nothing to do")
             return
         # we are in 'not online' case
-        utils.clean_dictionary_recursively(attributes)
+        utils.clean_recursively(attributes)
         resp = flz.add_dataset(
             parent_id=self.origin_id,
             dataset_type=self.dataset_type,
