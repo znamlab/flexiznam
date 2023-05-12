@@ -2,11 +2,6 @@
 
 ## v0.3.4
 
-### Minor
-- `flz.lookup_project` uses `PARAMETERS` as default project source.
-
-## v0.3.3
-
 ### Main changes
 - New entry point: `add_genealogy` to add the genealogy field to existing entries.
 - add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
@@ -24,6 +19,7 @@
 - `clean_dictionary_recursively` replaces ndarray by list, which are JSON-compatible
 
 ### Minor
+- `flz.lookup_project` uses `PARAMETERS` as default project source.
 - add `compare_dictionaries_recursively` in `utils`
 - switch to `black` formatter
 - `Dataset` can now be imported from `flexiznam`
