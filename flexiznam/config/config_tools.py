@@ -140,7 +140,7 @@ def update_config(
             project_ids.update(kwargs["project_ids"])
         kwargs["project_ids"] = project_ids
 
-    # run create_config with template=None to append new keys
+    # run create_config with template=None to append new keys
     create_config(
         config_folder=config_folder,
         config_file=param_file,

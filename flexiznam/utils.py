@@ -1,11 +1,13 @@
 import pathlib
 from pathlib import Path, PurePosixPath
 
+import numpy as np
 import pandas as pd
-import flexiznam as flz
-from flexiznam.schema import Dataset
-from flexiznam.errors import FlexilimsError
 from flexilims.main import SPECIAL_CHARACTERS
+
+import flexiznam as flz
+from flexiznam.errors import FlexilimsError, DatasetError
+from flexiznam.schema import Dataset
 
 
 def compare_series(
@@ -106,7 +108,12 @@ def compare_dictionaries_recursively(first_dict, second_dict, output=None):
 
 
 def clean_dictionary_recursively(
-    dictionary, keys=(), path2string=True, format_dataset=False, tuple_as_list=False
+    dictionary,
+    keys=(),
+    path2string=True,
+    array2list=True,
+    format_dataset=False,
+    tuple_as_list=False,
 ):
     """Recursively clean a dictionary inplace
 
@@ -115,6 +122,8 @@ def clean_dictionary_recursively(
         keys (list): list of keys to pop from the dictionary
         path2string (bool): replace :py:class:`pathlib.Path` object by their
             string representation (default True)
+        array2list (bool): replace :py:class:`numpy.ndarray` object by the equivalent
+            list (default True)
         format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`
             instances by their yaml representation (default False)
         tuple_as_list (bool): replace tuples by list (default False)
@@ -130,12 +139,20 @@ def clean_dictionary_recursively(
     for k, v in dictionary.items():
         if isinstance(v, dict):
             clean_dictionary_recursively(
-                v, keys, path2string, format_dataset, tuple_as_list
+                v,
+                keys=keys,
+                path2string=path2string,
+                array2list=array2list,
+                format_dataset=format_dataset,
+                tuple_as_list=tuple_as_list,
             )
         if path2string and isinstance(v, pathlib.Path):
             dictionary[k] = str(PurePosixPath(v))
         if tuple_as_list and isinstance(v, tuple):
             dictionary[k] = list(v)
+        if array2list and isinstance(v, np.ndarray):
+            dictionary[k] = v.tolist()
+
         if format_dataset:
             if any([isinstance(v, cls) for cls in ds_classes]):
                 ds_dict = v.format(mode="yaml")
@@ -237,7 +254,9 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     return pd.DataFrame(data=output, columns=["name", "parent_name"])
 
 
-def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None, verbose=True):
+def add_genealogy(
+    flexilims_session, root_name=None, recursive=False, added=None, verbose=True
+):
     """Add genealogy info to properly named sections of database
 
     If the names of all entries are as expected (check_flexilims_names return None),
@@ -294,7 +313,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
             parts[i] = part[len(cut) :]
             cut = part + "_"
 
-        if "genealogy" in entity:
+        if "genealogy" in entity and isinstance(entity.genealogy, list):
             if entity.genealogy != parts:
                 raise FlexilimsError(
                     '%s genealogy does not match database: "%s" vs '
@@ -304,7 +323,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
                 pass
         else:
             if verbose:
-                print(f'Updating {entity.name}', flush=True)
+                print(f"Updating {entity.name}", flush=True)
             flz.update_entity(
                 entity.type,
                 flexilims_session=flexilims_session,
@@ -351,9 +370,7 @@ def add_missing_paths(flexilims_session, root_name=None):
             name=element["name"],
             flexilims_session=flexilims_session,
         )
-        project = flz.main._lookup_project(
-            prm=flz.PARAMETERS, project_id=entity.project
-        )
+        project = flz.main.lookup_project(prm=flz.PARAMETERS, project_id=entity.project)
         if "genealogy" not in entity:
             raise FlexilimsError(
                 "Attribute genealogy not defined for %s", entity["name"]
@@ -443,7 +460,17 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
                 [
                     element.name,
                     element.type,
-                    "Cannot create dataset from " "flexilims",
+                    "Cannot create dataset from flexilims",
+                    str(err),
+                    0,
+                ]
+            )
+        except DatasetError as err:
+            output.append(
+                [
+                    element.name,
+                    element.type,
+                    "Genealogy might not be set",
                     str(err),
                     0,
                 ]

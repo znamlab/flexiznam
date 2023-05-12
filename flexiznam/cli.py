@@ -5,6 +5,7 @@ import click
 def cli():
     pass
 
+
 @cli.command()
 @click.option("-p", "--project_id", prompt="Enter the project ID", help="Project ID.")
 @click.option(
@@ -13,13 +14,28 @@ def cli():
     prompt="Enter the name of the entity you want to edit",
     help="Name of the entity to edit as on flexilims.",
 )
-@click.option("--recursive/--no-recursive", "-r", default=False, help="Process children recursively.", show_default=True)
-@click.option("--verbose/--no-verbose", default=True, help="Show progress info.", show_default=True)
+@click.option(
+    "--recursive/--no-recursive",
+    "-r",
+    default=False,
+    help="Process children recursively.",
+    show_default=True,
+)
+@click.option(
+    "--verbose/--no-verbose",
+    default=True,
+    help="Show progress info.",
+    show_default=True,
+)
 def add_genealogy(project_id, name, recursive, verbose):
     from flexiznam import get_flexilims_session
+
     flm_sess = get_flexilims_session(project_id=project_id)
     from flexiznam.utils import add_genealogy
-    add_genealogy(root_name=name, recursive=recursive, flexilims_session=flm_sess, verbose=verbose)
+
+    add_genealogy(
+        root_name=name, recursive=recursive, flexilims_session=flm_sess, verbose=verbose
+    )
 
 
 @cli.command()

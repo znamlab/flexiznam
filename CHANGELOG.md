@@ -1,11 +1,14 @@
 # Change log
 
-## v0.3.3
+## v0.3.4
 
 ### Main changes
 - New entry point: `add_genealogy` to add the genealogy field to existing entries.
 - add `enforce_dataset_types` option to `config.yml`. This let the user decide if the
   dataset type must be defined in the config file or can be freely changed.
+- `Dataset.from_flexilims` accepts `id` or `name`.
+- Use `pymcms` to get mouse data from MCMS
+- Make `_lookup_project` non private. It is now `flz.utils.lookup_project`
 
 ### Bugfixes
 - `add_genealogy` now works with scanimage datasets
@@ -13,8 +16,10 @@
   See issue #93
 - Adapt `add_mouse` to new MCMS page layout
 - `config --update` adds fields that are new in the default config to the current config
+- `clean_dictionary_recursively` replaces ndarray by list, which are JSON-compatible
 
 ### Minor
+- `flz.lookup_project` uses `PARAMETERS` as default project source.
 - add `compare_dictionaries_recursively` in `utils`
 - switch to `black` formatter
 - `Dataset` can now be imported from `flexiznam`
