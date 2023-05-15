@@ -9,6 +9,9 @@
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
   always the path in posix format.
+- Fix [#88](https://github.com/znamlab/flexiznam/issues/88). Now make attributes JSON
+  compatible before uploading to flexilims. This will replace special characters in
+  attribute names by `_` in the database.
 
 ## v0.3.4
 

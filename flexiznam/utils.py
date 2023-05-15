@@ -1,6 +1,6 @@
 import pathlib
 from pathlib import Path, PurePosixPath
-
+import re
 import numpy as np
 import pandas as pd
 from flexilims.main import SPECIAL_CHARACTERS
@@ -130,7 +130,17 @@ def clean_recursively(
     if isinstance(element, dict):
         for k in keys:
             element.pop(k, None)
-        for k, v in element.items():
+        for k in list(element.keys()):
+            v = element[k]
+            if json_compatible:
+                if SPECIAL_CHARACTERS.search(k) is not None:
+                    new_key = re.sub(SPECIAL_CHARACTERS, "_", k)
+                    print(
+                        f"Warning: key `{k}` contains special characters and is "
+                        + f"unvalid JSON. Will use {new_key} instead"
+                    )
+                    element[new_key] = element.pop(k)
+                    k = new_key
             element[k] = clean_recursively(v, keys, json_compatible, format_dataset)
         return element
 

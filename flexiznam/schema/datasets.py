@@ -395,6 +395,7 @@ class Dataset(object):
                 attributes[attribute] = bool(attributes[attribute])
             if isinstance(attributes[attribute], tuple):
                 attributes[attribute] = list(attribute)
+        flz.camp.make_json_compatible(attributes)
 
         if status == "different":
             if mode == "safe":
