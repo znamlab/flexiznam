@@ -1,5 +1,5 @@
 import pathlib
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import numpy as np
 import pandas as pd
@@ -436,7 +436,7 @@ class Dataset(object):
             parent_id=self.origin_id,
             dataset_type=self.dataset_type,
             created=self.created,
-            path=str(self.path),
+            path=str(PurePosixPath(self.path)),
             genealogy=self.genealogy,
             is_raw="yes" if self.is_raw else "no",
             project_id=self.project_id,
@@ -535,7 +535,7 @@ class Dataset(object):
             mode: 'flexilims' or 'yaml'
         """
         data = dict(
-            path=str(self.path),
+            path=str(PurePosixPath(self.path)),
             created=self.created,
             dataset_type=self.dataset_type,
             is_raw="yes" if self.is_raw else "no",

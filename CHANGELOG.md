@@ -6,6 +6,10 @@
 - More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It 
   handle more complex nesting and replaces non finite float by their string repr.
 
+### Bugfixes
+- Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
+  always the path in posix format.
+
 ## v0.3.4
 
 ### Main changes
