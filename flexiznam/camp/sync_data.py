@@ -93,7 +93,8 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
 
     Args:
         path_to_yaml (str or dict): path to the file to parse or dict of yaml contect
-        raw_data_folder (str): root folder containing the mice folders
+        raw_data_folder (str): root folder. Typically project folder or folder 
+            containing the mice subfolders
         verbose (bool): print info while looking for datasets
 
     Returns:
