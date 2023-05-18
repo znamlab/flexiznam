@@ -3,7 +3,8 @@ from pathlib import Path, PurePosixPath
 import re
 import numpy as np
 import pandas as pd
-from flexilims.main import SPECIAL_CHARACTERS
+
+SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
 import flexiznam as flz
 from flexiznam.errors import FlexilimsError, DatasetError
@@ -179,20 +180,6 @@ def clean_recursively(
             ds_dict = clean_recursively(ds_dict, keys, json_compatible, format_dataset)
             element = ds_dict
     return element
-
-
-def make_json_compatible(element):
-    """Recursively process an element to make it json compatible
-
-    Make pathlib.Path into string, np.ndarray and tuple into list, and replace non
-    finite floats by their string representation
-
-    Args:
-        element (any): Element to process
-
-    Returns:
-        list, dict, str or numeric: Element processed
-    """
 
 
 def check_flexilims_paths(

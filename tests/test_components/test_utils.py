@@ -135,7 +135,7 @@ def test_clean_recursively():
     out = utils.clean_recursively(dict(nested=[dict(a=[np.inf])]))
     assert out["nested"][0]["a"][0] == "inf"
 
-    out = {"Invalid.Name": "Valid-Value:", "ValidName": {"I+nvalid*Key": "Valid-Value"}}
+    out = {"Invalid?Name": "Valid-Value:", "ValidName": {"I+nvalid*Key": "Valid-Value"}}
     utils.clean_recursively(out)
     assert "Invalid_Name" in out
     assert "I_nvalid_Key" in out["ValidName"]
