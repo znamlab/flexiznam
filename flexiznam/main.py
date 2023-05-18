@@ -3,9 +3,11 @@ import warnings
 import pandas as pd
 import flexilims as flm
 from pathlib import Path
+import flexiznam
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import NameNotUniqueError, FlexilimsError
+
 
 warnings.simplefilter("always", DeprecationWarning)
 
@@ -948,6 +950,7 @@ def get_datasets(
     dataset_type=None,
     project_id=None,
     flexilims_session=None,
+    return_paths=True,
 ):
     """
     Recurse into recordings and get paths to child datasets of a given type.
@@ -964,6 +967,8 @@ def get_datasets(
         project_id (str): text name of the project. Not required if
             `flexilims_session` is provided.
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        return_paths (bool): if True, return a list of paths. If False, return the
+            dataset objects.
 
     Returns:
         dict: Dictionary with recording names as keys containing lists of associated dataset paths.
@@ -992,19 +997,27 @@ def get_datasets(
             query_value=dataset_type,
             flexilims_session=flexilims_session,
         )
-        datapaths = []
-        for dataset_path, is_raw in zip(datasets["path"], datasets["is_raw"]):
-            prefix = (
-                PARAMETERS["data_root"]["raw"]
-                if is_raw == "yes"
-                else PARAMETERS["data_root"]["processed"]
-            )
-            this_path = Path(prefix) / dataset_path
-            if this_path.exists():
-                datapaths.append(str(this_path))
-            else:
-                raise IOError("Dataset {} not found".format(this_path))
-            datapath_dict[recording_id] = datapaths
+        if return_paths:
+            datapaths = []
+            for dataset_path, is_raw in zip(datasets["path"], datasets["is_raw"]):
+                prefix = (
+                    PARAMETERS["data_root"]["raw"]
+                    if is_raw == "yes"
+                    else PARAMETERS["data_root"]["processed"]
+                )
+                this_path = Path(prefix) / dataset_path
+                if this_path.exists():
+                    datapaths.append(str(this_path))
+                else:
+                    raise IOError("Dataset {} not found".format(this_path))
+                datapath_dict[recording_id] = datapaths
+        else:
+            datapath_dict[recording_id] = [
+                flexiznam.Dataset.from_flexilims(
+                    data_series=ds, flexilims_session=flexilims_session
+                )
+                for _, ds in datasets.iterrows()
+            ]
     return datapath_dict
 
 

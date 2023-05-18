@@ -5,6 +5,8 @@
 ### Main changes
 - More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It 
   handle more complex nesting and replaces non finite float by their string repr.
+- `flz.get_datasets` can return `Dataset` objects instead of path strings if 
+  `return_paths=False`
 
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
