@@ -7,6 +7,7 @@
   handle more complex nesting and replaces non finite float by their string repr.
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
   `return_paths=False`
+- New `OnixData` class to handle Onix data
 
 ### Minor
 - `CameraDataset` metadata can also be `.yml`, not only `.txt`. 

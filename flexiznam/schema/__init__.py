@@ -27,8 +27,10 @@ from .camera_data import CameraData
 from .harp_data import HarpData
 from .scanimage_data import ScanimageData
 from .microscopy_data import MicroscopyData
+from .onix_data import OnixData
 
 Dataset.SUBCLASSES["camera"] = CameraData
 Dataset.SUBCLASSES["harp"] = HarpData
 Dataset.SUBCLASSES["scanimage"] = ScanimageData
 Dataset.SUBCLASSES["microscopy"] = MicroscopyData
+Dataset.SUBCLASSES["onix"] = OnixData
