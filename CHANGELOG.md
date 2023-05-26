@@ -8,6 +8,9 @@
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
   `return_paths=False`
 
+### Minor
+- `CameraDataset` metadata can also be `.yml`, not only `.txt`. 
+
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
   always the path in posix format.
