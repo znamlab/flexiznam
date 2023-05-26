@@ -10,7 +10,9 @@
 - New `OnixData` class to handle Onix data
 
 ### Minor
-- `CameraDataset` metadata can also be `.yml`, not only `.txt`. 
+- `CameraDataset` metadata can also be `.yml`, not only `.txt`.
+- `Dataset.format(mode='yaml')` ensure yaml compatibility. (path to str, tuple to list, 
+  etc...)
 
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 

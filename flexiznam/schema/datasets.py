@@ -1,13 +1,13 @@
 import pathlib
+from datetime import datetime
 from pathlib import Path, PurePosixPath
-import re
 import numpy as np
 import pandas as pd
+from flexilims.utils import check_flexilims_validity
 import flexiznam as flz
 from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.config import PARAMETERS
-from datetime import datetime
 
 
 class Dataset(object):
@@ -530,7 +530,7 @@ class Dataset(object):
         get_entities output) or a 'yaml' type as that used by flexiznam.camp
 
         The flexilims series will not include elements that are not used by the Dataset
-        class such as created_by
+        class such as created_by and will make sure that the output is JSON serializable
 
         Args:
             mode: 'flexilims' or 'yaml'
@@ -551,8 +551,9 @@ class Dataset(object):
             data.update(self.extra_attributes)
             series = pd.Series(data, name=self.full_name)
             return series
-        elif mode.lower() == "yaml":
+        elif mode.lower() in ["yaml", "json", "yml"]:
             data["extra_attributes"] = self.extra_attributes
+            flz.utils.clean_recursively(data)
             return data
         else:
             raise IOError('Unknown mode "%s". Must be `flexilims` or `yaml`' % mode)
