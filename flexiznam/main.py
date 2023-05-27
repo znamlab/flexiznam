@@ -150,43 +150,49 @@ def add_mouse(
 
 
 def add_experimental_session(
-    parent_name,
     date,
+    flexilims_session,
+    parent_name=None,
+    parent_id=None,
     attributes={},
     session_name=None,
     other_relations=None,
-    flexilims_session=None,
-    project_id=None,
     conflicts="abort",
 ):
     """Add a new session as a child entity of a mouse
 
     Args:
-        parent_name (str): name of the parent, usually a mouse. Must exist on flexilims
         date (str): date of the session. If `session_name` is not provided, will be
                     used as name
-        attributes (dict): dictionary of additional attributes (on top of date)
-        session_name (str or None): name of the session, usually in the shape `S20210420`.
-        conflicts (str): What to do if a session with that name already exists? Can be
+        flexilims_session (flexilims.Flexilims): flexilims session. Must contain project
+            information.
+        parent_name (str, optional): name of the parent, usually a mouse. Must exist on
+            flexilims. Ignored and optional if parent_id is provided.
+        parent_id (str, optional): hexadecimal id of the parent, usually a mouse. Must
+            exist on flexilims. If provided, parent_name is ignored.
+        attributes (dict, optional): dictionary of additional attributes
+        session_name (str, optional): name of the session, usually in the shape `S20210420`.
+        conflicts (str, optional): What to do if a session with that name already exists? Can be
                         `skip`, `abort`, `update` or `overwrite` (see update_entity for
                         detailed description)
-        other_relations: ID(s) of custom entities related to the session
-        flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session
-        project_id (str): name of the project or hexadecimal project id (needed if
-                          session is not provided)
+        other_relations (list, optional): ID(s) of custom entities related to the session
+
 
     Returns:
         flexilims reply
 
     """
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id)
 
     if conflicts.lower() not in ("skip", "abort", "overwrite", "update"):
         raise AttributeError("conflicts must be `skip` or `abort`")
 
-    parent_df = get_entity(name=parent_name, flexilims_session=flexilims_session)
-    parent_id = parent_df["id"]
+    if parent_id is None:
+        assert parent_name is not None, "Must provide either parent_name or parent_id"
+        parent_df = get_entity(name=parent_name, flexilims_session=flexilims_session)
+        parent_id = parent_df["id"]
+    else:
+        parent_df = get_entity(id=parent_id, flexilims_session=flexilims_session)
+
     if session_name is None:
         parsed_date = re.fullmatch(r"(\d\d\d\d)-(\d\d)-(\d\d)", date)
         if parsed_date:
