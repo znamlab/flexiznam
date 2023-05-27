@@ -13,6 +13,7 @@
 - `CameraDataset` metadata can also be `.yml`, not only `.txt`.
 - `Dataset.format(mode='yaml')` ensure yaml compatibility. (path to str, tuple to list, 
   etc...)
+- `add_experimental_session` can be done with `parent_id` (or `parent_name`).
 
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
