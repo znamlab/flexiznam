@@ -571,23 +571,10 @@ def add_dataset(
         raise AttributeError("`conflicts` must be in [%s]" % ", ".join(valid_conflicts))
 
     if dataset_name is None:
-        parent_name = pd.concat(
-            [
-                get_entities(
-                    flexilims_session=flexilims_session,
-                    datatype="recording",
-                    id=parent_id,
-                ),
-                get_entities(
-                    flexilims_session=flexilims_session,
-                    datatype="session",
-                    id=parent_id,
-                ),
-                get_entities(
-                    flexilims_session=flexilims_session, datatype="sample", id=parent_id
-                ),
-            ]
-        )["name"][0]
+        parent_name = get_entity(
+            flexilims_session=flexilims_session,
+            id=parent_id,
+        )["name"]
         dataset_name = parent_name + "_" + dataset_type + "_0"
 
     dataset_info = {
