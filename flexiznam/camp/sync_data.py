@@ -110,6 +110,9 @@ def _create_yaml_dict(
                 proot = str(level_folder)[: -len(level_dict["path"])]
                 ds.path = ds.path.relative_to(proot)
                 children[ds_name] = ds.format(mode="yaml")
+                # remove fields that are not needed
+                for field in ["origin_id", "project_id", "name"]:
+                    children[ds_name].pop(field, None)
                 children[ds_name]["path"] = str(
                     PurePosixPath(children[ds_name]["path"])
                 )
