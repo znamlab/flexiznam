@@ -28,7 +28,7 @@ def create_yaml_dict(
     Args:
         root_folder (str): Path to the folder to parse
         project (str): Name of the project, used as root of the path in the output
-        origin_name (str): Name of the origin on flexilims. Must be online and have 
+        origin_name (str): Name of the origin on flexilims. Must be online and have
             genealogy set.
         format_yaml (bool, optional): Format the output to be yaml compatible if True,
             otherwise keep dataset as Dataset object and path as pathlib.Path. Defaults
@@ -43,7 +43,7 @@ def create_yaml_dict(
         warnings.simplefilter("ignore")
         origin = flm_sess.get_origin(origin_name)
     genealogy = origin.genealogy
-    
+
     data = _create_yaml_dict(
         level_folder=root_folder,
         project=project,
@@ -260,6 +260,18 @@ def _upload_yaml_dict(
             conflicts=conflicts,
             verbose=verbose,
         )
+
+
+def check_yaml_validity(yaml, root_folder, origin_name):
+    if isinstance(yaml, str):
+        with open(yaml, "r") as f:
+            yaml = yaml.safe_load(f)
+    assert yaml["root_folder"] == root_folder, f"root_folder should be {root_folder}"
+    _check_recursively(yaml["children"], root_folder, origin_name)
+
+
+def _check_recursively(yaml, root_folder):
+    raise NotImplementedError
 
 
 if __name__ == "__main__":
