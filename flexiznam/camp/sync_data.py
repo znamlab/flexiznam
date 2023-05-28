@@ -83,16 +83,16 @@ def _create_yaml_dict(
     level_name = level_folder.stem
     m = re.fullmatch(r"R\d\d\d\d\d\d_?(.*)?", level_name)
     if m:
-        level_dict["datatype"] = "recording"
+        level_dict["type"] = "recording"
         level_dict["protocol"] = (
             m[1] if m[1] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
         )
         level_dict["recording_type"] = "XXERRORXX error RECORDING TYPE NOT SPECIFIED"
 
     elif re.fullmatch(r"S\d*", level_name):
-        level_dict["datatype"] = "session"
+        level_dict["type"] = "session"
     else:
-        level_dict["datatype"] = "sample"
+        level_dict["type"] = "sample"
     level_dict["genealogy"] = genealogy + [level_name]
     level_dict["path"] = Path(project, *level_dict["genealogy"])
     if format_yaml:
@@ -185,7 +185,7 @@ def _upload_yaml_dict(
 ):
     for entity, entity_data in yaml_dict.items():
         children = entity_data.pop("children", {})
-        datatype = entity_data.pop("datatype")
+        datatype = entity_data.pop("type")
         if datatype == "session":
             if verbose:
                 print(f"Adding session `{entity}`")
