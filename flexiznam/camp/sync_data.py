@@ -252,7 +252,7 @@ def _upload_yaml_dict(
                 is_raw="yes",
                 flexilims_session=flexilims_session,
                 dataset_name=entity,
-                attributes=entity_data['extra_attributes'],
+                attributes=entity_data["extra_attributes"],
                 strict_validation=False,
                 conflicts=conflicts,
             )
@@ -278,16 +278,3 @@ def check_yaml_validity(yaml, root_folder, origin_name):
 
 def _check_recursively(yaml, root_folder):
     raise NotImplementedError
-
-
-if __name__ == "__main__":
-    data = create_yaml_dict(
-        "/Volumes/lab-znamenskiyp/data/instruments/raw_data/projects/blota_onix_pilote/BRAC7448.2d/S20230412",
-        project="blota_onix_pilote",
-        genealogy="BRAC7448.2d",
-    )
-    with open("test.yml", "w") as writer:
-        yaml.safe_dump(data, writer)
-    print("done")
-    flm_sess = flz.get_flexilims_session(project_id="blota_onix_pilote")
-    upload_yaml("test.yml", conflicts="overwrite", flexilims_session=flm_sess)
