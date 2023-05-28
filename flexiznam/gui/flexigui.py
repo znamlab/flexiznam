@@ -11,6 +11,7 @@ import flexiznam.camp.sync_data
 class FlexiGui(tk.Tk):
 
     FLEXILIMS_ONLY_FIELDS = ("children", "project", "origin_id")
+    RESOURCES = Path(__file__).parent
 
     def __init__(self):
         super().__init__()
@@ -26,6 +27,8 @@ class FlexiGui(tk.Tk):
         self._create_frames()
         self._setup_widgets()
         self._entity_by_itemid = {}
+
+        self.data = {}
 
     def _setup_widgets(self):
         self._create_frames()
@@ -89,25 +92,26 @@ class FlexiGui(tk.Tk):
         )
         self.update_item_btn.grid(row=2, column=1, sticky="nsw")
 
+    def _check_options_are_set(self, options=("project", "origin_name")):
+        init_values = dict(project="SELECT", origin_name="ENTER")
+        for option in options:
+            value = getattr(self, option).get()
+            if value.startswith(init_values[option]):
+                tk.messagebox.showerror("Error", f"Error: enter {option} first!")
+                return False
+        return True
+
     def parse_folder(self):
-        genealogy = self.genealogy.get()
-        if genealogy.startswith("ENTER COMMA"):
-            tk.messagebox.showerror("Error", "Error: enter genealogy first!")
+        if not self._check_options_are_set():
             return
-        project = self.project.get()
-        if project == "SELECT PROJECT":
-            tk.messagebox.showerror("Error", "Error: select project first!")
-            return
-        genealogy = [g.strip() for g in genealogy.split(",")]
-        self.root_folder.set(
-            tk.filedialog.askdirectory(
-                initialdir=self.root_folder.get(), title="Select directory to parse"
-            )
+        folder = tk.filedialog.askdirectory(
+            initialdir=self.root_folder.get(), title="Select directory to parse"
         )
+        self.root_folder.set(folder)
         data = flz.camp.sync_data.create_yaml_dict(
-            root_folder=self.root_folder.get(),
-            project=project,
-            genealogy=genealogy,
+            root_folder=folder,
+            project=self.project.get(),
+            origin_name=self.origin_name.get(),
             format_yaml=True,
         )
         self.data = data
@@ -115,11 +119,11 @@ class FlexiGui(tk.Tk):
 
     def _create_buttons(self):
         topf = self.frames["t"]
-        self.parse_btn = tk.Button(topf, text="Parse folder", command=self.parse_folder)
+        self.parse_btn = tk.Button(topf, text="Parse", command=self.parse_folder)
         self.parse_btn.grid(row=0, column=0, sticky="w")
-        self.load_btn = tk.Button(topf, text="Load yaml", command=self.load_yaml)
+        self.load_btn = tk.Button(topf, text="Load", command=self.load_yaml)
         self.load_btn.grid(row=0, column=1, sticky="w")
-        self.write_btn = tk.Button(topf, text="Write yaml", command=self.write_yaml)
+        self.write_btn = tk.Button(topf, text="Write", command=self.write_yaml)
         self.write_btn.grid(row=0, column=2)
 
         # add project dropdown and label
@@ -132,23 +136,33 @@ class FlexiGui(tk.Tk):
             "SELECT PROJECT",
             *flz.PARAMETERS["project_ids"].keys(),
         ).grid(row=0, column=4, columnspan=3, sticky="w")
-        self.upload_btn = tk.Button(topf, text="Upload to flexilims")
+        fllogo = tk.PhotoImage(file=str(self.RESOURCES / "flexilims_logo.png"))
+        fllogo = fllogo.subsample(10, 10)
+        self.upload_btn = tk.Button(topf, text="Upload", command=self.upload)
         self.upload_btn.grid(row=0, column=7)
 
+        # add conflicts dropdown and label
+        tk.Label(topf, text="Conflicts:").grid(row=0, column=8, sticky="w")
+        self.conflicts = tk.StringVar(self)
+        self.conflicts.set("abort")
+        self.conflicts_ddwn = tk.OptionMenu(
+            topf, self.conflicts, "abort", "overwrite", "skip"
+        )
+        self.conflicts_ddwn.grid(row=0, column=9, sticky="w")
         self.quit_btn = tk.Button(topf, text="Quit", command=self.quit)
         self.quit_btn.grid(row=0, column=10, sticky="e")
 
-        # add genealogy and root dir
-        tk.Label(topf, text="Genealogy:").grid(row=1, column=0, sticky="w")
-        self.genealogy = tk.StringVar(self)
-        self.genealogy.set("ENTER COMMA SEPARATED GENEALOGY")
-        self.genealogy_entry = tk.Entry(topf, textvariable=self.genealogy)
-        self.genealogy_entry.grid(row=1, column=1, columnspan=3, sticky="nsew")
-        tk.Label(topf, text="Root directory:").grid(row=1, column=4, sticky="w")
+        # add origin name and root dir
+        tk.Label(topf, text="Origin name:").grid(row=1, column=0, sticky="w")
+        self.origin_name = tk.StringVar(self)
+        self.origin_name.set("ENTER FLEXILIMS ORIGIN NAME")
+        self.origin_name_entry = tk.Entry(topf, textvariable=self.origin_name)
+        self.origin_name_entry.grid(row=1, column=1, columnspan=2, sticky="nsew")
+        tk.Label(topf, text="Root directory:").grid(row=1, column=3, sticky="w")
         self.root_folder = tk.StringVar(self)
         self.root_folder.set(os.getcwd())
         self.root_folder_entry = tk.Entry(topf, textvariable=self.root_folder)
-        self.root_folder_entry.grid(row=1, column=5, columnspan=5, sticky="nsew")
+        self.root_folder_entry.grid(row=1, column=4, columnspan=6, sticky="nsew")
         self.chg_dir_btn = tk.Button(topf, text="...", command=self.chg_root_folder)
         self.chg_dir_btn.grid(row=1, column=10)
 
@@ -175,12 +189,14 @@ class FlexiGui(tk.Tk):
         print("Select YAML file to load")
         filetypes = (("Yaml files", "*.yml *.yaml"), ("All files", "*.*"))
 
-        self.filename = tk.filedialog.askopenfilename(
+        filename = tk.filedialog.askopenfilename(
             title="Select YAML file to load", filetypes=filetypes
         )
-        with open(self.filename, "r") as f:
+        if not filename:
+            return
+        with open(filename, "r") as f:
             self.data = yaml.safe_load(f)
-        print('Loaded YAML file "{}"'.format(self.filename))
+        print('Loaded YAML file "{}"'.format(filename))
         self.update_data()
 
     def update_data(self, name_to_select=None):
@@ -193,6 +209,12 @@ class FlexiGui(tk.Tk):
         self.selected_item.set("None")
         self.treeview.delete(*self.treeview.get_children())
         self._entity_by_itemid = {}
+        if "project" in self.data:
+            self.project.set(self.data["project"])
+        if "origin_name" in self.data:
+            self.origin_name.set(self.data["origin_name"])
+        if "root_folder" in self.data:
+            self.root_folder.set(self.data["root_folder"])
         self._insert_yaml_data(self.data["children"], name_to_select=name_to_select)
 
     def _insert_yaml_data(self, data, parent="", name_to_select=None):
@@ -207,6 +229,7 @@ class FlexiGui(tk.Tk):
                 values=[dtype],
                 open=True,
             )
+            self.treeview.change_state(item, "checked")
             if any(
                 [
                     v.startswith("XXERRORXX")
@@ -240,6 +263,31 @@ class FlexiGui(tk.Tk):
             yaml.dump(data, f)
         print('Wrote YAML file "{}"'.format(target))
 
+    def upload(self):
+        """Upload data to flexilims"""
+        print("Uploading data to flexilims")
+        if not self._check_options_are_set():
+            return
+
+        data = dict(self.data)
+        if not data:
+            tk.messagebox.showerror("Error", "No data loaded")
+            return
+        data["project"] = self.project.get()
+        data["root_folder"] = self.root_folder.get()
+        if data["project"].startswith("XXERRORXX"):
+            print("Project name not set")
+            return
+        flz.camp.sync_data.upload_yaml(
+            source_yaml=data,
+            raw_data_folder=data["root_folder"],
+            verbose=True,
+            log_func=print,
+            flexilims_session=None,
+            conflicts=self.conflicts.get(),
+        )
+        print("Done")
+
     def update_item(self):
         """Update the selected item with the textview contents"""
         text = self.textview.get(1.0, tk.END)
@@ -270,8 +318,4 @@ class FlexiGui(tk.Tk):
 
 if __name__ == "__main__":
     app = FlexiGui()
-    with open("test.yml", "r") as f:
-        data = yaml.safe_load(f)
-    app.data = data
-    app.update_data()
     app.mainloop()
