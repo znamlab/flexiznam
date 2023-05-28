@@ -3,8 +3,6 @@
 ## v0.3.5
 
 ### Main changes
-- More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It 
-  handle more complex nesting and replaces non finite float by their string repr.
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
   `return_paths=False`
 - New `OnixData` class to handle Onix data
@@ -12,6 +10,8 @@
 - Add a GUI module.
 
 ### Minor
+- More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It 
+  handle more complex nesting and replaces non finite float by their string repr.
 - `CameraDataset` metadata can also be `.yml`, not only `.txt`.
 - `Dataset.format(mode='yaml')` ensure yaml compatibility. (path to str, tuple to list, 
   etc...)

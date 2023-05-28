@@ -72,6 +72,8 @@ def get_flexilims_session(
                 token = dict(Authorization=f"Bearer {token}")
         except ConfigurationError:
             token = None
+    else:
+        token = None
     session = flm.Flexilims(username, password, project_id=project_id, token=token)
     if reuse_token:
         token = session.session.headers["Authorization"].split(" ")[-1]
