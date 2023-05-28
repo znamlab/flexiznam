@@ -18,7 +18,7 @@ from flexiznam.utils import clean_recursively
 def create_yaml_dict(
     root_folder,
     project,
-    genealogy,
+    origin_name,
     format_yaml=True,
 ):
     """Create a yaml dict from a folder
@@ -28,9 +28,8 @@ def create_yaml_dict(
     Args:
         root_folder (str): Path to the folder to parse
         project (str): Name of the project, used as root of the path in the output
-        genealogy (list): List of strings with the genealogy of root_folder. If
-            root_folder is a recording for instance, genealogy should be (mouse,
-            session).
+        origin_name (str): Name of the origin on flexilims. Must be online and have
+            genealogy set.
         format_yaml (bool, optional): Format the output to be yaml compatible if True,
             otherwise keep dataset as Dataset object and path as pathlib.Path. Defaults
             to True.
@@ -39,8 +38,12 @@ def create_yaml_dict(
         dict: Dictionary with the structure of the folder and automatically detected
             datasets
     """
-    if isinstance(genealogy, str):
-        genealogy = [genealogy]
+    flm_sess = flz.Session(project=project)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        origin = flm_sess.get_origin(origin_name)
+    genealogy = origin.genealogy
+
     data = _create_yaml_dict(
         level_folder=root_folder,
         project=project,
@@ -83,16 +86,16 @@ def _create_yaml_dict(
     level_name = level_folder.stem
     m = re.fullmatch(r"R\d\d\d\d\d\d_?(.*)?", level_name)
     if m:
-        level_dict["datatype"] = "recording"
+        level_dict["type"] = "recording"
         level_dict["protocol"] = (
             m[1] if m[1] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
         )
         level_dict["recording_type"] = "XXERRORXX error RECORDING TYPE NOT SPECIFIED"
 
     elif re.fullmatch(r"S\d*", level_name):
-        level_dict["datatype"] = "session"
+        level_dict["type"] = "session"
     else:
-        level_dict["datatype"] = "sample"
+        level_dict["type"] = "sample"
     level_dict["genealogy"] = genealogy + [level_name]
     level_dict["path"] = Path(project, *level_dict["genealogy"])
     if format_yaml:
@@ -107,6 +110,9 @@ def _create_yaml_dict(
                 proot = str(level_folder)[: -len(level_dict["path"])]
                 ds.path = ds.path.relative_to(proot)
                 children[ds_name] = ds.format(mode="yaml")
+                # remove fields that are not needed
+                for field in ["origin_id", "project_id", "name"]:
+                    children[ds_name].pop(field, None)
                 children[ds_name]["path"] = str(
                     PurePosixPath(children[ds_name]["path"])
                 )
@@ -185,7 +191,7 @@ def _upload_yaml_dict(
 ):
     for entity, entity_data in yaml_dict.items():
         children = entity_data.pop("children", {})
-        datatype = entity_data.pop("datatype")
+        datatype = entity_data.pop("type")
         if datatype == "session":
             if verbose:
                 print(f"Adding session `{entity}`")
@@ -254,6 +260,18 @@ def _upload_yaml_dict(
             conflicts=conflicts,
             verbose=verbose,
         )
+
+
+def check_yaml_validity(yaml, root_folder, origin_name):
+    if isinstance(yaml, str):
+        with open(yaml, "r") as f:
+            yaml = yaml.safe_load(f)
+    assert yaml["root_folder"] == root_folder, f"root_folder should be {root_folder}"
+    _check_recursively(yaml["children"], root_folder, origin_name)
+
+
+def _check_recursively(yaml, root_folder):
+    raise NotImplementedError
 
 
 if __name__ == "__main__":

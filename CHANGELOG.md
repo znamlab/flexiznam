@@ -8,6 +8,7 @@
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
   `return_paths=False`
 - New `OnixData` class to handle Onix data
+- `get_flexilims_session` can now re-use token from a previous session
 - Add a GUI module.
 
 ### Minor

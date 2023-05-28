@@ -1,3 +1,4 @@
+import datetime
 import re
 import warnings
 import pandas as pd
@@ -5,8 +6,8 @@ import flexilims as flm
 from pathlib import Path
 import flexiznam
 from flexiznam import mcms
-from flexiznam.config import PARAMETERS, get_password
-from flexiznam.errors import NameNotUniqueError, FlexilimsError
+from flexiznam.config import PARAMETERS, get_password, add_password
+from flexiznam.errors import NameNotUniqueError, FlexilimsError, ConfigurationError
 
 
 warnings.simplefilter("always", DeprecationWarning)
@@ -33,7 +34,9 @@ def lookup_project(project_id, prm=None):
         return None
 
 
-def get_flexilims_session(project_id=None, username=None, password=None):
+def get_flexilims_session(
+    project_id=None, username=None, password=None, reuse_token=True
+):
     """Open a new flexilims session by creating a new authentication token.
 
     Args:
@@ -43,10 +46,12 @@ def get_flexilims_session(project_id=None, username=None, password=None):
             read from the config file.
         password (str): (optional) flexilims password. If not provided, it is
             read from the secrets file, or failing that triggers an input prompt.
+        reuse_token (bool): (optional) if True, try to reuse an existing token
 
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
     """
+
     if project_id is not None:
         project_id = _format_project(project_id, PARAMETERS)
     else:
@@ -54,8 +59,23 @@ def get_flexilims_session(project_id=None, username=None, password=None):
     if username is None:
         username = PARAMETERS["flexilims_username"]
     if password is None:
-        password = get_password(username, "flexilims")
-    session = flm.Flexilims(username, password, project_id=project_id)
+        password = get_password("flexilims", username)
+
+    if reuse_token:
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        try:
+            token = get_password(app="flexilims", username="token", allow_input=False)
+            token, date = token.split("_")
+            if date != today:
+                token = None
+            else:
+                token = dict(Authorization=f"Bearer {token}")
+        except ConfigurationError:
+            token = None
+    session = flm.Flexilims(username, password, project_id=project_id, token=token)
+    if reuse_token:
+        token = session.session.headers["Authorization"].split(" ")[-1]
+        add_password("flexilims", "token", f"{token}_{today}")
     return session
 
 

@@ -51,7 +51,7 @@ def load_param(param_folder=None, config_file="config.yml"):
     return prm
 
 
-def get_password(username, app, password_file=None):
+def get_password(app, username, password_file=None, allow_input=True):
     """Read the password yaml"""
     if password_file is None:
         password_file = _find_file("secret_password.yml")
@@ -59,13 +59,15 @@ def get_password(username, app, password_file=None):
         pwd = yaml.safe_load(yml_file) or {}
     try:
         if app not in pwd:
-            raise IOError("No password for %s" % app)
+            raise ConfigurationError("No password for %s" % app)
         pwd = pwd[app]
         if username not in pwd:
-            raise IOError("No %s password for user %s" % (app, username))
+            raise ConfigurationError("No %s password for user %s" % (app, username))
         return pwd[username]
-    except IOError:
-        return getpass(prompt=f"Enter {app} password: ")
+    except ConfigurationError:
+        if allow_input:
+            return getpass(prompt=f"Enter {app} password: ")
+        raise ConfigurationError("No password for %s" % app)
 
 
 def add_password(app, username, password, password_file=None):
