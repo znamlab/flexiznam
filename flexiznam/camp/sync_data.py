@@ -18,7 +18,7 @@ from flexiznam.utils import clean_recursively
 def create_yaml_dict(
     root_folder,
     project,
-    genealogy,
+    origin_name,
     format_yaml=True,
 ):
     """Create a yaml dict from a folder
@@ -28,9 +28,8 @@ def create_yaml_dict(
     Args:
         root_folder (str): Path to the folder to parse
         project (str): Name of the project, used as root of the path in the output
-        genealogy (list): List of strings with the genealogy of root_folder. If
-            root_folder is a recording for instance, genealogy should be (mouse,
-            session).
+        origin_name (str): Name of the origin on flexilims. Must be online and have 
+            genealogy set.
         format_yaml (bool, optional): Format the output to be yaml compatible if True,
             otherwise keep dataset as Dataset object and path as pathlib.Path. Defaults
             to True.
@@ -39,8 +38,12 @@ def create_yaml_dict(
         dict: Dictionary with the structure of the folder and automatically detected
             datasets
     """
-    if isinstance(genealogy, str):
-        genealogy = [genealogy]
+    flm_sess = flz.Session(project=project)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        origin = flm_sess.get_origin(origin_name)
+    genealogy = origin.genealogy
+    
     data = _create_yaml_dict(
         level_folder=root_folder,
         project=project,
