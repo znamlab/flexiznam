@@ -8,6 +8,7 @@
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
   `return_paths=False`
 - New `OnixData` class to handle Onix data
+- Add a GUI module.
 
 ### Minor
 - `CameraDataset` metadata can also be `.yml`, not only `.txt`.
