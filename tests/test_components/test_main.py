@@ -13,17 +13,18 @@ from flexiznam.schema import Dataset
 
 
 def test_get_flexilims_session():
-    sess = flz.get_flexilims_session(project_id=PARAMETERS["project_ids"]["test"])
+    sess = flz.get_flexilims_session(
+        project_id=PARAMETERS["project_ids"]["test"], reuse_token=False
+    )
     assert sess.username == PARAMETERS["flexilims_username"]
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
     assert sess.username == PARAMETERS["flexilims_username"]
     token, date = get_password("flexilims", "token").split("_")
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     assert date == today
-    assert sess.session.headers['Authorization'].split(" ")[1] == token
+    assert sess.session.headers["Authorization"].split(" ")[1] == token
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
-    assert sess.session.headers['Authorization'].split(" ")[1] == token
-    
+    assert sess.session.headers["Authorization"].split(" ")[1] == token
 
 
 def test_format_results():
