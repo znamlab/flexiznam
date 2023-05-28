@@ -1,7 +1,8 @@
+import datetime
 import pandas as pd
 import pytest
 import flexiznam.main as flz
-from flexiznam.config import PARAMETERS
+from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from tests.tests_resources.data_for_testing import MOUSE_ID
 
@@ -14,8 +15,15 @@ from flexiznam.schema import Dataset
 def test_get_flexilims_session():
     sess = flz.get_flexilims_session(project_id=PARAMETERS["project_ids"]["test"])
     assert sess.username == PARAMETERS["flexilims_username"]
-    sess = flz.get_flexilims_session(project_id=None)
+    sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
     assert sess.username == PARAMETERS["flexilims_username"]
+    token, date = get_password("flexilims", "token").split("_")
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    assert date == today
+    assert sess.session.headers['Authorization'].split(" ")[1] == token
+    sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
+    assert sess.session.headers['Authorization'].split(" ")[1] == token
+    
 
 
 def test_format_results():
