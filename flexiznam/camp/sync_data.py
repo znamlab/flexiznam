@@ -38,11 +38,13 @@ def create_yaml_dict(
         dict: Dictionary with the structure of the folder and automatically detected
             datasets
     """
-    flm_sess = flz.Session(project=project)
+    flm_sess = flz.get_flexilims_session(project_id=project)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        origin = flm_sess.get_origin(origin_name)
-    genealogy = origin.genealogy
+        origin = flz.get_entity(name=origin_name, flexilims_session=flm_sess)
+    assert origin is not None, f"Origin {origin_name} not found in project {project}"
+    assert "genealogy" in origin, f"Origin {origin_name} has no genealogy"
+    genealogy = origin["genealogy"]
 
     data = _create_yaml_dict(
         level_folder=root_folder,
@@ -51,7 +53,7 @@ def create_yaml_dict(
         format_yaml=format_yaml,
         parent_dict=dict(),
     )
-    out = dict(root_folder=root_folder, root_genealogy=genealogy, children=data)
+    out = dict(root_folder=root_folder, origin_name=origin_name, children=data)
     return out
 
 
@@ -144,7 +146,7 @@ def upload_yaml(
     """Upload data from one yaml to flexilims
 
     Args:
-        source_yaml (str): path to clean yaml
+        source_yaml (dict or str): path to clean yaml or yaml dict
         raw_data_folder (str): path to the folder containing the data. Default to
             data_root['raw']
         verbose (bool): print progress information
@@ -159,15 +161,20 @@ def upload_yaml(
         list of names of entities created/updated
 
     """
-    with open(source_yaml, "r") as f:
-        yaml_data = yaml.safe_load(f)
+    if isinstance(source_yaml, str):
+        source_yaml = Path(source_yaml)
+        with open(source_yaml, "r") as f:
+            yaml_data = yaml.safe_load(f)
+    else:
+        assert isinstance(source_yaml, dict), "source_yaml must be a dict or a path"
+        yaml_data = source_yaml
 
     # first find the origin
 
     if flexilims_session is None:
         flexilims_session = flz.get_flexilims_session(project_id=yaml_data["project"])
 
-    origin_name = "_".join(yaml_data["root_genealogy"])
+    origin_name = yaml_data["origin_name"]
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         origin = flz.get_entity(name=origin_name, flexilims_session=flexilims_session)
@@ -243,12 +250,11 @@ def _upload_yaml_dict(
                 path=path,
                 genealogy=genealogy,
                 is_raw="yes",
-                project_id=None,
-                flexilims_session=None,
-                dataset_name=None,
-                attributes=None,
+                flexilims_session=flexilims_session,
+                dataset_name=entity,
+                attributes=entity_data['extra_attributes'],
                 strict_validation=False,
-                conflicts="append",
+                conflicts=conflicts,
             )
 
         _upload_yaml_dict(
