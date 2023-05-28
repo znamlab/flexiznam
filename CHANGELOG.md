@@ -1,6 +1,6 @@
 # Change log
 
-## v0.3.5
+## v0.4.0
 
 ### Main changes
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
