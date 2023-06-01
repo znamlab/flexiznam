@@ -18,6 +18,7 @@ setup(
         "flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims",
         "pymcms @ git+ssh://git@github.com/znamlab/pymcms.git#egg=pymcms",
         "tifffile",
+        "ttkwidgets",
     ],
     entry_points="""
         [console_scripts]
