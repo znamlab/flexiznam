@@ -139,9 +139,3 @@ class MicroscopyData(Dataset):
             id=id,
             flexilims_session=flexilims_session,
         )
-
-    def is_valid(self):
-        """Check that the file exist"""
-        if not (pathlib.Path(self.path)).exists():
-            return False
-        return True

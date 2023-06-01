@@ -234,7 +234,7 @@ class ScanimageData(Dataset):
             )
         self.extra_attributes["tif_files"] = value
 
-    def is_valid(self, tif_files=None):
+    def is_valid(self, return_reason=False, tif_files=None):
         """Check that associated files exist"""
         if tif_files is None:
             tif_files = self.tif_files
@@ -244,11 +244,13 @@ class ScanimageData(Dataset):
             f for f in os.listdir(self.path) if f.endswith(("tif", ".tiff"))
         }
         if tif_files - existing_file:
-            return False
+            msg = "Some tif files do not exist: %s" % (tif_files - existing_file)
+            return msg if return_reason else False
         for _, file_path in self.csv_files.items():
-            if not (pathlib.Path(self.path) / file_path).exists():
-                return False
-        return True
+            if not (self.path_full / file_path).exists():
+                msg = "Csv file does not exist: %s" % file_path
+                return msg if return_reason else False
+        return "" if return_reason else True
 
     def __len__(self):
         """Number of tif files in the dataset"""

@@ -94,7 +94,9 @@ class OnixData(Dataset):
             onix_name = "onix_data_%s" % ts.strftime("%Y-%m-%d_%H_%M_%S")
             extra_attributes = dict()
             for device, dev_df in df.groupby("device_name"):
-                extra_attributes[device] = {s.subname: s.file for s in dev_df.itertuples()}
+                extra_attributes[device] = {
+                    s.subname: s.file for s in dev_df.itertuples()
+                }
             output[onix_name] = OnixData(
                 path=folder,
                 genealogy=folder_genealogy + (onix_name,),
@@ -150,3 +152,30 @@ class OnixData(Dataset):
             id=id,
             flexilims_session=flexilims_session,
         )
+
+    def is_valid(self, return_reason=False):
+        """Check that the onix dataset is valid
+
+        Args:
+            return_reason (bool): if True, return a string with the reason why the
+                dataset is not valid. If False, return True or False
+
+        Returns:
+            bool or str: True if valid, False if not. If return_reason is True, return
+                a string with the reason why the dataset is not valid."""
+
+        ndevices = 0
+        for device_name in OnixData.DEVICE_NAMES:
+            if device_name not in self.extra_attributes:
+                continue
+            ndevices += 1
+            dev_dict = self.extra_attributes[device_name]
+            for v in dev_dict.values():
+                p = self.path_full / v
+                if not p.exists():
+                    msg = f"File {p} does not exist"
+                    return msg if return_reason else False
+        if ndevices == 0:
+            msg = "No devices found"
+            return msg if return_reason else False
+        return "" if return_reason else True

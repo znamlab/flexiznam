@@ -325,13 +325,16 @@ class Dataset(object):
         elif project_id is not None:
             self.project_id = project_id
 
-    def is_valid(self):
-        """
-        Dummy method definition. Should be reimplemented in children classes
+    def is_valid(self, return_reason=False):
+        """Check if the file path is valid for this dataset
 
+        Should be reimplemented in children classes.
         Should return True if the dataset is found a valid, false otherwise
         """
-        raise NotImplementedError("`is_valid` is not defined for generic datasets")
+        if not self.path_full.exists():
+            msg = f"Path {self.path_full} does not exist"
+            return msg if return_reason else False
+        return "" if return_reason else True
 
     def associated_files(self, folder=None):
         """Give a list of all files associated with this dataset
