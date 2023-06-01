@@ -16,7 +16,8 @@
 - `Dataset.format(mode='yaml')` ensure yaml compatibility. (path to str, tuple to list, 
   etc...)
 - `add_experimental_session` can be done with `parent_id` (or `parent_name`).
-- `add_dataset` can add a dataset to a mouse.
+- `add_dataset` can add a dataset to a mouse and does not require genealogy.
+
 
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
@@ -24,6 +25,8 @@
 - Fix [#88](https://github.com/znamlab/flexiznam/issues/88). Now make attributes JSON
   compatible before uploading to flexilims. This will replace special characters in
   attribute names by `_` in the database.
+- `add_recording` and `add_sample` add the value online with the full name (including
+  genealogy) rather than the short name.
 
 ## v0.3.4
 

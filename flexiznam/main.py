@@ -321,17 +321,16 @@ def add_recording(
             "conflicts must be `skip`, `abort`, `overwrite` or `update`"
         )
 
-    experimental_session = get_entity(
-        datatype="session", flexilims_session=flexilims_session, id=session_id
-    )
+    parent_series = get_entity(flexilims_session=flexilims_session, id=session_id)
     recording_info = {"recording_type": recording_type, "protocol": protocol}
+
     if attributes is None:
         attributes = {}
     if "path" not in attributes:
         attributes["path"] = str(
             Path(
                 get_path(
-                    experimental_session["path"],
+                    parent_series["path"],
                     datatype="session",
                     flexilims_session=flexilims_session,
                 )
@@ -347,20 +346,25 @@ def add_recording(
     recording_info.update(attributes)
 
     if recording_name is None:
-        recording_name = experimental_session["name"] + "_" + protocol + "_0"
+        recording_name = parent_series["name"] + "_" + protocol + "_0"
+
+    if "genealogy" not in attributes:
+        attributes["genealogy"] = list(parent_series["genealogy"]) + [recording_name]
+    rec_full_name = "_".join(attributes["genealogy"])
+
     online_recording = get_entity(
-        datatype="recording", name=recording_name, flexilims_session=flexilims_session
+        datatype="recording", name=rec_full_name, flexilims_session=flexilims_session
     )
     if online_recording is not None:
         if conflicts.lower() == "skip":
-            print("A recording named %s already exists" % (recording_name))
+            print("A recording named %s already exists" % (rec_full_name))
             return online_recording
         elif conflicts.lower() == "abort":
-            raise FlexilimsError("A recording named %s already exists" % recording_name)
+            raise FlexilimsError("A recording named %s already exists" % rec_full_name)
         else:
             resp = update_entity(
                 datatype="recording",
-                name=recording_name,
+                name=rec_full_name,
                 id=online_recording["id"],
                 origin_id=session_id,
                 mode=conflicts,
@@ -372,7 +376,7 @@ def add_recording(
 
     resp = flexilims_session.post(
         datatype="recording",
-        name=recording_name,
+        name=rec_full_name,
         attributes=recording_info,
         origin_id=session_id,
         other_relations=other_relations,
@@ -529,7 +533,6 @@ def add_dataset(
     dataset_type,
     created,
     path,
-    genealogy,
     is_raw="yes",
     project_id=None,
     flexilims_session=None,
@@ -545,8 +548,6 @@ def add_dataset(
         dataset_type (str): dataset_type, must be a type define in the config file
         created (str): date of creation as text, usually in this format: '2021-05-24 14:56:41'
         path (str): path to the data relative to the project folder
-        genealogy (tuple): parents of this dataset from the project (excluded) down to
-                           the dataset name itself (included)
         is_raw (str): `yes` or `no`, used to find the root directory
         project_id (str): hexadecimal ID or name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): authentication
@@ -572,11 +573,10 @@ def add_dataset(
     if conflicts.lower() not in valid_conflicts:
         raise AttributeError("`conflicts` must be in [%s]" % ", ".join(valid_conflicts))
 
+    parent = get_entity(flexilims_session=flexilims_session, id=parent_id)
+
     if dataset_name is None:
-        parent_name = get_entity(
-            flexilims_session=flexilims_session,
-            id=parent_id,
-        )["name"]
+        parent_name = parent["name"]
         dataset_name = parent_name + "_" + dataset_type + "_0"
 
     dataset_info = {
@@ -584,7 +584,7 @@ def add_dataset(
         "created": created,
         "path": path,
         "is_raw": is_raw,
-        "genealogy": genealogy,
+        "genealogy": list(parent["genealogy"]),
     }
     reserved_attributes = ["dataset_type", "created", "path", "is_raw", "genealogy"]
     if attributes is not None:
@@ -596,32 +596,37 @@ def add_dataset(
         dataset_name = generate_name(
             "dataset", dataset_name, flexilims_session=flexilims_session
         )
+        dataset_info["genealogy"].append(dataset_name)
+        dataset_full_name = "_".join(dataset_info["genealogy"])
     else:
+        dataset_info["genealogy"].append(dataset_name)
+        dataset_full_name = "_".join(dataset_info["genealogy"])
         online_version = get_entity(
-            "dataset", name=dataset_name, flexilims_session=flexilims_session
+            "dataset", name=dataset_full_name, flexilims_session=flexilims_session
         )
         if online_version is not None:
             if conflicts.lower() == "abort":
-                raise FlexilimsError("A dataset named %s already exists" % dataset_name)
+                raise FlexilimsError(
+                    "A dataset named %s already exists" % dataset_full_name
+                )
             elif conflicts.lower() == "skip":
-                print("A dataset named %s already exists" % dataset_name)
+                print("A dataset named %s already exists" % dataset_full_name)
                 return online_version
             else:
                 resp = update_entity(
                     datatype="dataset",
-                    name=dataset_name,
+                    name=dataset_full_name,
                     id=online_version["id"],
                     origin_id=parent_id,
                     mode=conflicts,
                     attributes=dataset_info,
-                    other_relations=None,
                     flexilims_session=flexilims_session,
                 )
                 return resp
 
     resp = flexilims_session.post(
         datatype="dataset",
-        name=dataset_name,
+        name=dataset_full_name,
         origin_id=parent_id,
         attributes=dataset_info,
         strict_validation=strict_validation,
