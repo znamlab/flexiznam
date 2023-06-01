@@ -82,7 +82,7 @@ def test_passwd_creation():
             "my_otherapp", "username", "password", password_file=tmp.name
         )
 
-        pwd = config_tools.get_password("username1", "my_app", tmp.name)
+        pwd = config_tools.get_password("my_app", "username1", tmp.name)
         assert pwd == "password1"
 
 

@@ -16,6 +16,7 @@
   etc...)
 - `add_experimental_session` can be done with `parent_id` (or `parent_name`).
 - `add_dataset` can add a dataset to a mouse.
+- `get_password` syntax changed to match the `add_password` syntax.
 
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
