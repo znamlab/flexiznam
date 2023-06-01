@@ -9,7 +9,6 @@ import flexiznam.camp.sync_data
 
 
 class FlexiGui(tk.Tk):
-
     FLEXILIMS_ONLY_FIELDS = ("children", "project", "origin_id")
     RESOURCES = Path(__file__).parent
 
@@ -73,7 +72,6 @@ class FlexiGui(tk.Tk):
         self.treeview.tag_configure("error", background="red")
 
     def _create_textview(self):
-
         # Create the Text widget
         tk.Label(self.frames["br"], text="Selected item:").grid(
             row=0,
@@ -136,8 +134,6 @@ class FlexiGui(tk.Tk):
             "SELECT PROJECT",
             *flz.PARAMETERS["project_ids"].keys(),
         ).grid(row=0, column=4, columnspan=3, sticky="w")
-        fllogo = tk.PhotoImage(file=str(self.RESOURCES / "flexilims_logo.png"))
-        fllogo = fllogo.subsample(10, 10)
         self.upload_btn = tk.Button(topf, text="Upload", command=self.upload)
         self.upload_btn.grid(row=0, column=7)
 
