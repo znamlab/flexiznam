@@ -197,6 +197,7 @@ def _upload_yaml_dict(
     yaml_dict, origin, raw_data_folder, log_func, flexilims_session, conflicts, verbose
 ):
     for entity, entity_data in yaml_dict.items():
+        entity_data = entity_data.copy()
         children = entity_data.pop("children", {})
         datatype = entity_data.pop("type")
         if datatype == "session":
@@ -240,7 +241,8 @@ def _upload_yaml_dict(
             created = entity_data.pop("created")
             dataset_type = entity_data.pop("dataset_type")
             path = entity_data.pop("path")
-            genealogy = entity_data.pop("genealogy")
+            is_raw = entity_data.pop("is_raw")
+
             if verbose:
                 print(f"Adding dataset `{entity}`, type `{dataset_type}`")
             new_entity = flz.add_dataset(
@@ -248,8 +250,7 @@ def _upload_yaml_dict(
                 dataset_type=dataset_type,
                 created=created,
                 path=path,
-                genealogy=genealogy,
-                is_raw="yes",
+                is_raw=is_raw,
                 flexilims_session=flexilims_session,
                 dataset_name=entity,
                 attributes=entity_data["extra_attributes"],
