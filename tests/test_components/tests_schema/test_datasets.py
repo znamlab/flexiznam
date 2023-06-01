@@ -156,6 +156,7 @@ def test_dataset_flexilims_integration(flm_sess):
 
     # same with yaml mode
     fmt["extra_attributes"] = {}
+    fmt["genealogy"] = list(fmt["genealogy"])
     ds_yaml = ds.format(mode="yaml")
     try:
         del ds_yaml["origin_id"]

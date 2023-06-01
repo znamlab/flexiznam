@@ -1,7 +1,8 @@
+import datetime
 import pandas as pd
 import pytest
 import flexiznam.main as flz
-from flexiznam.config import PARAMETERS
+from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from tests.tests_resources.data_for_testing import MOUSE_ID
 
@@ -12,10 +13,18 @@ from flexiznam.schema import Dataset
 
 
 def test_get_flexilims_session():
-    sess = flz.get_flexilims_session(project_id=PARAMETERS["project_ids"]["test"])
+    sess = flz.get_flexilims_session(
+        project_id=PARAMETERS["project_ids"]["test"], reuse_token=False
+    )
     assert sess.username == PARAMETERS["flexilims_username"]
-    sess = flz.get_flexilims_session(project_id=None)
+    sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
     assert sess.username == PARAMETERS["flexilims_username"]
+    token, date = get_password("flexilims", "token").split("_")
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    assert date == today
+    assert sess.session.headers["Authorization"].split(" ")[1] == token
+    sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
+    assert sess.session.headers["Authorization"].split(" ")[1] == token
 
 
 def test_format_results():
@@ -94,6 +103,31 @@ def test_get_mouse_id(flm_sess):
         flexilims_session=flm_sess,
     )
     assert mid == MOUSE_ID
+
+
+def test_get_datasets(flm_sess):
+    sess = flz.get_entity(
+        name="mouse_physio_2p_S20211102", datatype="session", flexilims_session=flm_sess
+    )
+    ds = flz.get_datasets(
+        flexilims_session=flm_sess, origin_id=sess.id, return_paths=True
+    )
+    assert len(ds) == 2
+    for v in ds.values():
+        assert isinstance(v, list)
+        assert all([isinstance(d, str) for d in v])
+
+    ds2 = flz.get_datasets(
+        flexilims_session=flm_sess, origin_id=sess.id, return_paths=False
+    )
+    assert len(ds2) == 2
+    assert all([k in ds2 for k in ds])
+    for k in ds2:
+        ds_paths = ds[k]
+        ds_ds = ds2[k]
+        assert len(ds_ds) == len(ds_paths)
+        assert all([isinstance(d, Dataset) for d in ds_ds])
+        assert all([str(d.path_full) in ds_paths for d in ds_ds])
 
 
 def test_add_mouse(flm_sess):

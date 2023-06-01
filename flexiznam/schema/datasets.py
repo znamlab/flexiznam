@@ -1,13 +1,13 @@
 import pathlib
-from pathlib import Path
-import re
+from datetime import datetime
+from pathlib import Path, PurePosixPath
 import numpy as np
 import pandas as pd
+from flexilims.utils import check_flexilims_validity
 import flexiznam as flz
 from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.config import PARAMETERS
-from datetime import datetime
 
 
 class Dataset(object):
@@ -395,6 +395,7 @@ class Dataset(object):
                 attributes[attribute] = bool(attributes[attribute])
             if isinstance(attributes[attribute], tuple):
                 attributes[attribute] = list(attribute)
+        flz.utils.clean_recursively(attributes)
 
         if status == "different":
             if mode == "safe":
@@ -431,12 +432,12 @@ class Dataset(object):
             print("Already up to date, nothing to do")
             return
         # we are in 'not online' case
-        utils.clean_dictionary_recursively(attributes)
+        utils.clean_recursively(attributes)
         resp = flz.add_dataset(
             parent_id=self.origin_id,
             dataset_type=self.dataset_type,
             created=self.created,
-            path=str(self.path),
+            path=str(PurePosixPath(self.path)),
             genealogy=self.genealogy,
             is_raw="yes" if self.is_raw else "no",
             project_id=self.project_id,
@@ -529,13 +530,13 @@ class Dataset(object):
         get_entities output) or a 'yaml' type as that used by flexiznam.camp
 
         The flexilims series will not include elements that are not used by the Dataset
-        class such as created_by
+        class such as created_by and will make sure that the output is JSON serializable
 
         Args:
             mode: 'flexilims' or 'yaml'
         """
         data = dict(
-            path=str(self.path),
+            path=str(PurePosixPath(self.path)),
             created=self.created,
             dataset_type=self.dataset_type,
             is_raw="yes" if self.is_raw else "no",
@@ -550,8 +551,9 @@ class Dataset(object):
             data.update(self.extra_attributes)
             series = pd.Series(data, name=self.full_name)
             return series
-        elif mode.lower() == "yaml":
+        elif mode.lower() in ["yaml", "json", "yml"]:
             data["extra_attributes"] = self.extra_attributes
+            flz.utils.clean_recursively(data)
             return data
         else:
             raise IOError('Unknown mode "%s". Must be `flexilims` or `yaml`' % mode)

@@ -9,7 +9,7 @@ import pandas as pd
 import yaml
 
 from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
-from flexiznam.utils import clean_dictionary_recursively
+from flexiznam.utils import clean_recursively
 from tests.tests_resources import flexilims_session
 from tests.tests_resources.data_for_testing import (
     DATA_ROOT,
@@ -60,9 +60,7 @@ def test_parse_yaml():
     #                                               overwrite=True)
     # parsed contains datasets, we need to make them  into str to compare with saved data
     parsed_str = copy.deepcopy(parsed)
-    clean_dictionary_recursively(
-        parsed_str, keys=["name"], format_dataset=True, tuple_as_list=True
-    )
+    clean_recursively(parsed_str, keys=["name"], format_dataset=True)
 
     with open(saved_parsed_yaml, "r") as fopen:
         saved = yaml.safe_load(fopen)

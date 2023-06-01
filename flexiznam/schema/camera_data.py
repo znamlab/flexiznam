@@ -8,7 +8,7 @@ from flexiznam.schema.datasets import Dataset
 class CameraData(Dataset):
     DATASET_TYPE = "camera"
     VIDEO_EXTENSIONS = {".mp4", ".bin", ".avi"}
-    VALID_EXTENSIONS = {".txt", ".csv"}.union(VIDEO_EXTENSIONS)
+    VALID_EXTENSIONS = {".txt", ".csv", ".yml"}.union(VIDEO_EXTENSIONS)
 
     @staticmethod
     def from_folder(
@@ -50,7 +50,11 @@ class CameraData(Dataset):
             for f in os.listdir(folder)
             if f.endswith(tuple(CameraData.VALID_EXTENSIONS))
         ]
-        metadata_files = [f for f in fnames if f.endswith("_metadata.txt")]
+        metadata_files = [
+            f
+            for f in fnames
+            if f.endswith("_metadata.txt") or f.endswith("_metadata.yml")
+        ]
         if (not metadata_files) and enforce_validity:
             raise IOError("Cannot find metadata")
         timestamp_files = [f for f in fnames if f.endswith("_timestamps.csv")]
@@ -62,7 +66,7 @@ class CameraData(Dataset):
         if (not valid_names) and enforce_validity:
             raise IOError("Metadata do not correspond to timestamps")
         if verbose:
-            print()
+            print(f"Valid names: {valid_names}")
         video_files = [
             f for f in fnames if f.endswith(tuple(CameraData.VIDEO_EXTENSIONS))
         ]
@@ -108,13 +112,18 @@ class CameraData(Dataset):
                 raise IOError(
                     "Error finding timestamp files. I should have it but I " "don" "t"
                 )
-            metadata_file = "%s_metadata.txt" % camera_name
-            if metadata_file in metadata_files:
-                extra_attributes["metadata_file"] = metadata_file
+            import re
+
+            metadata_file = [
+                f
+                for f in metadata_files
+                if re.match(rf"{camera_name}_metadata.[yml]?[txt]?", f)
+            ]
+
+            if len(metadata_file) == 1:
+                extra_attributes["metadata_file"] = metadata_file[0]
             elif enforce_validity:
-                raise IOError(
-                    "Error finding metadata files. I should have it but I " "don" "t"
-                )
+                raise IOError(f"Found {len(metadata_file)} metadata files, not 1.")
 
             output[camera_name] = CameraData(
                 path=folder,

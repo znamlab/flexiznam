@@ -11,7 +11,7 @@ import flexiznam as flz
 from flexiznam.errors import SyncYmlError, FlexilimsError
 from flexiznam.schema import Dataset
 from flexiznam.config import PARAMETERS
-from flexiznam.utils import clean_dictionary_recursively
+from flexiznam.utils import clean_recursively
 
 
 def create_yaml(
@@ -93,7 +93,8 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
 
     Args:
         path_to_yaml (str or dict): path to the file to parse or dict of yaml contect
-        raw_data_folder (str): root folder containing the mice folders
+        raw_data_folder (str): root folder. Typically project folder or folder 
+            containing the mice subfolders
         verbose (bool): print info while looking for datasets
 
     Returns:
@@ -139,7 +140,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     session_data["samples"] = _create_sample_datasets(session_data, raw_data_folder)
 
     # remove the full path that are not needed
-    clean_dictionary_recursively(session_data)
+    clean_recursively(session_data)
     return session_data
 
 
@@ -322,9 +323,7 @@ def write_session_data_as_yaml(session_data, target_file=None, overwrite=False):
 
     """
     out_dict = copy.deepcopy(session_data)
-    clean_dictionary_recursively(
-        out_dict, keys=["name"], format_dataset=True, tuple_as_list=True
-    )
+    clean_recursively(out_dict, keys=["name"], format_dataset=True)
     if target_file is not None:
         target_file = Path(target_file)
         if target_file.exists() and not overwrite:

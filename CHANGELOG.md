@@ -1,5 +1,30 @@
 # Change log
 
+## v0.3.5
+
+### Main changes
+- `flz.get_datasets` can return `Dataset` objects instead of path strings if 
+  `return_paths=False`
+- New `OnixData` class to handle Onix data
+- `get_flexilims_session` can now re-use token from a previous session
+
+### Minor
+- More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It 
+  handle more complex nesting and replaces non finite float by their string repr.
+- `CameraDataset` metadata can also be `.yml`, not only `.txt`.
+- `Dataset.format(mode='yaml')` ensure yaml compatibility. (path to str, tuple to list, 
+  etc...)
+- `add_experimental_session` can be done with `parent_id` (or `parent_name`).
+- `add_dataset` can add a dataset to a mouse.
+- `get_password` syntax changed to match the `add_password` syntax.
+
+### Bugfixes
+- Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns 
+  always the path in posix format.
+- Fix [#88](https://github.com/znamlab/flexiznam/issues/88). Now make attributes JSON
+  compatible before uploading to flexilims. This will replace special characters in
+  attribute names by `_` in the database.
+
 ## v0.3.4
 
 ### Main changes

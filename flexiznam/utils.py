@@ -1,9 +1,10 @@
 import pathlib
 from pathlib import Path, PurePosixPath
-
+import re
 import numpy as np
 import pandas as pd
-from flexilims.main import SPECIAL_CHARACTERS
+
+SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
 import flexiznam as flz
 from flexiznam.errors import FlexilimsError, DatasetError
@@ -107,69 +108,78 @@ def compare_dictionaries_recursively(first_dict, second_dict, output=None):
     return output
 
 
-def clean_dictionary_recursively(
-    dictionary,
+def clean_recursively(
+    element,
     keys=(),
-    path2string=True,
-    array2list=True,
+    json_compatible=True,
     format_dataset=False,
-    tuple_as_list=False,
 ):
-    """Recursively clean a dictionary inplace
+    """Recursively clean inplace to make json compatible
 
     Args:
-        dictionary: dict (of dict)
+        element (any): Typically a dict of dict to clean, but can be any object that
+            needs to be made json compatible
         keys (list): list of keys to pop from the dictionary
-        path2string (bool): replace :py:class:`pathlib.Path` object by their
-            string representation (default True)
-        array2list (bool): replace :py:class:`numpy.ndarray` object by the equivalent
-            list (default True)
+        json_compatible (bool): make the dictionary json compatible (default True)
         format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`
             instances by their yaml representation (default False)
-        tuple_as_list (bool): replace tuples by list (default False)
     """
-
     if isinstance(keys, str):
         keys = [keys]
-    for k in keys:
-        dictionary.pop(k, None)
+
+    # handle dictionaries and first recursion
+    if isinstance(element, dict):
+        for k in keys:
+            element.pop(k, None)
+        for k in list(element.keys()):
+            v = element[k]
+            if json_compatible:
+                if SPECIAL_CHARACTERS.search(k) is not None:
+                    new_key = re.sub(SPECIAL_CHARACTERS, "_", k)
+                    print(
+                        f"Warning: key `{k}` contains special characters and is "
+                        + f"unvalid JSON. Will use {new_key} instead"
+                    )
+                    element[new_key] = element.pop(k)
+                    k = new_key
+            element[k] = clean_recursively(v, keys, json_compatible, format_dataset)
+        return element
+
+    if json_compatible:
+        # we don't have a dictionary
+        if isinstance(element, tuple):
+            element = list(element)
+        elif isinstance(element, np.ndarray):
+            element = element.tolist()
+        elif isinstance(element, pathlib.Path):
+            element = str(PurePosixPath(element))
+        elif isinstance(element, float) and (not np.isfinite(element)):
+            element = str(element)
+        elif isinstance(element, pd.Series or pd.DataFrame):
+            raise IOError("Cannot make a pandas object json compatible")
+
+    if isinstance(element, list):
+        for i, v in enumerate(element):
+            element[i] = clean_recursively(v, keys, json_compatible, format_dataset)
+
     if format_dataset:
         ds_classes = set(Dataset.SUBCLASSES.values())
         ds_classes.add(Dataset)
-    for k, v in dictionary.items():
-        if isinstance(v, dict):
-            clean_dictionary_recursively(
-                v,
-                keys=keys,
-                path2string=path2string,
-                array2list=array2list,
-                format_dataset=format_dataset,
-                tuple_as_list=tuple_as_list,
-            )
-        if path2string and isinstance(v, pathlib.Path):
-            dictionary[k] = str(PurePosixPath(v))
-        if tuple_as_list and isinstance(v, tuple):
-            dictionary[k] = list(v)
-        if array2list and isinstance(v, np.ndarray):
-            dictionary[k] = v.tolist()
+        if any([isinstance(element, cls) for cls in ds_classes]):
+            ds_dict = element.format(mode="yaml")
+            # we have now a dictionary with a flat structure. Reshape it to match
+            # what acquisition yaml are supposed to look like
+            for field in ["name", "project", "type"]:
+                ds_dict.pop(field, None)
 
-        if format_dataset:
-            if any([isinstance(v, cls) for cls in ds_classes]):
-                ds_dict = v.format(mode="yaml")
-                # we have now a dictionary with a flat structure. Reshape it to match
-                # what acquisition yaml are supposed to look like
-                for field in ["name", "project", "type"]:
-                    ds_dict.pop(field, None)
-
-                # rename extra_attributes to match acquisition yaml.
-                # Making a copy with dict is required to write yaml later on. If I keep
-                # the reference the output file has `*id001` instead of `{}`
-                ds_dict["attributes"] = dict(ds_dict.pop("extra_attributes", {}))
-                ds_dict["path"] = str(PurePosixPath(Path(ds_dict["path"])))
-                clean_dictionary_recursively(
-                    ds_dict, path2string=path2string, tuple_as_list=tuple_as_list
-                )
-                dictionary[k] = ds_dict
+            # rename extra_attributes to match acquisition yaml.
+            # Making a copy with dict is required to write yaml later on. If I keep
+            # the reference the output file has `*id001` instead of `{}`
+            ds_dict["attributes"] = dict(ds_dict.pop("extra_attributes", {}))
+            ds_dict["path"] = str(PurePosixPath(Path(ds_dict["path"])))
+            ds_dict = clean_recursively(ds_dict, keys, json_compatible, format_dataset)
+            element = ds_dict
+    return element
 
 
 def check_flexilims_paths(
