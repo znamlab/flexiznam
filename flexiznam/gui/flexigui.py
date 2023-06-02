@@ -148,24 +148,29 @@ class FlexiGui(tk.Tk):
         self.chg_dir_btn.grid(row=1, column=10)
 
     def _create_statusbar(self):
+        self.sb_msg = tk.StringVar()
         self.statusbar = tk.Label(
-            self.frames["B"], text="Ready", bd=1, relief=tk.SUNKEN
+            self.frames["B"], textvariable=self.sb_msg, bd=1, relief=tk.SUNKEN
         )
         self.statusbar.grid(row=0, column=0, sticky="sw")
+        self.sb_msg.set("Ready")
 
     ############# GUI update methods #############
     # These methods are used to actually do stuff with the GUI elements
     def report(self, message):
-        self.statusbar["text"] = message
+        self.sb_msg.set(message)
         print(message)
+        self.update()
 
     def _check_options_are_set(self, options=("project", "origin_name")):
+        self.report("Checking options")
         init_values = dict(project="SELECT", origin_name="ENTER")
         for option in options:
             value = getattr(self, option).get()
             if value.startswith(init_values[option]):
                 tk.messagebox.showerror("Error", f"Error: enter {option} first!")
                 return False
+        self.report("Options are set")
         return True
 
     def parse_folder(self):
@@ -174,6 +179,7 @@ class FlexiGui(tk.Tk):
         folder = tk.filedialog.askdirectory(
             initialdir=self.root_folder.get(), title="Select directory to parse"
         )
+        self.report(f"Parsing folder {folder}...")
         self.root_folder.set(folder)
         data = flz.camp.sync_data.create_yaml_dict(
             root_folder=folder,
@@ -181,11 +187,14 @@ class FlexiGui(tk.Tk):
             origin_name=self.origin_name.get(),
             format_yaml=True,
         )
+        self.report("Parsing done. Validating data...")
         data = flz.camp.sync_data.check_yaml_dict(data)
         self.data = data
         self.update_data()
+        self.report("Done")
 
     def chg_root_folder(self):
+        self.report("Changing root folder")
         self.root_folder.set(
             tk.filedialog.askdirectory(
                 initialdir=self.root_folder.get(), title="Select root directory"
@@ -195,17 +204,18 @@ class FlexiGui(tk.Tk):
     def on_treeview_select(self, event):
         item = self.treeview.focus()
         name, data = self._entity_by_itemid[item]
+        self.report(f"Selected item: {name}")
         self.selected_item.set(name)
         display = {k: v for k, v in data.items() if k not in self.FLEXILIMS_ONLY_FIELDS}
         self.textview.delete(1.0, tk.END)
         self.textview.insert(tk.END, yaml.dump(display))
 
     def on_textview_change(self, event):
-        print('Textview changed: "{}"'.format(event))
+        return
 
     def load_yaml(self):
         """Load a YAML file and display it in the treeview"""
-        print("Select YAML file to load")
+        self.report("Select YAML file to load")
         filetypes = (("Yaml files", "*.yml *.yaml"), ("All files", "*.*"))
 
         filename = tk.filedialog.askopenfilename(
@@ -213,10 +223,11 @@ class FlexiGui(tk.Tk):
         )
         if not filename:
             return
+        self.report(f"Loading YAML file {filename}...")
         with open(filename, "r") as f:
             self.data = yaml.safe_load(f)
-        print('Loaded YAML file "{}"'.format(filename))
         self.update_data()
+        self.report("Done")
 
     def update_data(self, name_to_select=None):
         """Update GUI data from self.data
@@ -224,6 +235,7 @@ class FlexiGui(tk.Tk):
         Args:
             name_to_select (str, optional): Name of item to select in treeview.
                 Defaults to None."""
+        self.report("Updating GUI")
         self.textview.delete("1.0", tk.END)
         self.selected_item.set("None")
         self.treeview.delete(*self.treeview.get_children())
@@ -259,6 +271,7 @@ class FlexiGui(tk.Tk):
                 ]
             ):
                 self.contains_errors = True
+                self.report(f"ERROR: {child} contains errors")
                 self.treeview.item(item, tags=("error",))
 
             self._entity_by_itemid[item] = (child, child_data)
@@ -273,17 +286,21 @@ class FlexiGui(tk.Tk):
 
     def write_yaml(self):
         """Write the current data to a YAML file"""
+        self.report("Select YAML file to write")
         target = tk.filedialog.asksaveasfilename(
             initialdir=self.root_folder.get(),
             title="Select YAML file to write",
             filetypes=(("Yaml files", "*.yml *.yaml"), ("All files", "*.*")),
         )
+        if not target:
+            self.report("No file selected. Cancel")
+            return
         data = dict(self.data)
         data["project"] = self.project.get()
         data["root_folder"] = self.root_folder.get()
         with open(target, "w") as f:
             yaml.dump(data, f)
-        print('Wrote YAML file "{}"'.format(target))
+        self.report('Wrote YAML file "{}"'.format(target))
 
     def upload(self):
         """Upload data to flexilims"""
@@ -295,6 +312,7 @@ class FlexiGui(tk.Tk):
             tk.messagebox.showerror("Error", "No data loaded")
             return
 
+        self.report("Validating data...")
         self.data = flz.camp.sync_data.check_yaml_validity(self.data)
 
         if self.contains_errors:
@@ -307,7 +325,7 @@ class FlexiGui(tk.Tk):
         data = dict(self.data)
         data["project"] = self.project.get()
         data["root_folder"] = self.root_folder.get()
-
+        self.report("Validating data...")
         flz.camp.sync_data.upload_yaml(
             source_yaml=data,
             raw_data_folder=data["root_folder"],
@@ -316,15 +334,17 @@ class FlexiGui(tk.Tk):
             flexilims_session=None,
             conflicts=self.conflicts.get(),
         )
-        print("Done")
+        self.report("Done")
 
     def update_item(self):
         """Update the selected item with the textview contents"""
+
         text = self.textview.get(1.0, tk.END)
         if not text.strip():
             return
         item = self.treeview.focus()
         name, original_data = self._entity_by_itemid[item]
+        self.report(f"Updating item {name}")
         assert name == self.selected_item.get(), "Selected item does not match"
         data = yaml.safe_load(text)
         for field in self.FLEXILIMS_ONLY_FIELDS:
@@ -344,6 +364,7 @@ class FlexiGui(tk.Tk):
             ref = ref["children"][parent]
         ref["children"][name] = data
         self.update_data(name_to_select=name)
+        self.report("Done")
 
 
 if __name__ == "__main__":
