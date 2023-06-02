@@ -26,7 +26,7 @@ class FlexiGui(tk.Tk):
         self._create_frames()
         self._setup_widgets()
         self._entity_by_itemid = {}
-
+        self.contains_errors = False
         self.data = {}
 
     def _setup_widgets(self):
@@ -112,6 +112,7 @@ class FlexiGui(tk.Tk):
             origin_name=self.origin_name.get(),
             format_yaml=True,
         )
+        data = flz.camp.sync_data.check_yaml_dict(data)
         self.data = data
         self.update_data()
 
@@ -211,6 +212,8 @@ class FlexiGui(tk.Tk):
             self.origin_name.set(self.data["origin_name"])
         if "root_folder" in self.data:
             self.root_folder.set(self.data["root_folder"])
+
+        self.contains_errors = False
         self._insert_yaml_data(self.data["children"], name_to_select=name_to_select)
 
     def _insert_yaml_data(self, data, parent="", name_to_select=None):
@@ -233,6 +236,7 @@ class FlexiGui(tk.Tk):
                     if isinstance(v, str)
                 ]
             ):
+                self.contains_errors = True
                 self.treeview.item(item, tags=("error",))
 
             self._entity_by_itemid[item] = (child, child_data)
@@ -265,15 +269,23 @@ class FlexiGui(tk.Tk):
         if not self._check_options_are_set():
             return
 
-        data = dict(self.data)
-        if not data:
+        if not self.data:
             tk.messagebox.showerror("Error", "No data loaded")
             return
+
+        self.data = flz.camp.sync_data.check_yaml_validity(self.data)
+
+        if self.contains_errors:
+            tk.messagebox.showerror(
+                "Error",
+                "There are still errors. Please fix them before uploading",
+            )
+            return
+
+        data = dict(self.data)
         data["project"] = self.project.get()
         data["root_folder"] = self.root_folder.get()
-        if data["project"].startswith("XXERRORXX"):
-            print("Project name not set")
-            return
+
         flz.camp.sync_data.upload_yaml(
             source_yaml=data,
             raw_data_folder=data["root_folder"],
