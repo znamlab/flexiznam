@@ -29,37 +29,47 @@ class FlexiGui(tk.Tk):
         self.contains_errors = False
         self.data = {}
 
+    ############# GUI setup methods #############
+    # These methods are used to create the GUI elements
+
     def _setup_widgets(self):
         self._create_frames()
         self._create_buttons()
         self._create_treeview()
         self._create_textview()
+        self._create_statusbar()
 
     def _create_frames(self):
-        self.frames["t"] = tk.Frame(self)
-        self.frames["t"].grid(
+        self.frames["T"] = tk.Frame(self)
+        self.frames["T"].grid(
             row=0, column=0, padx=10, pady=5, columnspan=2, sticky="nwe"
         )
-        self.frames["t"].rowconfigure(0, weight=1)
-        self.frames["t"].rowconfigure(1, weight=1)
+        self.frames["T"].rowconfigure(0, weight=1)
+        self.frames["T"].rowconfigure(1, weight=1)
         for i in range(10):
-            self.frames["t"].columnconfigure(i, weight=1)
-        self.frames["t"].columnconfigure(3, weight=10)
-        self.frames["bl"] = tk.Frame(self)
-        self.frames["bl"].grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
-        self.frames["bl"].rowconfigure(0, weight=1)
-        self.frames["bl"].columnconfigure(0, weight=1)
-        self.frames["br"] = tk.Frame(self)
-        self.frames["br"].grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
-        self.frames["br"].rowconfigure(0, weight=1)
-        self.frames["br"].rowconfigure(1, weight=30)
-        self.frames["br"].rowconfigure(2, weight=1)
-        self.frames["br"].columnconfigure(0, weight=1)
+            self.frames["T"].columnconfigure(i, weight=1)
+        self.frames["T"].columnconfigure(3, weight=10)
+        self.frames["L"] = tk.Frame(self)
+        self.frames["L"].grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+        self.frames["L"].rowconfigure(0, weight=1)
+        self.frames["L"].columnconfigure(0, weight=1)
+        self.frames["R"] = tk.Frame(self)
+        self.frames["R"].grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
+        self.frames["R"].rowconfigure(0, weight=1)
+        self.frames["R"].rowconfigure(1, weight=30)
+        self.frames["R"].rowconfigure(2, weight=1)
+        self.frames["R"].columnconfigure(0, weight=1)
+        self.frames["B"] = tk.Frame(self)
+        self.frames["B"].grid(
+            row=2, column=0, columnspan=2, padx=10, pady=5, sticky="sew"
+        )
+        self.frames["B"].rowconfigure(0, weight=1)
+        self.frames["B"].columnconfigure(0, weight=10)
 
     def _create_treeview(self):
         # Create the Treeview
         self.treeview = CheckboxTreeview(
-            self.frames["bl"],
+            self.frames["L"],
             columns=("datatype",),
             selectmode="browse",
         )
@@ -73,51 +83,25 @@ class FlexiGui(tk.Tk):
 
     def _create_textview(self):
         # Create the Text widget
-        tk.Label(self.frames["br"], text="Selected item:").grid(
+        tk.Label(self.frames["R"], text="Selected item:").grid(
             row=0,
             column=0,
             sticky="nw",
         )
         self.selected_item = tk.StringVar()
         self.selected_item.set("None")
-        l = tk.Label(self.frames["br"], textvariable=self.selected_item)
+        l = tk.Label(self.frames["R"], textvariable=self.selected_item)
         l.grid(row=0, column=1, sticky="new")
-        self.textview = tk.Text(self.frames["br"], width=40, height=10, wrap="none")
+        self.textview = tk.Text(self.frames["R"], width=40, height=10, wrap="none")
         self.textview.grid(row=1, column=0, sticky="nsew", columnspan=2)
         self.textview.bind("<<Modified>>", self.on_textview_change)
         self.update_item_btn = tk.Button(
-            self.frames["br"], text="Update item", command=self.update_item
+            self.frames["R"], text="Update item", command=self.update_item
         )
         self.update_item_btn.grid(row=2, column=1, sticky="nsw")
 
-    def _check_options_are_set(self, options=("project", "origin_name")):
-        init_values = dict(project="SELECT", origin_name="ENTER")
-        for option in options:
-            value = getattr(self, option).get()
-            if value.startswith(init_values[option]):
-                tk.messagebox.showerror("Error", f"Error: enter {option} first!")
-                return False
-        return True
-
-    def parse_folder(self):
-        if not self._check_options_are_set():
-            return
-        folder = tk.filedialog.askdirectory(
-            initialdir=self.root_folder.get(), title="Select directory to parse"
-        )
-        self.root_folder.set(folder)
-        data = flz.camp.sync_data.create_yaml_dict(
-            root_folder=folder,
-            project=self.project.get(),
-            origin_name=self.origin_name.get(),
-            format_yaml=True,
-        )
-        data = flz.camp.sync_data.check_yaml_dict(data)
-        self.data = data
-        self.update_data()
-
     def _create_buttons(self):
-        topf = self.frames["t"]
+        topf = self.frames["T"]
         self.parse_btn = tk.Button(topf, text="Parse", command=self.parse_folder)
         self.parse_btn.grid(row=0, column=0, sticky="w")
         self.load_btn = tk.Button(topf, text="Load", command=self.load_yaml)
@@ -162,6 +146,44 @@ class FlexiGui(tk.Tk):
         self.root_folder_entry.grid(row=1, column=4, columnspan=6, sticky="nsew")
         self.chg_dir_btn = tk.Button(topf, text="...", command=self.chg_root_folder)
         self.chg_dir_btn.grid(row=1, column=10)
+
+    def _create_statusbar(self):
+        self.statusbar = tk.Label(
+            self.frames["B"], text="Ready", bd=1, relief=tk.SUNKEN
+        )
+        self.statusbar.grid(row=0, column=0, sticky="sw")
+
+    ############# GUI update methods #############
+    # These methods are used to actually do stuff with the GUI elements
+    def report(self, message):
+        self.statusbar["text"] = message
+        print(message)
+
+    def _check_options_are_set(self, options=("project", "origin_name")):
+        init_values = dict(project="SELECT", origin_name="ENTER")
+        for option in options:
+            value = getattr(self, option).get()
+            if value.startswith(init_values[option]):
+                tk.messagebox.showerror("Error", f"Error: enter {option} first!")
+                return False
+        return True
+
+    def parse_folder(self):
+        if not self._check_options_are_set():
+            return
+        folder = tk.filedialog.askdirectory(
+            initialdir=self.root_folder.get(), title="Select directory to parse"
+        )
+        self.root_folder.set(folder)
+        data = flz.camp.sync_data.create_yaml_dict(
+            root_folder=folder,
+            project=self.project.get(),
+            origin_name=self.origin_name.get(),
+            format_yaml=True,
+        )
+        data = flz.camp.sync_data.check_yaml_dict(data)
+        self.data = data
+        self.update_data()
 
     def chg_root_folder(self):
         self.root_folder.set(
