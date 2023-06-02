@@ -34,7 +34,11 @@ DEFAULT_CONFIG = dict(
         "suite2p_traces",
         "harp",
         "microscopy",
+        "sequencing",
+        "onix",
     ],
     # list of extensions accepted as `MicroscopyData`
     microscopy_extensions=[".czi", ".png", ".gif", ".tif", ".tiff"],
+    # list of extensions accepted as `SequencingData`
+    sequencing_extensions=[".fastq.gz", ".fastq", ".fq.gz", ".fq", ".bam", ".sam"],
 )

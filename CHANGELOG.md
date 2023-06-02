@@ -1,5 +1,11 @@
 # Change log
 
+## v0.3.6
+
+### Main changes
+
+- New `SequencingData` class to handle sequencing data
+
 ## v0.3.5
 
 ### Main changes
