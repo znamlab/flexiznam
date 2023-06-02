@@ -441,7 +441,6 @@ class Dataset(object):
             dataset_type=self.dataset_type,
             created=self.created,
             path=str(PurePosixPath(self.path)),
-            genealogy=self.genealogy,
             is_raw="yes" if self.is_raw else "no",
             project_id=self.project_id,
             dataset_name=self.full_name,
