@@ -4,7 +4,6 @@ import pathlib
 import re
 import warnings
 
-import pandas as pd
 from tifffile import TiffFile, TiffFileError
 from flexiznam.schema.datasets import Dataset
 import math

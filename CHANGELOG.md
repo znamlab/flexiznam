@@ -1,6 +1,12 @@
 # Change log
 
-## v0.4.0
+## v0.4
+
+### Main changes
+
+- New `SequencingData` class to handle sequencing data
+
+## v0.3.5
 
 ### Main changes
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if 
