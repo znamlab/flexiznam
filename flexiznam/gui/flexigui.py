@@ -188,7 +188,7 @@ class FlexiGui(tk.Tk):
             format_yaml=True,
         )
         self.report("Parsing done. Validating data...")
-        data = flz.camp.sync_data.check_yaml_dict(data)
+        data = flz.camp.sync_data.check_yaml_validity(data)
         self.data = data
         self.update_data()
         self.report("Done")
