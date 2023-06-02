@@ -56,7 +56,12 @@ def create_yaml_dict(
         format_yaml=format_yaml,
         parent_dict=dict(),
     )
-    out = dict(root_folder=root_folder.parent, origin_name=origin_name, children=data)
+    out = dict(
+        root_folder=root_folder.parent,
+        origin_name=origin_name,
+        children=data,
+        project=project,
+    )
     return out
 
 
