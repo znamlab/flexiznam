@@ -5,6 +5,7 @@ from pathlib import Path, PurePosixPath
 import re
 import copy
 import warnings
+import pandas as pd
 import yaml
 from yaml.parser import ParserError
 
@@ -58,6 +59,46 @@ def create_yaml_dict(
     out = dict(root_folder=root_folder.parent, origin_name=origin_name, children=data)
     return out
 
+
+def check_yaml_validity(yaml_data, root_folder=None, origin_name=None, project=None):
+    if isinstance(yaml_data, str) or isinstance(yaml_data, Path):
+        with open(yaml_data, "r") as f:
+            yaml_data = yaml.safe_load(f)
+    if root_folder is not None:
+        assert yaml_data["root_folder"] == str(
+            root_folder
+        ), f"root_folder is {yaml_data['root_folder']}. Expected {root_folder}"
+    else:
+        root_folder = yaml_data["root_folder"]
+
+    if project is not None:
+        assert (
+            yaml_data["project"] == project
+        ), f"project is {yaml_data['project']}. Expected {project}"
+    else:
+        project = yaml_data["project"]
+
+    if origin_name is not None:
+        assert (
+            yaml_data["origin_name"] == origin_name
+        ), f"origin_name is {yaml_data['origin_name']}. Expected {origin_name}"
+    else:
+        origin_name = yaml_data["origin_name"]
+
+    flm_sess = flz.get_flexilims_session(project_id=project)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        origin = flz.get_entity(name=origin_name, flexilims_session=flm_sess)
+    assert hasattr(origin, "genealogy"), f"Origin {origin_name} has no genealogy"
+
+    _check_recursively(
+        yaml_data["children"],
+        origin_genealogy=origin["genealogy"],
+        root_folder=root_folder,
+        project=project,
+        genealogy=[],
+    )
+    return yaml_data
 
 
 def upload_yaml(
@@ -272,13 +313,48 @@ def _upload_yaml_dict(
         )
 
 
-def check_yaml_validity(yaml, root_folder, origin_name):
-    if isinstance(yaml, str):
-        with open(yaml, "r") as f:
-            yaml = yaml.safe_load(f)
-    assert yaml["root_folder"] == root_folder, f"root_folder should be {root_folder}"
-    _check_recursively(yaml["children"], root_folder, origin_name)
+def _check_recursively(
+    yaml_data, origin_genealogy, root_folder, project, genealogy, fixerrors=False
+):
+    root_folder = Path(root_folder)
+
+    for child, child_dict in yaml_data.items():
+        fname = root_folder / Path(*genealogy) / child
+        child_genealogy = genealogy + [child]
+
+        if child_dict["type"] != "dataset":
+            if not fname.is_dir():
+                child_dict["PATH_ERROR"] = f"XXERRORXX folder {fname} does not exist"
+        else:
+            data_series = pd.Series(child_dict)
+            for k, v in data_series.pop("extra_attributes").items():
+                data_series[k] = v
+            data_series.id = None
+            data_series.name = "_".join(origin_genealogy + child_genealogy)
+            ds = flz.Dataset.from_flexilims(data_series=data_series)
+            msg = ds.is_valid(return_reason=True)
+            if msg:
+                child_dict["VALIDATION_ERROR"] = f"XXERRORXX {msg}"
+
+        if child_dict["genealogy"] != origin_genealogy + child_genealogy:
+            if fixerrors:
+                print(f"Fixing genealogy for {child}")
+                child_dict["genealogy"] = origin_genealogy + child_genealogy
+            else:
+                child_dict["GENEALOGY_ERROR"] = f"XXERRORXX genealogy is not correct"
+        if "children" in child_dict:
+            _check_recursively(
+                child_dict["children"],
+                origin_genealogy,
+                root_folder,
+                project,
+                genealogy=genealogy + [child],
+            )
 
 
-def _check_recursively(yaml, root_folder):
-    raise NotImplementedError
+if __name__ == "__main__":
+    rel = "blota_onix_pilote/BRAC7448.2d/"
+    root_folder = Path(flz.PARAMETERS["data_root"]["raw"]) / rel
+    yaml_file = Path(flz.PARAMETERS["data_root"]["processed"]) / rel / "S20230421.yml"
+    origin_name = "BRAC7448.2d"
+    check_yaml_validity(yaml_file, root_folder, origin_name)
