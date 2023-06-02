@@ -126,8 +126,14 @@ class SequencingData(Dataset):
             project_id=project_id,
         )
 
-    def is_valid(self):
-        """Check that the file exist"""
+    def is_valid(self, return_reason=False):
+        """Check that file exist
+
+        Args:
+            return_reason (bool): if True, return a string with the reason why the
+                                  dataset is not valid
+        Returns:"""
         if not self.path_full.exists():
-            return False
-        return True
+            msg = f"{self.path_full} does not exist"
+            return msg if return_reason else False
+        return "" if return_reason else True
