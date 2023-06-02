@@ -702,7 +702,7 @@ def update_entity(
 
 
 def get_entities(
-    datatype="mouse",
+    datatype,
     query_key=None,
     query_value=None,
     project_id=None,
