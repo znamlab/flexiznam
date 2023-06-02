@@ -45,6 +45,8 @@ def create_yaml_dict(
     assert origin is not None, f"Origin {origin_name} not found in project {project}"
     assert "genealogy" in origin, f"Origin {origin_name} has no genealogy"
     genealogy = origin["genealogy"]
+    root_folder = Path(root_folder)
+    assert root_folder.is_dir(), f"Folder {root_folder} does not exist"
 
     data = _create_yaml_dict(
         level_folder=root_folder,
@@ -53,8 +55,67 @@ def create_yaml_dict(
         format_yaml=format_yaml,
         parent_dict=dict(),
     )
-    out = dict(root_folder=root_folder, origin_name=origin_name, children=data)
+    out = dict(root_folder=root_folder.parent, origin_name=origin_name, children=data)
     return out
+
+
+
+def upload_yaml(
+    source_yaml,
+    raw_data_folder=None,
+    verbose=False,
+    log_func=print,
+    flexilims_session=None,
+    conflicts="abort",
+):
+    """Upload data from one yaml to flexilims
+
+    Args:
+        source_yaml (dict or str): path to clean yaml or yaml dict
+        raw_data_folder (str): path to the folder containing the data. Default to
+            data_root['raw']
+        verbose (bool): print progress information
+        log_func: function to deal with warnings and messages
+        flexilims_session (Flexilims): session to avoid recreating a token
+        conflicts (str): `abort` to crash if there is already a session or recording
+                         existing on flexilims, `skip` to ignore and proceed. Samples
+                         are always updated with `skip` and datasets always have
+                         mode=`safe`
+
+    Returns:
+        list of names of entities created/updated
+
+    """
+    if isinstance(source_yaml, str):
+        source_yaml = Path(source_yaml)
+        with open(source_yaml, "r") as f:
+            yaml_data = yaml.safe_load(f)
+    else:
+        assert isinstance(source_yaml, dict), "source_yaml must be a dict or a path"
+        yaml_data = source_yaml
+
+    # first find the origin
+
+    if flexilims_session is None:
+        flexilims_session = flz.get_flexilims_session(project_id=yaml_data["project"])
+
+    origin_name = yaml_data["origin_name"]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        origin = flz.get_entity(name=origin_name, flexilims_session=flexilims_session)
+    assert origin is not None, f"`{origin_name}` not found on flexilims"
+    if verbose:
+        print(f"Found origin `{origin_name}` with id `{origin.id}`")
+    # then upload the data recursively
+    _upload_yaml_dict(
+        yaml_data["children"],
+        origin=origin,
+        raw_data_folder=raw_data_folder,
+        log_func=log_func,
+        flexilims_session=flexilims_session,
+        conflicts=conflicts,
+        verbose=verbose,
+    )
 
 
 def _create_yaml_dict(
@@ -133,64 +194,6 @@ def _create_yaml_dict(
     level_dict["children"] = children
     parent_dict[level_folder.stem] = level_dict
     return parent_dict
-
-
-def upload_yaml(
-    source_yaml,
-    raw_data_folder=None,
-    verbose=False,
-    log_func=print,
-    flexilims_session=None,
-    conflicts="abort",
-):
-    """Upload data from one yaml to flexilims
-
-    Args:
-        source_yaml (dict or str): path to clean yaml or yaml dict
-        raw_data_folder (str): path to the folder containing the data. Default to
-            data_root['raw']
-        verbose (bool): print progress information
-        log_func: function to deal with warnings and messages
-        flexilims_session (Flexilims): session to avoid recreating a token
-        conflicts (str): `abort` to crash if there is already a session or recording
-                         existing on flexilims, `skip` to ignore and proceed. Samples
-                         are always updated with `skip` and datasets always have
-                         mode=`safe`
-
-    Returns:
-        list of names of entities created/updated
-
-    """
-    if isinstance(source_yaml, str):
-        source_yaml = Path(source_yaml)
-        with open(source_yaml, "r") as f:
-            yaml_data = yaml.safe_load(f)
-    else:
-        assert isinstance(source_yaml, dict), "source_yaml must be a dict or a path"
-        yaml_data = source_yaml
-
-    # first find the origin
-
-    if flexilims_session is None:
-        flexilims_session = flz.get_flexilims_session(project_id=yaml_data["project"])
-
-    origin_name = yaml_data["origin_name"]
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        origin = flz.get_entity(name=origin_name, flexilims_session=flexilims_session)
-    assert origin is not None, f"`{origin_name}` not found on flexilims"
-    if verbose:
-        print(f"Found origin `{origin_name}` with id `{origin.id}`")
-    # then upload the data recursively
-    _upload_yaml_dict(
-        yaml_data["children"],
-        origin=origin,
-        raw_data_folder=raw_data_folder,
-        log_func=log_func,
-        flexilims_session=flexilims_session,
-        conflicts=conflicts,
-        verbose=verbose,
-    )
 
 
 def _upload_yaml_dict(
