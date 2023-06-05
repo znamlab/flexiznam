@@ -4,6 +4,7 @@ import warnings
 import pandas as pd
 import flexilims as flm
 from pathlib import Path
+from flexilims.utils import SPECIAL_CHARACTERS
 import flexiznam
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password, add_password
@@ -150,6 +151,9 @@ def add_mouse(
         alleles = mcms_info.pop("alleles")
         for gene in alleles:
             gene_name = gene["allele"]["shortAlleleSymbol"].replace(" ", "_")
+            gene_name = re.sub(
+                SPECIAL_CHARACTERS, "_", gene["allele"]["shortAlleleSymbol"]
+            )
             mcms_info[gene_name] = gene["genotype"]["name"]
         colony = mcms_info.pop("colony")
         mcms_info["colony_prefix"] = colony["colonyPrefix"]
@@ -702,7 +706,7 @@ def update_entity(
 
 
 def get_entities(
-    datatype="mouse",
+    datatype,
     query_key=None,
     query_value=None,
     project_id=None,

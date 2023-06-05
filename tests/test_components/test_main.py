@@ -131,7 +131,7 @@ def test_get_datasets(flm_sess):
 
 
 def test_add_mouse(flm_sess):
-    mouse_name = "PZAA15.1a"
+    mouse_name = "FIAA32.6a"
     rep = flm_sess.get(datatype="mouse", name=mouse_name)
     if rep:
         flm_sess.delete(rep[0]["id"])
