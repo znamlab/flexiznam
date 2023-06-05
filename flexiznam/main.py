@@ -159,6 +159,11 @@ def add_mouse(
         mcms_info["colony_prefix"] = colony["colonyPrefix"]
         if not mcms_info:
             raise IOError(f"Could not get info for mouse {mouse_name} from MCMS")
+        # format birthdate
+        for date in ["birth_date", "death_date"]:
+            d = mcms_info[date]
+            d = datetime.datetime.strptime(d.split("+")[0], r"%Y-%m-%dT%H:%M:%S.%f")
+            mcms_info[date] = d.strftime("%Y-%m-%d")
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
         mouse_info = dict(mcms_info, **mouse_info)
 

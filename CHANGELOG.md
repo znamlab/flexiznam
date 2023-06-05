@@ -6,6 +6,9 @@
 
 - New `SequencingData` class to handle sequencing data
 
+### Minor
+- `add_mouse` uploads birth and death dates in a human readable format instead.
+
 ## v0.3.5
 
 ### Main changes
