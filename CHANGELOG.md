@@ -24,6 +24,8 @@
 - Fix [#88](https://github.com/znamlab/flexiznam/issues/88). Now make attributes JSON
   compatible before uploading to flexilims. This will replace special characters in
   attribute names by `_` in the database.
+- Fix [[#102](https://github.com/znamlab/flexiznam/issues/102). `add_mouse` now works
+  with mice that have special character in their allele.
 
 ## v0.3.4
 
