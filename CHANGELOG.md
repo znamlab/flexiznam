@@ -10,6 +10,11 @@
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.
 
+### Bugfixes
+
+- `update_config` actually adds the new fields (i.e. fields that are in the default
+config but not the local config) to the config file
+
 ## v0.3.5
 
 ### Main changes
