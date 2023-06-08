@@ -5,6 +5,7 @@
 ### Main changes
 
 - New `SequencingData` class to handle sequencing data
+- Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
 
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.
