@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="flexiznam",
-    version="v0.3.6",
+    version="v0.3.7",
     url="https://github.com/znamlab/flexznam",
     license="MIT",
     author="Antonin Blot",

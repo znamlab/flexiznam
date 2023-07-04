@@ -1,5 +1,12 @@
 # Change log
 
+## v0.3.7
+
+### Main changes
+
+### Minor
+
+### Bugfixes
 ## v0.3.6
 
 ### Main changes
