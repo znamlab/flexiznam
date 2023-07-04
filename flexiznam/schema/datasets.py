@@ -186,16 +186,6 @@ class Dataset(object):
             short_name = dataset_name[len(origin["name"]) + 1 :]
             genealogy = tuple(origin.genealogy) + (short_name,)
             dataset_path = str(Path(origin["path"]) / short_name)
-            ds = Dataset(
-                path=dataset_path,
-                is_raw="no",
-                dataset_type=dataset_type,
-                genealogy=genealogy,
-                created=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                project=project,
-                origin_id=origin["id"],
-                flexilims_session=flexilims_session,
-            )
             return Dataset(
                 path=dataset_path,
                 is_raw="no",
