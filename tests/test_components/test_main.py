@@ -131,7 +131,7 @@ def test_get_datasets(flm_sess):
 
 
 def test_add_mouse(flm_sess):
-    mouse_name = "FIAA32.6a"
+    mouse_name = "BRAC7449.2a"
     rep = flm_sess.get(datatype="mouse", name=mouse_name)
     if rep:
         flm_sess.delete(rep[0]["id"])
@@ -178,6 +178,8 @@ def test_get_children(flm_sess):
     while len(res):
         res = flz.get_children(parent_id=res.iloc[0].id, flexilims_session=flm_sess)
     assert isinstance(res, pd.DataFrame)
+    res = flz.get_children(parent_name="mouse_physio_2p", flexilims_session=flm_sess)
+    assert len(res) == 1
 
 
 def test_add_entity(flm_sess):

@@ -2,6 +2,7 @@ import os.path
 from pathlib import Path
 import sys
 import yaml
+import warnings
 from copy import deepcopy
 import flexiznam
 from flexiznam.errors import ConfigurationError
@@ -141,6 +142,11 @@ def update_config(
         if "project_ids" in kwargs:
             project_ids.update(kwargs["project_ids"])
         kwargs["project_ids"] = project_ids
+        all_ids = {}
+        for (pname, pid) in kwargs["project_ids"].items():
+            if pid in all_ids:
+                warnings.warn(f"PIDs {pname} and {all_ids[pid]} have the same ID")
+            all_ids[pid] = pname
 
     # run create_config with template=None to append new keys
     create_config(

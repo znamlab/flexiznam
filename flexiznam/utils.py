@@ -3,6 +3,7 @@ from pathlib import Path, PurePosixPath
 import re
 import numpy as np
 import pandas as pd
+import warnings
 
 SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
@@ -147,7 +148,18 @@ def clean_recursively(
 
     if json_compatible:
         # we don't have a dictionary
-        if isinstance(element, tuple):
+        ds_classes = set(Dataset.SUBCLASSES.values())
+        ds_classes.add(Dataset)
+        if (
+            (element is None)
+            or isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, bool)
+            or isinstance(element, list)
+            or any([isinstance(element, cls) for cls in ds_classes])
+        ):
+            pass
+        elif isinstance(element, tuple):
             element = list(element)
         elif isinstance(element, np.ndarray):
             element = element.tolist()
@@ -157,6 +169,11 @@ def clean_recursively(
             element = str(element)
         elif isinstance(element, pd.Series or pd.DataFrame):
             raise IOError("Cannot make a pandas object json compatible")
+        else:
+            warnings.warn(
+                f"{element} has unknown type ({type(element)}). Will save as string"
+            )
+            element = str(element)
 
     if isinstance(element, list):
         for i, v in enumerate(element):

@@ -48,6 +48,7 @@ def create_yaml(
     _find_yaml_struct(root_folder, yaml_dict)
 
     if outfile is not None:
+        outfile = Path(outfile)
         if outfile.is_file() and not overwrite:
             raise IOError(
                 "File %s already exists. Use `overwrite` to replace." % outfile
@@ -93,7 +94,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
 
     Args:
         path_to_yaml (str or dict): path to the file to parse or dict of yaml contect
-        raw_data_folder (str): root folder. Typically project folder or folder 
+        raw_data_folder (str): root folder. Typically project folder or folder
             containing the mice subfolders
         verbose (bool): print info while looking for datasets
 
