@@ -6,9 +6,12 @@
 
 - New `SequencingData` class to handle sequencing data
 - Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
+- `get_children` can work with name or id (instead of id only)
 
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.
+- `get_entities` does not raise warnings anymore if `name` is specified and `datatype` 
+is not. This is now supported upstream by `flexilims`
 
 ### Bugfixes
 

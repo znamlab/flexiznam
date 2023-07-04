@@ -178,6 +178,8 @@ def test_get_children(flm_sess):
     while len(res):
         res = flz.get_children(parent_id=res.iloc[0].id, flexilims_session=flm_sess)
     assert isinstance(res, pd.DataFrame)
+    res = flz.get_children(parent_name="mouse_physio_2p", flexilims_session=flm_sess)
+    assert len(res) == 1
 
 
 def test_add_entity(flm_sess):

@@ -941,13 +941,18 @@ def get_experimental_sessions(project_id=None, flexilims_session=None, mouse=Non
 
 
 def get_children(
-    parent_id, children_datatype=None, project_id=None, flexilims_session=None
+    parent_id=None,
+    parent_name=None,
+    children_datatype=None,
+    project_id=None,
+    flexilims_session=None,
 ):
     """
     Get all entries belonging to a particular parent entity
 
     Args:
         parent_id (str): hexadecimal id of the parent entity
+        parent_name (str): name of the parent entity.
         children_datatype (str or None): type of child entities to fetch (return all
                                          types if None)
         project_id (str): text name of the project
@@ -960,6 +965,9 @@ def get_children(
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
+    if parent_id is None:
+        assert parent_name is not None, "Must provide either parent_id or parent_name"
+        parent_id = get_id(parent_name, flexilims_session=flexilims_session)
     results = format_results(flexilims_session.get_children(parent_id))
     if not len(results):
         return results
