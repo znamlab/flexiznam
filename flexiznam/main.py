@@ -160,10 +160,15 @@ def add_mouse(
         if not mcms_info:
             raise IOError(f"Could not get info for mouse {mouse_name} from MCMS")
         # format birthdate
-        for date in ["birth_date", "death_date"]:
-            d = mcms_info[date]
-            d = datetime.datetime.strptime(d.split("+")[0], r"%Y-%m-%dT%H:%M:%S.%f")
-            mcms_info[date] = d.strftime("%Y-%m-%d")
+        for date_type in ["birth_date", "death_date"]:
+            d = mcms_info[date_type]
+            d = datetime.datetime.fromisoformat(d)
+            # birthdate is at midnight or 23 depending on the time zone
+            if d.hour <= 12:
+                date = d.strftime("%Y-%m-%d")
+            else:
+                date = (d + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            mcms_info[date_type] = date
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
         mouse_info = dict(mcms_info, **mouse_info)
 
