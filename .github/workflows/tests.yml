@@ -28,17 +28,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      env:
-        FLEXILIM_PASS: ${{ secrets.FLEXILIMS_PSWD }}
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        if [ -f setup.py ]; then pip install .; fi
-        flexiznam config
-        echo created
-        flexiznam add-password -a flexilims -u blota -p "$FLEXILIM_PASS"
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
