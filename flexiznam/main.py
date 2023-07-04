@@ -816,11 +816,7 @@ def get_entity(
 
     """
 
-    if datatype is None:
-        if id is None:
-            warnings.warn(
-                "No datatype specified, trying everything. Will be slow", UserWarning
-            )
+    if (datatype is None) and (name is None):
         # datatype is not specify, try everything
         args = [
             datatype,
