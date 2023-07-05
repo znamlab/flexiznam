@@ -59,19 +59,24 @@ class Dataset(object):
         data_series=None,
         flexilims_session=None,
     ):
-        """Loads a dataset from flexilims.
+        """Loads a dataset from flexilims or flexilims data series.
 
         If the dataset_type attribute of the flexilims entry defined in
         Dataset.SUBCLASSES,this subclass will be used. Otherwise a generic Dataset is
         returned
 
         Args:
-            project: Name of the project or hexadecimal project_id
-            name: Unique name of the dataset on flexilims
-            id: Hexadecimal id of the dataset on flexilims
-            data_series: default to None. pd.Series as returned by flz.get_entities.
-                If provided, supersedes project, name and id.
-            flexilims_session: authentication session to access flexilims
+            project (str, optional): Name of the project or hexadecimal project_id. If 
+                not provided, can be read from flexilims_session
+            name (str, optional): Unique name of the dataset on flexilims. Ignored if
+                `data_series` is provided
+            id (str, optional): Hexadecimal id of the dataset on flexilims. Ignored if
+                `data_series` is provided
+            data_series (pandas.Series, optional): default to None. Dataset info as 
+                returned by flz.get_entities. If provided, supersedes project, name and 
+                id.
+            flexilims_session (flexilims.Session, optional): authentication session to 
+                access flexilims.
         """
         if data_series is not None:
             if (project is not None) or (name is not None):
