@@ -465,8 +465,8 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
             output.append([element.name, element.type, "Folder found", " ".join(ok), 0])
     else:
         try:
-            ds = Dataset.from_flexilims(
-                flexilims_session=flexilims_session, data_series=element
+            ds = Dataset.from_dataseries(
+                flexilims_session=flexilims_session, dataseries=element
             )
             if not ds.path_full.exists():
                 output.append(

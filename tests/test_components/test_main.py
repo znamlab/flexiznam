@@ -251,7 +251,7 @@ def test_update_entity(flm_sess):
     assert dbval["attributes"]["acq_num"] is None
 
     # restore database state
-    ds = Dataset.from_flexilims(data_series=original_entity, flexilims_session=flm_sess)
+    ds = Dataset.from_dataseries(dataseries=original_entity, flexilims_session=flm_sess)
     ds.update_flexilims(mode="overwrite")
     new_entity = flz.get_entity(
         datatype="dataset", name=dataset_name, flexilims_session=flm_sess

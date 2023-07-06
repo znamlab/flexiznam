@@ -1,10 +1,10 @@
 import pytest
 import pathlib
 import pandas as pd
-from flexiznam.schema import Dataset
+from flexiznam.schema import Dataset, microscopy_data
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError
-from tests.tests_resources.data_for_testing import TEST_PROJECT
+from tests.tests_resources.data_for_testing import TEST_PROJECT, PROJECT_ID
 from tests.test_components.test_main import MOUSE_ID
 
 # Test the generic dataset class.
@@ -195,6 +195,51 @@ def test_from_flexilims(flm_sess):
     ds_by_id = Dataset.from_flexilims(flexilims_session=flm_sess, id=ds.id)
     assert ds_by_id.full_name == ds.full_name
     assert ds_by_id.project == project
+
+
+def test_from_dataseries(flm_sess):
+    """This test requires the config file to include demo_project"""
+    series = pd.Series(
+        name="minimal_series",
+        data=dict(
+            genealogy=("minimal_series",),
+            path="/fake/path",
+            id="hexidonflexilims",
+            project=PROJECT_ID,
+            is_raw="no",
+            dataset_type="suite2p_rois",
+        ),
+    )
+    ds = Dataset.from_dataseries(
+        dataseries=series,
+        flexilims_session=flm_sess,
+    )
+    assert ds.flexilims_session == flm_sess
+    assert ds.full_name == "minimal_series"
+    assert type(ds) == Dataset
+    series = pd.Series(
+        name="test_microscopy",
+        data=dict(
+            genealogy=(
+                "test",
+                "microscopy",
+            ),
+            path="/fake/path",
+            id="hexidonflexilims",
+            project=PROJECT_ID,
+            is_raw="no",
+            dataset_type="microscopy",
+        ),
+    )
+
+    ds = Dataset.from_dataseries(
+        dataseries=series,
+        flexilims_session=flm_sess,
+    )
+    assert ds.flexilims_session == flm_sess
+    assert ds.full_name == "test_microscopy"
+    assert ds.dataset_name == "microscopy"
+    assert type(ds) == microscopy_data.MicroscopyData
 
 
 def test_from_origin(flm_sess):

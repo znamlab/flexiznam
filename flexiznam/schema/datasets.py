@@ -56,49 +56,57 @@ class Dataset(object):
         project=None,
         name=None,
         id=None,
-        data_series=None,
         flexilims_session=None,
     ):
-        """Loads a dataset from flexilims or flexilims data series.
+        """Loads a dataset from flexilims
 
         If the dataset_type attribute of the flexilims entry defined in
         Dataset.SUBCLASSES,this subclass will be used. Otherwise a generic Dataset is
         returned
 
         Args:
-            project (str, optional): Name of the project or hexadecimal project_id. If 
+            project (str, optional): Name of the project or hexadecimal project_id. If
                 not provided, can be read from flexilims_session
             name (str, optional): Unique name of the dataset on flexilims. Ignored if
-                `data_series` is provided
+                `dataseries` is provided
             id (str, optional): Hexadecimal id of the dataset on flexilims. Ignored if
-                `data_series` is provided
-            data_series (pandas.Series, optional): default to None. Dataset info as 
-                returned by flz.get_entities. If provided, supersedes project, name and 
-                id.
-            flexilims_session (flexilims.Session, optional): authentication session to 
+                `dataseries` is provided
+            flexilims_session (flexilims.Session, optional): authentication session to
                 access flexilims.
         """
-        if data_series is not None:
-            if (project is not None) or (name is not None):
-                raise AttributeError("Specify either data_series OR project + name/id")
-        else:
-            data_series = flz.get_entity(
-                project_id=project,
-                datatype="dataset",
-                name=name,
-                id=id,
-                flexilims_session=flexilims_session,
+        dataseries = flz.get_entity(
+            project_id=project,
+            datatype="dataset",
+            name=name,
+            id=id,
+            flexilims_session=flexilims_session,
+        )
+
+        if dataseries is None:
+            if project is None:
+                project = flexilims_session.project_id
+            raise FlexilimsError(
+                "No dataset named {} in project {}".format(name, project)
             )
+        ds = Dataset.from_dataseries(dataseries, flexilims_session=flexilims_session)
+        return ds
 
-            if data_series is None:
-                if project is None:
-                    project = flexilims_session.project_id
-                raise FlexilimsError(
-                    "No dataset named {} in project {}".format(name, project)
-                )
-        dataset_type = data_series.dataset_type
+    @staticmethod
+    def from_dataseries(
+        dataseries,
+        flexilims_session=None,
+    ):
+        """Create dataset from a flexilims dataseries
 
-        kwargs = Dataset._format_series_to_kwargs(data_series)
+        This function does not call flexilims, but uses the dataseries object directly.
+        Args:
+            dataseries (flexilims.DataSeries): flexilims dataseries object
+            flexilims_session (flexilims.Session, optional): authentication session to
+                access flexilims. Will be added to dataset object.
+        """
+        dataset_type = dataseries.dataset_type
+
+        kwargs = Dataset._format_series_to_kwargs(dataseries)
         name = kwargs.pop("name")
         kwargs["flexilims_session"] = flexilims_session
         if dataset_type in Dataset.SUBCLASSES:
@@ -209,7 +217,7 @@ class Dataset(object):
                 )
             elif conflicts == "skip" or conflicts == "overwrite":
                 if len(processed) == 1:
-                    return Dataset.from_flexilims(data_series=processed.iloc[0])
+                    return Dataset.from_dataseries(dataseries=processed.iloc[0])
                 else:
                     raise flz.errors.NameNotUniqueError(
                         "{} {} datasets with name starting by {} exists for {}, "

@@ -4,6 +4,8 @@
 
 ### Main changes
 
+- Separate `Dataset.from_dataseries` and `Dataset.from_flexilims` to avoid confusion
+
 ### Minor
 
 ### Bugfixes

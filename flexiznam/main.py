@@ -1046,8 +1046,8 @@ def get_datasets(
                 datapath_dict[recording_id] = datapaths
         else:
             datapath_dict[recording_id] = [
-                flexiznam.Dataset.from_flexilims(
-                    data_series=ds, flexilims_session=flexilims_session
+                flexiznam.Dataset.from_dataseries(
+                    dataseries=ds, flexilims_session=flexilims_session
                 )
                 for _, ds in datasets.iterrows()
             ]
