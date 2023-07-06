@@ -8,6 +8,8 @@
 
 ### Minor
 
+- `get_children` output is filtered to contain only relevant columns when   `children_datatype` is not None
+
 ### Bugfixes
 ## v0.3.6
 

@@ -4,7 +4,7 @@ import pytest
 import flexiznam.main as flz
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
-from tests.tests_resources.data_for_testing import MOUSE_ID
+from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 
 # Test functions from main.py
 from flexiznam.schema import Dataset
@@ -180,6 +180,13 @@ def test_get_children(flm_sess):
     assert isinstance(res, pd.DataFrame)
     res = flz.get_children(parent_name="mouse_physio_2p", flexilims_session=flm_sess)
     assert len(res) == 1
+    res_all = flz.get_children(parent_name=SESSION, flexilims_session=flm_sess)
+    assert (res_all.type != "recording").sum() != 0
+    res_part = flz.get_children(
+        parent_name=SESSION, flexilims_session=flm_sess, children_datatype="recording"
+    )
+    assert (res_part.type != "recording").sum() == 0
+    assert res_all.shape[1] > res_part.shape[1]
 
 
 def test_add_entity(flm_sess):
