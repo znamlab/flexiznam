@@ -1,5 +1,16 @@
 # Change log
 
+## v0.3.7
+
+### Main changes
+
+- Separate `Dataset.from_dataseries` and `Dataset.from_flexilims` to avoid confusion
+
+### Minor
+
+- `get_children` output is filtered to contain only relevant columns when   `children_datatype` is not None
+
+### Bugfixes
 ## v0.3.6
 
 ### Main changes

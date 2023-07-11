@@ -1,10 +1,10 @@
 import pytest
 import pathlib
 import pandas as pd
-from flexiznam.schema import Dataset
+from flexiznam.schema import Dataset, microscopy_data
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError, FlexilimsError
-from tests.tests_resources.data_for_testing import TEST_PROJECT
+from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
+from tests.tests_resources.data_for_testing import TEST_PROJECT, PROJECT_ID
 from tests.test_components.test_main import MOUSE_ID
 
 # Test the generic dataset class.
@@ -197,19 +197,118 @@ def test_from_flexilims(flm_sess):
     assert ds_by_id.project == project
 
 
-def test_from_origin(flm_sess):
-    """This test requires the database to be up-to-date for the physio mouse"""
-    origin_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube"
-    ds = Dataset.from_origin(
-        origin_type="recording",
-        origin_name=origin_name,
-        dataset_type="suite2p_rois",
-        conflicts="skip",
+def test_from_dataseries(flm_sess):
+    """This test requires the config file to include demo_project"""
+    series = pd.Series(
+        name="minimal_series",
+        data=dict(
+            genealogy=("minimal_series",),
+            path="/fake/path",
+            id="hexidonflexilims",
+            project=PROJECT_ID,
+            is_raw="no",
+            dataset_type="suite2p_rois",
+        ),
+    )
+    ds = Dataset.from_dataseries(
+        dataseries=series,
         flexilims_session=flm_sess,
     )
     assert ds.flexilims_session == flm_sess
-    assert ds.genealogy[-1].startswith("suite2p_rois")
+    assert ds.full_name == "minimal_series"
+    assert type(ds) == Dataset
+    series = pd.Series(
+        name="test_microscopy",
+        data=dict(
+            genealogy=(
+                "test",
+                "microscopy",
+            ),
+            path="/fake/path",
+            id="hexidonflexilims",
+            project=PROJECT_ID,
+            is_raw="no",
+            dataset_type="microscopy",
+        ),
+    )
 
+    ds = Dataset.from_dataseries(
+        dataseries=series,
+        flexilims_session=flm_sess,
+    )
+    assert ds.flexilims_session == flm_sess
+    assert ds.full_name == "test_microscopy"
+    assert ds.dataset_name == "microscopy"
+    assert type(ds) == microscopy_data.MicroscopyData
+
+
+def test_from_origin(flm_sess):
+    """This test requires the database to be up-to-date for the physio mouse"""
+    origin_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube"
+    ds0 = Dataset.from_origin(
+        origin_type="recording",
+        origin_name=origin_name,
+        dataset_type="suite2p_rois",
+        conflicts="abort",
+        flexilims_session=flm_sess,
+    )
+    assert ds0.flexilims_session == flm_sess
+    assert ds0.genealogy[-1].startswith("suite2p_rois")
+    assert ds0.dataset_name == "suite2p_rois_0"
+    ds0.update_flexilims()
+    # now from_origin should raise an error if abort
+    with pytest.raises(DatasetError) as err:
+        Dataset.from_origin(
+            origin_type="recording",
+            origin_name=origin_name,
+            dataset_type="suite2p_rois",
+            conflicts="abort",
+            flexilims_session=flm_sess,
+        )
+    ds0_bis = Dataset.from_origin(
+            origin_type="recording",
+            origin_name=origin_name,
+            dataset_type="suite2p_rois",
+            conflicts="overwrite",
+            flexilims_session=flm_sess,
+        )
+    assert ds0.id == ds0_bis.id
+
+    ds1 = Dataset.from_origin(
+        origin_type="recording",
+        origin_name=origin_name,
+        dataset_type="suite2p_rois",
+        conflicts="append",
+        flexilims_session=flm_sess,
+    )
+    assert ds1.id is None
+    assert ds1.flexilims_session == flm_sess
+    assert ds1.dataset_name == "suite2p_rois_1"
+    ds1.update_flexilims()
+    assert ds1.id is not None
+    assert ds1.id != ds0.id
+    # now we have 2 datasets, skip and overwrite should raise an error
+    with pytest.raises(NameNotUniqueError) as err:
+        Dataset.from_origin(
+            origin_type="recording",
+            origin_name=origin_name,
+            dataset_type="suite2p_rois",
+            conflicts="skip",
+            flexilims_session=flm_sess,
+        )
+    with pytest.raises(NameNotUniqueError) as err:
+        Dataset.from_origin(
+            origin_type="recording",
+            origin_name=origin_name,
+            dataset_type="suite2p_rois",
+            conflicts="overwrite",
+            flexilims_session=flm_sess,
+        )
+    # clean up
+    for ds in (ds0, ds1):
+        flm_sess.delete(ds.id)
+    
+                
 
 def test_update_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""

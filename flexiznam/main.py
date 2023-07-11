@@ -968,11 +968,14 @@ def get_children(
     if parent_id is None:
         assert parent_name is not None, "Must provide either parent_id or parent_name"
         parent_id = get_id(parent_name, flexilims_session=flexilims_session)
-    results = format_results(flexilims_session.get_children(parent_id))
+    results = format_results(
+        flexilims_session.get_children(parent_id), return_list=True
+    )
     if not len(results):
-        return results
+        return pd.DataFrame(results)
     if children_datatype is not None:
-        results = results.loc[results.type == children_datatype, :]
+        results = [r for r in results if r["type"] == children_datatype]
+    results = pd.DataFrame(results)
     results.set_index("name", drop=False, inplace=True)
     return results
 
@@ -1046,8 +1049,8 @@ def get_datasets(
                 datapath_dict[recording_id] = datapaths
         else:
             datapath_dict[recording_id] = [
-                flexiznam.Dataset.from_flexilims(
-                    data_series=ds, flexilims_session=flexilims_session
+                flexiznam.Dataset.from_dataseries(
+                    dataseries=ds, flexilims_session=flexilims_session
                 )
                 for _, ds in datasets.iterrows()
             ]
@@ -1085,7 +1088,7 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
     return name
 
 
-def format_results(results):
+def format_results(results, return_list=False):
     """Make request output a nice DataFrame
 
     This will crash if any attribute is also present in the flexilims reply,
@@ -1095,6 +1098,7 @@ def format_results(results):
 
     Args:
         results (:obj:`list` of :obj:`dict`): Flexilims reply
+        return_list (bool): if True, return a list of dicts instead of a DataFrame
 
     Returns:
         :py:class:`pandas.DataFrame`: Reply formatted as a DataFrame
@@ -1108,5 +1112,6 @@ def format_results(results):
                 )
             result[attr_name] = attr_value
         result.pop("attributes")
-    df = pd.DataFrame(results)
-    return df
+    if return_list:
+        return results
+    return pd.DataFrame(results)
