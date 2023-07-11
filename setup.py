@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="flexiznam",
-    version="v0.3.7",
+    version="v0.3.8",
     url="https://github.com/znamlab/flexznam",
     license="MIT",
     author="Antonin Blot",
     author_email="antonin.blot@gmail.com",
     description="Znamlab tool to interact with flexilims",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     install_requires=[
         "Click",
