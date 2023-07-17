@@ -1019,20 +1019,125 @@ def get_children(
     return results
 
 
-def get_datasets(
-    origin_id,
-    recording_type=None,
+def get_child_dataset(flz_session, parent_name, dataset_type):
+    """
+    Get the last dataset of a given type for a given parent entity.
+
+    Args:
+        flz_session (flexilims_session): flexilims session
+        parent_name (str): name of the parent entity
+        dataset_type (str): type of the dataset
+
+    Returns:
+        Dataset: the last dataset of the given type for the given parent entity
+
+    """
+    all_children = get_children(
+        parent_name=parent_name,
+        children_datatype="dataset",
+        flexilims_session=flz_session,
+    )
+    selected_datasets = all_children[all_children["dataset_type"] == dataset_type]
+    if len(selected_datasets) == 0:
+        raise ValueError(f"No {dataset_type} dataset found for session {parent_name}")
+    elif len(selected_datasets) > 1:
+        print(
+            f"{len(selected_datasets)} {dataset_type} datasets found for session {parent_name}"
+        )
+        print("Will return the last one...")
+    return flexiznam.Dataset.from_dataseries(
+        selected_datasets.iloc[-1], flexilims_session=flz_session
+    )
+
+
+def get_datasets_recursively(
+    origin_id=None,
+    origin_name=None,
+    origin_series=None,
     dataset_type=None,
+    filter_datasets=None,
+    parent_type=None,
+    filter_parents=None,
+    return_paths=False,
     project_id=None,
     flexilims_session=None,
-    return_paths=True,
+    _output=None,
 ):
-    """
-    Recurse into recordings and get paths to child datasets of a given type.
+    """Get datasets recursively from a parent entity
 
     For example, this is useful if you want to retrieve paths to all *scanimage*
     datasets associated with a given session.
 
+    Returns:
+        dict: Dictionary with direct parent id as keys and lists of associated
+            datasets, or dataset paths as values
+
+    """
+    if origin_series is None:
+        if origin_id is None:
+            origin_id = get_id(origin_name, flexilims_session=flexilims_session)
+        origin_series = get_entity(id=origin_id, flexilims_session=flexilims_session)
+    else:
+        origin_id = origin_series["id"]
+    origin_is_valid = True
+
+    # initialize output if first call
+    if _output is None:
+        _output = {}
+
+    # Before adding the datasets of this level, check if the parent is valid
+    if (parent_type is not None) and (origin_series["type"] != parent_type):
+        origin_is_valid = False
+    if filter_parents is not None:
+        for key, value in filter_parents.items():
+            if origin_series.get(key, None) != value:
+                origin_is_valid = False
+
+    if origin_is_valid:
+        ds = get_datasets(
+            origin_id=origin_id,
+            dataset_type=dataset_type,
+            project_id=project_id,
+            flexilims_session=flexilims_session,
+            return_paths=return_paths,
+            filter_datasets=filter_datasets,
+        )
+        # add only if there are datasets
+        if len(ds):
+            _output[origin_id] = ds
+
+    # now recurse on children
+    children = get_children(
+        parent_id=origin_id,
+        parent_name=origin_name,
+        flexilims_session=flexilims_session,
+    )
+    for _, child in children.iterrows():
+        if child.type == "dataset":
+            continue
+        get_datasets_recursively(
+            origin_series=child,
+            dataset_type=dataset_type,
+            project_id=project_id,
+            flexilims_session=flexilims_session,
+            return_paths=return_paths,
+            filter_datasets=filter_datasets,
+            filter_parents=filter_parents,
+            _output=_output,
+        )
+    return _output
+
+
+def get_datasets(
+    origin_id=None,
+    origin_name=None,
+    dataset_type=None,
+    project_id=None,
+    flexilims_session=None,
+    return_paths=True,
+    filter_datasets=None,
+):
+    """
     Args:
         origin_id (str): hexadecimal ID of the origin session.
         recording_type (str): type of the recording to filter by. If `None`,
@@ -1044,9 +1149,8 @@ def get_datasets(
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
         return_paths (bool): if True, return a list of paths. If False, return the
             dataset objects.
+        _output (list): internal argument used for recursion.
 
-    Returns:
-        dict: Dictionary with recording names as keys containing lists of associated dataset paths.
 
     """
     assert (project_id is not None) or (flexilims_session is not None)
@@ -1054,46 +1158,30 @@ def get_datasets(
         flexilims_session = get_flexilims_session(project_id)
     else:
         project_id = lookup_project(flexilims_session.project_id, PARAMETERS)
-    recordings = get_entities(
-        datatype="recording",
-        origin_id=origin_id,
-        query_key="recording_type",
-        query_value=recording_type,
+
+    if origin_id is None:
+        assert origin_name is not None, "Must provide either origin_id or origin_name"
+    if filter_datasets is None:
+        filter_datasets = {}
+    if dataset_type is not None:
+        filter_datasets.update({"dataset_type": dataset_type})
+    datasets = get_children(
+        parent_id=origin_id,
+        parent_name=origin_name,
+        children_datatype="dataset",
         flexilims_session=flexilims_session,
+        filter=filter_datasets,
     )
-    datapath_dict = {}
-    if len(recordings) < 1:
-        return datapath_dict
-    for recording_id in recordings["id"]:
-        datasets = get_entities(
-            datatype="dataset",
-            origin_id=recording_id,
-            query_key="dataset_type",
-            query_value=dataset_type,
-            flexilims_session=flexilims_session,
+
+    datasets = [
+        flexiznam.Dataset.from_dataseries(
+            dataseries=ds, flexilims_session=flexilims_session
         )
-        if return_paths:
-            datapaths = []
-            for dataset_path, is_raw in zip(datasets["path"], datasets["is_raw"]):
-                prefix = (
-                    PARAMETERS["data_root"]["raw"]
-                    if is_raw == "yes"
-                    else PARAMETERS["data_root"]["processed"]
-                )
-                this_path = Path(prefix) / dataset_path
-                if this_path.exists():
-                    datapaths.append(str(this_path))
-                else:
-                    raise IOError("Dataset {} not found".format(this_path))
-                datapath_dict[recording_id] = datapaths
-        else:
-            datapath_dict[recording_id] = [
-                flexiznam.Dataset.from_dataseries(
-                    dataseries=ds, flexilims_session=flexilims_session
-                )
-                for _, ds in datasets.iterrows()
-            ]
-    return datapath_dict
+        for _, ds in datasets.iterrows()
+    ]
+    if return_paths:
+        datasets = [ds.path_full for ds in datasets]
+    return datasets
 
 
 def generate_name(datatype, name, flexilims_session=None, project_id=None):

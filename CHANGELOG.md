@@ -6,6 +6,8 @@
 
 - Add `get_data_root` function to get `raw` or `processed` root for a project
 - `get_children` can filter children by attributes before returning results
+- refactor `get_datasets` to be non recursive and add filtering options
+- add `get_datasets_recursively` to get all datasets below a given entity
 
 ### Bugfixes
 
