@@ -1,6 +1,7 @@
 import pytest
 import pathlib
 import pandas as pd
+import flexiznam
 from flexiznam.schema import Dataset, microscopy_data
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
@@ -266,12 +267,12 @@ def test_from_origin(flm_sess):
             flexilims_session=flm_sess,
         )
     ds0_bis = Dataset.from_origin(
-            origin_type="recording",
-            origin_name=origin_name,
-            dataset_type="suite2p_rois",
-            conflicts="overwrite",
-            flexilims_session=flm_sess,
-        )
+        origin_type="recording",
+        origin_name=origin_name,
+        dataset_type="suite2p_rois",
+        conflicts="overwrite",
+        flexilims_session=flm_sess,
+    )
     assert ds0.id == ds0_bis.id
 
     ds1 = Dataset.from_origin(
@@ -307,8 +308,7 @@ def test_from_origin(flm_sess):
     # clean up
     for ds in (ds0, ds1):
         flm_sess.delete(ds.id)
-    
-                
+
 
 def test_update_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
@@ -353,6 +353,16 @@ def test_dataset_paths(flm_sess):
     assert str(ds.path_full) == str(
         pathlib.Path(PARAMETERS["data_root"]["raw"] / ds.path)
     )
+    ds = Dataset(
+        path="test_project",
+        is_raw="no",
+        dataset_type="camera",
+        extra_attributes={},
+        created="",
+        project="example",
+    )
+    assert ds.path_root != pathlib.Path(PARAMETERS["data_root"]["processed"])
+    assert ds.path_root == flexiznam.get_data_root(which="processed", project="example")
 
 
 def test_project_project_id(flm_sess):

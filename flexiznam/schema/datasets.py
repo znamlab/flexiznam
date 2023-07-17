@@ -711,12 +711,11 @@ class Dataset(object):
     @property
     def path_root(self):
         """Get CAMP root path that should apply to this dataset"""
-        if self.is_raw:
-            return Path(flz.config.PARAMETERS["data_root"]["raw"])
-        elif self.is_raw is None:
+        if self.is_raw is None:
             raise AttributeError("`is_raw` must be set to find path.")
-        else:
-            return Path(flz.config.PARAMETERS["data_root"]["processed"])
+        return flz.get_data_root(
+            which="raw" if self.is_raw else "processed", project=self.project
+        )
 
     @property
     def path_full(self):
