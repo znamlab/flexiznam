@@ -22,6 +22,38 @@ def _format_project(project_id, prm):
     return project_id
 
 
+def get_data_root(which, project=None, flexilims_session=None):
+    """Get raw or processed path for a project
+
+    Args:
+        which (str): either "raw" or "processed"
+        project (str, optional): name or id of the project. Optional if
+            flexilims_session is provided
+        flexilims_session (:py:class:`flexilims.Flexilims`, optional): a flexilims
+            session with project set. Optional if project is provided.
+    """
+    if which not in ["raw", "processed"]:
+        raise ValueError("which must be either 'raw' or 'processed'")
+
+    if project is None:
+        assert (
+            flexilims_session is not None,
+            "`flexilims_session` must be provided if `project` is None",
+        )
+        project = flexilims_session.project_id
+
+    if project not in PARAMETERS["project_ids"]:
+        project = lookup_project(project, prm=None)
+        assert project is not None, f"Invalid project {project}"
+
+    if project in PARAMETERS["project_paths"]:
+        return Path(PARAMETERS["project_paths"][project][which])
+
+    if which == "raw":
+        return Path(PARAMETERS["data_root"]["raw"])
+    return Path(PARAMETERS["data_root"]["processed"])
+
+
 def lookup_project(project_id, prm=None):
     """
     Look up project name by hexadecimal id
@@ -975,6 +1007,7 @@ def get_children(
         return pd.DataFrame(results)
     if children_datatype is not None:
         results = [r for r in results if r["type"] == children_datatype]
+
     results = pd.DataFrame(results)
     results.set_index("name", drop=False, inplace=True)
     return results

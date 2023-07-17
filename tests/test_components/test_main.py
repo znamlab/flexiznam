@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 import pandas as pd
 import pytest
 import flexiznam.main as flz
@@ -10,6 +11,26 @@ from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 from flexiznam.schema import Dataset
 
 # this needs to change every time I reset flexlilims
+
+
+def test_get_path():
+    p = flz.get_data_root(which="raw", project="test", flexilims_session=None)
+    assert p == Path(PARAMETERS["data_root"]["raw"])
+    p = flz.get_data_root(which="processed", project="test", flexilims_session=None)
+    assert p == Path(PARAMETERS["data_root"]["processed"])
+    sess = flz.get_flexilims_session(
+        project_id=PARAMETERS["project_ids"]["test"], reuse_token=False
+    )
+    p = flz.get_data_root(which="processed", project=None, flexilims_session=sess)
+    assert p == Path(PARAMETERS["data_root"]["processed"])
+    p = flz.get_data_root(which="raw", project="example", flexilims_session=None)
+    assert p == Path("/camp/project/example_project/raw")
+    with pytest.raises(AttributeError):
+        flz.get_data_root(which="processed", project=None, flexilims_session=None)
+    with pytest.raises(ValueError):
+        flz.get_data_root(which="crap", project="test", flexilims_session=None)
+    with pytest.raises(AssertionError):
+        p = flz.get_data_root(which="raw", project="random", flexilims_session=None)
 
 
 def test_get_flexilims_session():

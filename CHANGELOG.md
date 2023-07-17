@@ -6,6 +6,8 @@
 
 ## v0.3.7
 
+- Add `get_data_root` function to get `raw` or `processed` root for a project
+
 ### Main changes
 
 - Separate `Dataset.from_dataseries` and `Dataset.from_flexilims` to avoid confusion
