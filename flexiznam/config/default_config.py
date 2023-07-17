@@ -14,6 +14,12 @@ DEFAULT_CONFIG = dict(
         "test": "606df1ac08df4d77c72c9aa4",
         "AAVRKO_retina_hva": "60a7757a8901a2357f29080a",
     },
+    project_paths={
+        "example": dict(
+            raw="/camp/project/example_project/raw",
+            processed="/camp/project/example_project/processed",
+        )
+    },
     # a default username can be specified
     flexilims_username="yourusername",
     # Use for data dataset detection
