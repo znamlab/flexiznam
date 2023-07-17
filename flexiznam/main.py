@@ -978,6 +978,7 @@ def get_children(
     children_datatype=None,
     project_id=None,
     flexilims_session=None,
+    filter=None,
 ):
     """
     Get all entries belonging to a particular parent entity
@@ -989,6 +990,7 @@ def get_children(
                                          types if None)
         project_id (str): text name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        filter (dict, None): filter to apply to the extra_attributes of the children
 
     Returns:
         DataFrame: containing all the relevant child entitites
@@ -1007,6 +1009,9 @@ def get_children(
         return pd.DataFrame(results)
     if children_datatype is not None:
         results = [r for r in results if r["type"] == children_datatype]
+    if filter is not None:
+        for key, value in filter.items():
+            results = [r for r in results if r.get(key, None) == value]
 
     results = pd.DataFrame(results)
     results.set_index("name", drop=False, inplace=True)

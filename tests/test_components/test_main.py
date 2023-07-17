@@ -208,6 +208,13 @@ def test_get_children(flm_sess):
     )
     assert (res_part.type != "recording").sum() == 0
     assert res_all.shape[1] > res_part.shape[1]
+    single_res = flz.get_children(
+        parent_name=SESSION,
+        flexilims_session=flm_sess,
+        children_datatype="dataset",
+        filter=dict(notes="Motion correction reference"),
+    )
+    assert single_res.shape[0] == 1
 
 
 def test_add_entity(flm_sess):

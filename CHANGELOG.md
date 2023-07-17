@@ -5,6 +5,7 @@
 ### Main changes
 
 - Add `get_data_root` function to get `raw` or `processed` root for a project
+- `get_children` can filter children by attributes before returning results
 
 ### Minor
 
