@@ -7,6 +7,11 @@
 - Add `get_data_root` function to get `raw` or `processed` root for a project
 - `get_children` can filter children by attributes before returning results
 
+### Bugfixes
+
+- return empty dataframe if `filter` in `get_children` filters out everything (instead 
+  of crashing)
+
 ### Minor
 
 - `harp_dataset.from_folder` will now match csv even if there is nothing before or after

@@ -1014,7 +1014,8 @@ def get_children(
             results = [r for r in results if r.get(key, None) == value]
 
     results = pd.DataFrame(results)
-    results.set_index("name", drop=False, inplace=True)
+    if len(results):
+        results.set_index("name", drop=False, inplace=True)
     return results
 
 
