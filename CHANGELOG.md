@@ -4,9 +4,15 @@
 
 ### Main changes
 
-## v0.3.7
-
 - Add `get_data_root` function to get `raw` or `processed` root for a project
+
+### Minor
+
+- `harp_dataset.from_folder` will now match csv even if there is nothing before or after
+  `harpmessage` in the file name (i.e. the file is `harpmessage.bin`, and all csvs in 
+  the folder will be matched)
+
+## v0.3.7
 
 ### Main changes
 
