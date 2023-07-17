@@ -9,7 +9,7 @@ from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 
 # Test functions from main.py
-from flexiznam.schema import Dataset, HarpData
+from flexiznam.schema import Dataset, HarpData, ScanimageData
 
 # this needs to change every time I reset flexlilims
 
@@ -136,6 +136,7 @@ def test_get_datasets(flm_sess):
     ds = flz.get_datasets(
         origin_name=SESSION,
         flexilims_session=flm_sess,
+        return_paths=True,
     )
     assert len(ds) == 3
     assert all([isinstance(d, pathlib.PosixPath) for d in ds])
@@ -153,11 +154,42 @@ def test_get_datasets(flm_sess):
         filter_datasets=dict(acq_uid="overview_zoom1_00001"),
     )
     assert len(ds) == 1
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=False,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=False,
+    )
+    assert isinstance(ds, ScanimageData)
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=True,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=False,
+    )
+    assert isinstance(ds, pathlib.PosixPath)
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_dataseries=True,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=True,
+    )
+    assert isinstance(ds,  pd.DataFrame)
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_dataseries=True,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=False,
+    )
+    assert isinstance(ds,  pd.Series)
 
     rec = flz.get_children(
         parent_name=SESSION, flexilims_session=flm_sess, children_datatype="recording"
     ).iloc[0]
-
     ds_all = flz.get_datasets(
         origin_id=rec.id,
         flexilims_session=flm_sess,
@@ -186,6 +218,12 @@ def test_get_datasets(flm_sess):
         return_paths=True,
     )
     assert ds == ds2
+    with pytest.raises(AssertionError):
+        flz.get_datasets(
+            origin_id=rec.id,
+            project_id=flm_sess.project_id,
+            allow_multiple=False,
+        )
 
 
 def test_get_datasets_recursively(flm_sess):

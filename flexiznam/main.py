@@ -1134,20 +1134,28 @@ def get_datasets(
     dataset_type=None,
     project_id=None,
     flexilims_session=None,
-    return_paths=True,
     filter_datasets=None,
+    allow_multiple=True,
+    return_paths=False,
+    return_dataseries=False,
 ):
     """
     Args:
-        origin_id (str): hexadecimal ID of the origin session.
-        recording_type (str): type of the recording to filter by. If `None`,
-            will return datasets for all recordings.
+        origin_id (str): hexadecimal ID of the origin session. Not required if
+            origin_name is provided.
+        origin_name (str): text name of the origin session. Not required if origin_id
+            is provided.
         dataset_type (str): type of the dataseet to filter by. If `None`,
             will return all datasets.
         project_id (str): text name of the project. Not required if
             `flexilims_session` is provided.
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        allow_multiple (bool): if True, allow multiple datasets to be returned,
+            otherwise ensure that only one dataset exists online and return it.
         return_paths (bool): if True, return a list of paths. If False, return the
+            dataset objects or dataseries.
+        return_dataseries (bool): if True, return the dataseries instead of the
             dataset objects.
         _output (list): internal argument used for recursion.
 
@@ -1165,6 +1173,7 @@ def get_datasets(
         filter_datasets = {}
     if dataset_type is not None:
         filter_datasets.update({"dataset_type": dataset_type})
+        
     datasets = get_children(
         parent_id=origin_id,
         parent_name=origin_name,
@@ -1173,14 +1182,22 @@ def get_datasets(
         filter=filter_datasets,
     )
 
-    datasets = [
-        flexiznam.Dataset.from_dataseries(
-            dataseries=ds, flexilims_session=flexilims_session
-        )
-        for _, ds in datasets.iterrows()
-    ]
-    if return_paths:
-        datasets = [ds.path_full for ds in datasets]
+    if not return_dataseries:
+        datasets = [
+            flexiznam.Dataset.from_dataseries(
+                dataseries=ds, flexilims_session=flexilims_session
+            )
+            for _, ds in datasets.iterrows()
+        ]
+        if return_paths:
+            datasets = [ds.path_full for ds in datasets]
+
+    if not allow_multiple:
+        assert len(datasets) <= 1, f"Fount {len(datasets)} datasets. Expected 1."
+        if len(datasets) == 1:
+            datasets = datasets[0] if not return_dataseries else datasets.iloc[0]
+        else:
+            datasets = None
     return datasets
 
 
