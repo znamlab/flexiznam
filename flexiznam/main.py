@@ -1153,10 +1153,8 @@ def get_datasets(
         filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
         allow_multiple (bool): if True, allow multiple datasets to be returned,
             otherwise ensure that only one dataset exists online and return it.
-        return_paths (bool): if True, return a list of paths. If False, return the
-            dataset objects or dataseries.
-        return_dataseries (bool): if True, return the dataseries instead of the
-            dataset objects.
+        return_paths (bool): if True, return a list of paths
+        return_dataseries (bool): if True, a dataframe or a dataseries
         _output (list): internal argument used for recursion.
 
 
@@ -1173,7 +1171,7 @@ def get_datasets(
         filter_datasets = {}
     if dataset_type is not None:
         filter_datasets.update({"dataset_type": dataset_type})
-        
+
     datasets = get_children(
         parent_id=origin_id,
         parent_name=origin_name,
