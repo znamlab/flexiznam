@@ -37,9 +37,9 @@ def get_data_root(which, project=None, flexilims_session=None):
 
     if project is None:
         assert (
-            flexilims_session is not None,
-            "`flexilims_session` must be provided if `project` is None",
-        )
+            flexilims_session is not None
+        ), "`flexilims_session` must be provided if `project` is None"
+
         project = flexilims_session.project_id
 
     if project not in PARAMETERS["project_ids"]:
