@@ -397,7 +397,7 @@ class Dataset(object):
             if isinstance(attributes[attribute], np.bool_):
                 attributes[attribute] = bool(attributes[attribute])
             if isinstance(attributes[attribute], tuple):
-                attributes[attribute] = list(attribute)
+                attributes[attribute] = list(attributes[attribute])
         flz.utils.clean_recursively(attributes)
 
         if status == "different":

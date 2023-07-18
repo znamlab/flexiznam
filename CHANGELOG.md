@@ -14,6 +14,7 @@
 
 - return empty dataframe if `filter` in `get_children` filters out everything (instead 
   of crashing)
+- `update_flexilims` correctly uploads tuples parameters
 
 ### Minor
 

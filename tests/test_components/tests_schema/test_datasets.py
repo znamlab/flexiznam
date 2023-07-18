@@ -341,6 +341,19 @@ def test_update_flexilims(flm_sess):
         ds.origin_id = None
         ds.update_flexilims(mode="overwrite")
     assert err.value.args[0] == "Cannot set origin_id to null"
+    params = dict(
+        harp_bin="some/random/path",
+        di_names=("frame_triggers", "lick_detection", "di2_encoder_initial_state"),
+        verbose=False,
+    )
+    ds.extra_attributes = params
+    ds.origin_id = MOUSE_ID
+    ds.update_flexilims(mode="overwrite")
+    reloaded_ds = Dataset.from_flexilims(
+        project, name=ds_name, flexilims_session=flm_sess
+    )
+    assert reloaded_ds.extra_attributes["di_names"] == list(params["di_names"])
+    assert reloaded_ds.extra_attributes["verbose"] == params["verbose"]
 
 
 def test_dataset_paths(flm_sess):
