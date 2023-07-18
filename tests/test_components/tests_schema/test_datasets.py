@@ -1,6 +1,7 @@
 import pytest
 import pathlib
 import pandas as pd
+import numpy as np
 import flexiznam
 from flexiznam.schema import Dataset, microscopy_data
 from flexiznam.config import PARAMETERS
@@ -315,6 +316,33 @@ def test_update_flexilims(flm_sess):
     project = "demo_project"
     ds_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera"
     ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
+
+    # test weirded datatypes
+    ds.extra_attributes = dict(
+        nf64=np.float64(1),
+        nf32=np.float32(1),
+        ni64=np.int64(1),
+        ni32=np.int32(1),
+        pathobj=pathlib.Path("some/path"),
+        list=[1, 2, 3],
+        tuple=(1, 2, 3),
+        f=float(1.0),
+        i=int(34),
+    )
+    ds.update_flexilims(mode="overwrite")
+    reloaded_ds = Dataset.from_flexilims(
+        project, name=ds_name, flexilims_session=flm_sess
+    )
+    assert reloaded_ds.extra_attributes["nf64"] == 1.0
+    assert reloaded_ds.extra_attributes["nf32"] == 1.0
+    assert reloaded_ds.extra_attributes["ni64"] == 1
+    assert reloaded_ds.extra_attributes["ni32"] == 1
+    assert reloaded_ds.extra_attributes["pathobj"] == str(pathlib.Path("some/path"))
+    assert reloaded_ds.extra_attributes["list"] == [1, 2, 3]
+    assert reloaded_ds.extra_attributes["tuple"] == list((1, 2, 3))
+    assert reloaded_ds.extra_attributes["f"] == 1.0
+    assert reloaded_ds.extra_attributes["i"] == 34
+
     original_path = ds.path
     ds.path = "new/test/path"
     with pytest.raises(FlexilimsError) as err:

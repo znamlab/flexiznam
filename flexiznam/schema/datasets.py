@@ -389,16 +389,6 @@ class Dataset(object):
 
         status = self.flexilims_status()
         attributes = self.extra_attributes.copy()
-        # the following lines are necessary because pandas converts python types to numpy
-        # types, which JSON does not understand and because JSON doesn't like tuples
-        for attribute in attributes:
-            if isinstance(attributes[attribute], np.integer):
-                attributes[attribute] = int(attributes[attribute])
-            if isinstance(attributes[attribute], np.bool_):
-                attributes[attribute] = bool(attributes[attribute])
-            if isinstance(attributes[attribute], tuple):
-                attributes[attribute] = list(attributes[attribute])
-        flz.utils.clean_recursively(attributes)
 
         if status == "different":
             if mode == "safe":
@@ -417,7 +407,7 @@ class Dataset(object):
                 if self.origin_id is None:
                     if self.get_flexilims_entry().get("origin_id", None) is not None:
                         raise FlexilimsError("Cannot set origin_id to null")
-
+                utils.clean_recursively(attributes)
                 resp = flz.update_entity(
                     datatype="dataset",
                     id=self.id,

@@ -150,6 +150,8 @@ def clean_recursively(
         # we don't have a dictionary
         ds_classes = set(Dataset.SUBCLASSES.values())
         ds_classes.add(Dataset)
+        floats = (float, np.float32, np.float64)
+        ints = (int, np.int32, np.int64)
         if (
             (element is None)
             or isinstance(element, str)
@@ -165,8 +167,14 @@ def clean_recursively(
             element = element.tolist()
         elif isinstance(element, pathlib.Path):
             element = str(PurePosixPath(element))
-        elif isinstance(element, float) and (not np.isfinite(element)):
-            element = str(element)
+        elif isinstance(element, floats):
+            if not np.isfinite(element):
+                # nan and inf must be uploaded as string
+                element = str(element)
+            else:
+                element = float(element)
+        elif isinstance(element, ints):
+            element = int(element)
         elif isinstance(element, pd.Series or pd.DataFrame):
             raise IOError("Cannot make a pandas object json compatible")
         else:
