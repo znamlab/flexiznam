@@ -171,6 +171,7 @@ def upload_yaml(
         list of names of entities created/updated
 
     """
+    
     output = []
     # if there are errors, I cannot safely parse the yaml
     errors = find_xxerrorxx(yml_file=source_yaml)
@@ -232,12 +233,17 @@ def upload_yaml(
         root_id = mouse["id"]
 
     # session datasets
+    # use "overwrite" as mode if conflict is "overwrite", otherwise use "safe" mode
+    if conflicts == "overwrite":
+        mode = "overwrite"
+    else:
+        mode = "safe"
     for ds_name, ds in session_data.get("datasets", {}).items():
         ds.genealogy = [mouse["name"], session_data["session"], ds_name]
         ds.project = session_data["project"]
         ds.origin_id = root_id
         ds.flexilims_session = flexilims_session
-        ds.update_flexilims(mode="safe")
+        ds.update_flexilims(mode=mode)
         output.append(ds.full_name)
 
     # now deal with recordings
@@ -276,7 +282,7 @@ def upload_yaml(
             ds.project = session_data["project"]
             ds.origin_id = rec_rep["id"]
             ds.flexilims_session = flexilims_session
-            ds.update_flexilims(mode="safe")
+            ds.update_flexilims(mode=mode)
             output.append(ds.full_name)
 
     # now deal with samples
