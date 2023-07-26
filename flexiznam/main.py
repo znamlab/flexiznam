@@ -1,11 +1,13 @@
 import datetime
 import re
+import portalocker
 import warnings
 import pandas as pd
 import flexilims as flm
 from pathlib import Path
 from flexilims.utils import SPECIAL_CHARACTERS
 import flexiznam
+import yaml
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password, add_password
 from flexiznam.errors import NameNotUniqueError, FlexilimsError, ConfigurationError
@@ -68,7 +70,11 @@ def lookup_project(project_id, prm=None):
 
 
 def get_flexilims_session(
-    project_id=None, username=None, password=None, reuse_token=True
+    project_id=None,
+    username=None,
+    password=None,
+    reuse_token=True,
+    timeout=10,
 ):
     """Open a new flexilims session by creating a new authentication token.
 
@@ -80,6 +86,8 @@ def get_flexilims_session(
         password (str): (optional) flexilims password. If not provided, it is
             read from the secrets file, or failing that triggers an input prompt.
         reuse_token (bool): (optional) if True, try to reuse an existing token
+        timeout (int): (optional) timeout in seconds for the portalocker lock. Default
+            to 10.
 
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
@@ -96,21 +104,26 @@ def get_flexilims_session(
 
     if reuse_token:
         today = datetime.datetime.now().strftime("%Y-%m-%d")
-        try:
-            token = get_password(app="flexilims", username="token", allow_input=False)
-            token, date = token.split("_")
+        tocken_file = flexiznam.config.config_tools._find_file(
+            "flexilims_token.yml", create_if_missing=True
+        )
+        with portalocker.Lock(tocken_file, "r+", timeout=timeout) as file_handle:
+            tokinfo = yaml.safe_load(file_handle) or {}
+            token = tokinfo.get("token", None)
+            date = tokinfo.get("date", None)
             if date != today:
                 token = None
             else:
                 token = dict(Authorization=f"Bearer {token}")
-        except ConfigurationError:
-            token = None
+            session = flm.Flexilims(
+                username, password, project_id=project_id, token=token
+            )
+            if token is None:
+                # we need to update the token
+                token = session.session.headers["Authorization"].split(" ")[-1]
+                yaml.dump(dict(token=token, date=today), file_handle)
     else:
-        token = None
-    session = flm.Flexilims(username, password, project_id=project_id, token=token)
-    if reuse_token:
-        token = session.session.headers["Authorization"].split(" ")[-1]
-        add_password("flexilims", "token", f"{token}_{today}")
+        session = flm.Flexilims(username, password, project_id=project_id, token=None)
     return session
 
 
