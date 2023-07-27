@@ -16,6 +16,7 @@
   of crashing)
 - `update_flexilims` correctly uploads tuples parameters
 - `update_flexilims` correctly uploads floats and np.float/np.int parameters
+- `update_flexilims` can overwrite existing datasets (if `conflicts='overwrite'`)
 - Add filelock for token creation to avoid concurrent access and move token to their own
   file
 
