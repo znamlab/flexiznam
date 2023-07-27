@@ -13,6 +13,7 @@ setup(
     install_requires=[
         "Click",
         "pandas",
+        "portalocker",
         "webbot",
         "pyyaml",
         "flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims",

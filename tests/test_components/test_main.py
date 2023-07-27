@@ -2,8 +2,10 @@ import datetime
 import pathlib
 from pathlib import Path
 import pandas as pd
+import portalocker
 import pytest
-import flexiznam.main as flz
+import flexiznam as flz
+import yaml
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
@@ -26,7 +28,7 @@ def test_get_path():
     assert p == Path(PARAMETERS["data_root"]["processed"])
     p = flz.get_data_root(which="raw", project="example", flexilims_session=None)
     assert p == Path("/camp/project/example_project/raw")
-    with pytest.raises(AttributeError):
+    with pytest.raises(AssertionError):
         flz.get_data_root(which="processed", project=None, flexilims_session=None)
     with pytest.raises(ValueError):
         flz.get_data_root(which="crap", project="test", flexilims_session=None)
@@ -41,11 +43,26 @@ def test_get_flexilims_session():
     assert sess.username == PARAMETERS["flexilims_username"]
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
     assert sess.username == PARAMETERS["flexilims_username"]
-    token, date = get_password("flexilims", "token").split("_")
+    token_file = flz.config.config_tools._find_file("flexilims_token.yml")
+    tokinfo = yaml.safe_load(token_file.read_text())
+    token = tokinfo.get("token", None)
+    date = tokinfo.get("date", None)
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     assert date == today
     assert sess.session.headers["Authorization"].split(" ")[1] == token
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
+    assert sess.session.headers["Authorization"].split(" ")[1] == token
+
+    # manualy lock the token file to test timeout
+    with portalocker.Lock(token_file, "r+", timeout=10) as file_handle:
+        with pytest.raises(portalocker.exceptions.LockException):
+            sess = flz.get_flexilims_session(
+                project_id=None, reuse_token=True, timeout=0.1
+            )
+        # but fine without the reuse_token flag
+        sess = flz.get_flexilims_session(project_id=None, reuse_token=False)
+        assert sess.session.headers["Authorization"].split(" ")[1] != token
+    sess = flz.get_flexilims_session(project_id=None, reuse_token=True, timeout=0.1)
     assert sess.session.headers["Authorization"].split(" ")[1] == token
 
 
@@ -177,7 +194,7 @@ def test_get_datasets(flm_sess):
         filter_datasets=dict(acq_uid="overview_zoom1_00001"),
         allow_multiple=True,
     )
-    assert isinstance(ds,  pd.DataFrame)
+    assert isinstance(ds, pd.DataFrame)
     ds = flz.get_datasets(
         origin_name=SESSION,
         flexilims_session=flm_sess,
@@ -185,7 +202,7 @@ def test_get_datasets(flm_sess):
         filter_datasets=dict(acq_uid="overview_zoom1_00001"),
         allow_multiple=False,
     )
-    assert isinstance(ds,  pd.Series)
+    assert isinstance(ds, pd.Series)
 
     rec = flz.get_children(
         parent_name=SESSION, flexilims_session=flm_sess, children_datatype="recording"
@@ -247,10 +264,13 @@ def test_get_datasets_recursively(flm_sess):
         origin_name=SESSION,
         return_paths=False,
         dataset_type="harp",
-        filter_datasets=dict(binary_file="harpmessage.bin"),
+        filter_datasets=dict(
+            binary_file="PZAD9.4d_S20211102_R173917_SpheresPermTube_harpmessage.bin"
+        ),
     )
     assert len(ds_dict) == 1
-    assert ds_dict.values().__iter__().__next__()[0].dataset_name == "harpmessage"
+    ds = ds_dict.values().__iter__().__next__()[0]
+    assert isinstance(ds, HarpData)
 
     ds_dict = flz.get_datasets_recursively(
         flexilims_session=flm_sess,

@@ -16,12 +16,16 @@
   of crashing)
 - `update_flexilims` correctly uploads tuples parameters
 - `update_flexilims` correctly uploads floats and np.float/np.int parameters
+- Add filelock for token creation to avoid concurrent access and move token to their own
+  file
 
 ### Minor
 
 - `harp_dataset.from_folder` will now match csv even if there is nothing before or after
   `harpmessage` in the file name (i.e. the file is `harpmessage.bin`, and all csvs in 
   the folder will be matched)
+- private function `config_tools._find_files` has now  a `create_if_missing` argument to 
+  create the file if it does not exist
 
 ## v0.3.7
 
