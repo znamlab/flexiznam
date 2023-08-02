@@ -1,6 +1,8 @@
 import pytest
 import pathlib
 import pandas as pd
+import numpy as np
+import flexiznam
 from flexiznam.schema import Dataset, microscopy_data
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
@@ -99,70 +101,56 @@ def test_dataset_flexilims_integration(flm_sess):
         extra_attributes={},
         created="",
         flexilims_session=flm_sess,
-        genealogy=(
-            "mouse_physio_2p",
-            "S20211102",
-            "R165821_SpheresPermTube",
-            "wf_camera",
-        ),
+        genealogy=("PZAA15.1a", "temporary_dataset"),
     )
+    st = ds.flexilims_status()
+    assert st == "not online"
+    ds.update_flexilims()
+    st = ds.flexilims_status()
+    assert st == "up-to-date"
+    ds.extra_attributes = dict(test="test")
+    ds.path = "new/path"
     st = ds.flexilims_status()
     assert st == "different"
     rep = ds.flexilims_report()
     expected = pd.DataFrame(
         dict(
-            offline={
-                "is_raw": "no",
-                "path": "fake/path",
-                "created": "",
-                "metadata_file": "NA",
-                "timestamp_file": "NA",
-                "video_file": "NA",
-            },
-            flexilims={
-                "is_raw": "yes",
-                "created": "2021-11-02 17:03:17",
-                "path": "demo_project/mouse_physio_2p/"
-                "S20211102/R165821_SpheresPermTube",
-                "origin_id": "61ebf94120d82a35f724490d",
-                "timestamp_file": "wf_camera_timestamps.csv",
-                "video_file": "wf_camera_data.bin",
-                "metadata_file": "wf_camera_metadata.txt",
-            },
+            offline={"path": "fake/path", "test": "test"},
+            flexilims={"path": "new/path", "test": "NA"},
         )
     )
     assert all(rep.sort_index() == expected.sort_index())
-    ds_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera"
+    ds_name = "PZAA15.1a_temporary_dataset"
+    assert ds.format().name == ds_name
     fmt = {
-        "path": "fake/path",
         "created": "",
         "dataset_type": "camera",
+        "genealogy": ("PZAA15.1a", "temporary_dataset"),
         "is_raw": "no",
-        "name": ds_name,
+        "name": "PZAA15.1a_temporary_dataset",
+        "path": "new/path",
         "project": "610989f9a651ff0b6237e0f6",
+        "test": "test",
         "type": "dataset",
-        "genealogy": (
-            "mouse_physio_2p",
-            "S20211102",
-            "R165821_SpheresPermTube",
-            "wf_camera",
-        ),
     }
-    assert ds.format().name == ds_name
     assert all(
         ds.format().drop("origin_id").sort_index()
         == pd.Series(data=fmt, name=ds_name).sort_index()
     )
 
     # same with yaml mode
-    fmt["extra_attributes"] = {}
+    fmt["extra_attributes"] = {"test": "test"}
     fmt["genealogy"] = list(fmt["genealogy"])
+    fmt.pop("test")
     ds_yaml = ds.format(mode="yaml")
     try:
         del ds_yaml["origin_id"]
     except KeyError:
         pass
     assert ds_yaml == fmt
+
+    flm_sess.delete(ds.id)
+    assert ds.flexilims_status() == "not online"
 
     ds = Dataset(
         path="fake/path",
@@ -266,12 +254,12 @@ def test_from_origin(flm_sess):
             flexilims_session=flm_sess,
         )
     ds0_bis = Dataset.from_origin(
-            origin_type="recording",
-            origin_name=origin_name,
-            dataset_type="suite2p_rois",
-            conflicts="overwrite",
-            flexilims_session=flm_sess,
-        )
+        origin_type="recording",
+        origin_name=origin_name,
+        dataset_type="suite2p_rois",
+        conflicts="overwrite",
+        flexilims_session=flm_sess,
+    )
     assert ds0.id == ds0_bis.id
 
     ds1 = Dataset.from_origin(
@@ -307,14 +295,14 @@ def test_from_origin(flm_sess):
     # clean up
     for ds in (ds0, ds1):
         flm_sess.delete(ds.id)
-    
-                
+
 
 def test_update_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = "demo_project"
     ds_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera"
     ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
+
     original_path = ds.path
     ds.path = "new/test/path"
     with pytest.raises(FlexilimsError) as err:
@@ -341,6 +329,51 @@ def test_update_flexilims(flm_sess):
         ds.origin_id = None
         ds.update_flexilims(mode="overwrite")
     assert err.value.args[0] == "Cannot set origin_id to null"
+    params = dict(
+        harp_bin="some/random/path",
+        di_names=("frame_triggers", "lick_detection", "di2_encoder_initial_state"),
+        verbose=False,
+    )
+    ds.extra_attributes = params
+    ds.origin_id = MOUSE_ID
+    ds.update_flexilims(mode="overwrite")
+    reloaded_ds = Dataset.from_flexilims(
+        project, name=ds_name, flexilims_session=flm_sess
+    )
+    assert reloaded_ds.extra_attributes["di_names"] == list(params["di_names"])
+    assert reloaded_ds.extra_attributes["verbose"] == params["verbose"]
+    # test weirded datatypes
+    ds = Dataset.from_origin(
+        project,
+        origin_id=ds.origin_id,
+        flexilims_session=flm_sess,
+        dataset_type="microscopy",
+    )
+    ds.extra_attributes = dict(
+        nf64=np.float64(1),
+        nf32=np.float32(1),
+        ni64=np.int64(1),
+        ni32=np.int32(1),
+        pathobj=pathlib.Path("some/path"),
+        list=[1, 2, 3],
+        tuple=(1, 2, 3),
+        f=float(1.0),
+        i=int(34),
+    )
+    ds.update_flexilims(mode="overwrite")
+    reloaded_ds = Dataset.from_flexilims(
+        project, name=ds.full_name, flexilims_session=flm_sess
+    )
+    assert reloaded_ds.extra_attributes["nf64"] == 1.0
+    assert reloaded_ds.extra_attributes["nf32"] == 1.0
+    assert reloaded_ds.extra_attributes["ni64"] == 1
+    assert reloaded_ds.extra_attributes["ni32"] == 1
+    assert reloaded_ds.extra_attributes["pathobj"] == str(pathlib.Path("some/path"))
+    assert reloaded_ds.extra_attributes["list"] == [1, 2, 3]
+    assert reloaded_ds.extra_attributes["tuple"] == list((1, 2, 3))
+    assert reloaded_ds.extra_attributes["f"] == 1.0
+    assert reloaded_ds.extra_attributes["i"] == 34
+    flm_sess.delete(ds.id)
 
 
 def test_dataset_paths(flm_sess):
@@ -353,6 +386,16 @@ def test_dataset_paths(flm_sess):
     assert str(ds.path_full) == str(
         pathlib.Path(PARAMETERS["data_root"]["raw"] / ds.path)
     )
+    ds = Dataset(
+        path="test_project",
+        is_raw="no",
+        dataset_type="camera",
+        extra_attributes={},
+        created="",
+        project="example",
+    )
+    assert ds.path_root != pathlib.Path(PARAMETERS["data_root"]["processed"])
+    assert ds.path_root == flexiznam.get_data_root(which="processed", project="example")
 
 
 def test_project_project_id(flm_sess):

@@ -1,15 +1,39 @@
 import datetime
+import pathlib
+from pathlib import Path
 import pandas as pd
+import portalocker
 import pytest
-import flexiznam.main as flz
+import flexiznam as flz
+import yaml
 from flexiznam.config import PARAMETERS, get_password
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 
 # Test functions from main.py
-from flexiznam.schema import Dataset
+from flexiznam.schema import Dataset, HarpData, ScanimageData
 
 # this needs to change every time I reset flexlilims
+
+
+def test_get_path():
+    p = flz.get_data_root(which="raw", project="test", flexilims_session=None)
+    assert p == Path(PARAMETERS["data_root"]["raw"])
+    p = flz.get_data_root(which="processed", project="test", flexilims_session=None)
+    assert p == Path(PARAMETERS["data_root"]["processed"])
+    sess = flz.get_flexilims_session(
+        project_id=PARAMETERS["project_ids"]["test"], reuse_token=False
+    )
+    p = flz.get_data_root(which="processed", project=None, flexilims_session=sess)
+    assert p == Path(PARAMETERS["data_root"]["processed"])
+    p = flz.get_data_root(which="raw", project="example", flexilims_session=None)
+    assert p == Path("/camp/project/example_project/raw")
+    with pytest.raises(AssertionError):
+        flz.get_data_root(which="processed", project=None, flexilims_session=None)
+    with pytest.raises(ValueError):
+        flz.get_data_root(which="crap", project="test", flexilims_session=None)
+    with pytest.raises(AssertionError):
+        p = flz.get_data_root(which="raw", project="random", flexilims_session=None)
 
 
 def test_get_flexilims_session():
@@ -19,11 +43,26 @@ def test_get_flexilims_session():
     assert sess.username == PARAMETERS["flexilims_username"]
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
     assert sess.username == PARAMETERS["flexilims_username"]
-    token, date = get_password("flexilims", "token").split("_")
+    token_file = flz.config.config_tools._find_file("flexilims_token.yml")
+    tokinfo = yaml.safe_load(token_file.read_text())
+    token = tokinfo.get("token", None)
+    date = tokinfo.get("date", None)
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     assert date == today
     assert sess.session.headers["Authorization"].split(" ")[1] == token
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
+    assert sess.session.headers["Authorization"].split(" ")[1] == token
+
+    # manualy lock the token file to test timeout
+    with portalocker.Lock(token_file, "r+", timeout=10) as file_handle:
+        with pytest.raises(portalocker.exceptions.LockException):
+            sess = flz.get_flexilims_session(
+                project_id=None, reuse_token=True, timeout=0.1
+            )
+        # but fine without the reuse_token flag
+        sess = flz.get_flexilims_session(project_id=None, reuse_token=False)
+        assert sess.session.headers["Authorization"].split(" ")[1] != token
+    sess = flz.get_flexilims_session(project_id=None, reuse_token=True, timeout=0.1)
     assert sess.session.headers["Authorization"].split(" ")[1] == token
 
 
@@ -106,28 +145,147 @@ def test_get_mouse_id(flm_sess):
 
 
 def test_get_datasets(flm_sess):
-    sess = flz.get_entity(
-        name="mouse_physio_2p_S20211102", datatype="session", flexilims_session=flm_sess
-    )
     ds = flz.get_datasets(
-        flexilims_session=flm_sess, origin_id=sess.id, return_paths=True
+        origin_id=MOUSE_ID,
+        flexilims_session=flm_sess,
     )
-    assert len(ds) == 2
-    for v in ds.values():
-        assert isinstance(v, list)
-        assert all([isinstance(d, str) for d in v])
+    assert len(ds) == 0
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=True,
+    )
+    assert len(ds) == 3
+    assert all([isinstance(d, pathlib.PosixPath) for d in ds])
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=False,
+    )
+    assert len(ds) == 3
+    assert all([hasattr(d, "path_full") for d in ds])
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=False,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+    )
+    assert len(ds) == 1
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=False,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=False,
+    )
+    assert isinstance(ds, ScanimageData)
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_paths=True,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=False,
+    )
+    assert isinstance(ds, pathlib.PosixPath)
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_dataseries=True,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=True,
+    )
+    assert isinstance(ds, pd.DataFrame)
+    ds = flz.get_datasets(
+        origin_name=SESSION,
+        flexilims_session=flm_sess,
+        return_dataseries=True,
+        filter_datasets=dict(acq_uid="overview_zoom1_00001"),
+        allow_multiple=False,
+    )
+    assert isinstance(ds, pd.Series)
 
-    ds2 = flz.get_datasets(
-        flexilims_session=flm_sess, origin_id=sess.id, return_paths=False
+    rec = flz.get_children(
+        parent_name=SESSION, flexilims_session=flm_sess, children_datatype="recording"
+    ).iloc[0]
+    ds_all = flz.get_datasets(
+        origin_id=rec.id,
+        flexilims_session=flm_sess,
+        return_paths=False,
     )
-    assert len(ds2) == 2
-    assert all([k in ds2 for k in ds])
-    for k in ds2:
-        ds_paths = ds[k]
-        ds_ds = ds2[k]
-        assert len(ds_ds) == len(ds_paths)
-        assert all([isinstance(d, Dataset) for d in ds_ds])
-        assert all([str(d.path_full) in ds_paths for d in ds_ds])
+    ds_cam = flz.get_datasets(
+        origin_id=rec.id,
+        dataset_type="camera",
+        flexilims_session=flm_sess,
+        return_paths=False,
+    )
+    assert len(ds_all) > len(ds_cam)
+    ds = flz.get_datasets(
+        origin_id=rec.id,
+        dataset_type="camera",
+        filter_datasets=dict(timestamp_file="face_camera_timestamps.csv"),
+        flexilims_session=flm_sess,
+        return_paths=True,
+    )
+    assert len(ds) == 1
+    ds2 = flz.get_datasets(
+        origin_id=rec.id,
+        dataset_type="camera",
+        filter_datasets=dict(timestamp_file="face_camera_timestamps.csv"),
+        project_id=flm_sess.project_id,
+        return_paths=True,
+    )
+    assert ds == ds2
+    with pytest.raises(AssertionError):
+        flz.get_datasets(
+            origin_id=rec.id,
+            project_id=flm_sess.project_id,
+            allow_multiple=False,
+        )
+
+
+def test_get_datasets_recursively(flm_sess):
+    ds_dict = flz.get_datasets_recursively(
+        flexilims_session=flm_sess, origin_name=SESSION, return_paths=True
+    )
+    assert len(ds_dict) == 3
+    ds_dict = flz.get_datasets_recursively(
+        flexilims_session=flm_sess,
+        origin_name=SESSION,
+        return_paths=False,
+        dataset_type="harp",
+    )
+    assert len(ds_dict) == 2
+    ds = []
+    for d in ds_dict.values():
+        ds.extend(d)
+    assert all([isinstance(d, HarpData) for d in ds])
+    ds_dict = flz.get_datasets_recursively(
+        flexilims_session=flm_sess,
+        origin_name=SESSION,
+        return_paths=False,
+        dataset_type="harp",
+        filter_datasets=dict(
+            binary_file="PZAD9.4d_S20211102_R173917_SpheresPermTube_harpmessage.bin"
+        ),
+    )
+    assert len(ds_dict) == 1
+    ds = ds_dict.values().__iter__().__next__()[0]
+    assert isinstance(ds, HarpData)
+
+    ds_dict = flz.get_datasets_recursively(
+        flexilims_session=flm_sess,
+        origin_name=SESSION,
+        return_paths=False,
+        filter_parents={"timestamp": "165821"},
+    )
+    assert len(ds_dict) == 1
+    ds_dict = flz.get_datasets_recursively(
+        flexilims_session=flm_sess,
+        origin_name=SESSION,
+        return_paths=False,
+        parent_type="recording",
+    )
+    assert len(ds_dict) == 2
 
 
 def test_add_mouse(flm_sess):
@@ -187,6 +345,13 @@ def test_get_children(flm_sess):
     )
     assert (res_part.type != "recording").sum() == 0
     assert res_all.shape[1] > res_part.shape[1]
+    single_res = flz.get_children(
+        parent_name=SESSION,
+        flexilims_session=flm_sess,
+        children_datatype="dataset",
+        filter=dict(notes="Motion correction reference"),
+    )
+    assert single_res.shape[0] == 1
 
 
 def test_add_entity(flm_sess):
