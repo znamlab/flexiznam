@@ -192,7 +192,7 @@ def _create_yaml_dict(
     level_dict = dict()
     genealogy = list(genealogy)
 
-    level_name = level_folder.stem
+    level_name = level_folder.name
     m = re.fullmatch(r"R\d\d\d\d\d\d_?(.*)?", level_name)
     if m:
         level_dict["type"] = "recording"
@@ -238,7 +238,7 @@ def _create_yaml_dict(
                 parent_dict=children,
             )
     level_dict["children"] = children
-    parent_dict[level_folder.stem] = level_dict
+    parent_dict[level_name] = level_dict
     return parent_dict
 
 
