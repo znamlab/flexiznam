@@ -56,44 +56,57 @@ class Dataset(object):
         project=None,
         name=None,
         id=None,
-        data_series=None,
         flexilims_session=None,
     ):
-        """Loads a dataset from flexilims.
+        """Loads a dataset from flexilims
 
         If the dataset_type attribute of the flexilims entry defined in
         Dataset.SUBCLASSES,this subclass will be used. Otherwise a generic Dataset is
         returned
 
         Args:
-            project: Name of the project or hexadecimal project_id
-            name: Unique name of the dataset on flexilims
-            id: Hexadecimal id of the dataset on flexilims
-            data_series: default to None. pd.Series as returned by flz.get_entities.
-                If provided, supersedes project, name and id.
-            flexilims_session: authentication session to access flexilims
+            project (str, optional): Name of the project or hexadecimal project_id. If
+                not provided, can be read from flexilims_session
+            name (str, optional): Unique name of the dataset on flexilims. Ignored if
+                `dataseries` is provided
+            id (str, optional): Hexadecimal id of the dataset on flexilims. Ignored if
+                `dataseries` is provided
+            flexilims_session (flexilims.Session, optional): authentication session to
+                access flexilims.
         """
-        if data_series is not None:
-            if (project is not None) or (name is not None):
-                raise AttributeError("Specify either data_series OR project + name/id")
-        else:
-            data_series = flz.get_entity(
-                project_id=project,
-                datatype="dataset",
-                name=name,
-                id=id,
-                flexilims_session=flexilims_session,
+        dataseries = flz.get_entity(
+            project_id=project,
+            datatype="dataset",
+            name=name,
+            id=id,
+            flexilims_session=flexilims_session,
+        )
+
+        if dataseries is None:
+            if project is None:
+                project = flexilims_session.project_id
+            raise FlexilimsError(
+                "No dataset named {} in project {}".format(name, project)
             )
+        ds = Dataset.from_dataseries(dataseries, flexilims_session=flexilims_session)
+        return ds
 
-            if data_series is None:
-                if project is None:
-                    project = flexilims_session.project_id
-                raise FlexilimsError(
-                    "No dataset named {} in project {}".format(name, project)
-                )
-        dataset_type = data_series.dataset_type
+    @staticmethod
+    def from_dataseries(
+        dataseries,
+        flexilims_session=None,
+    ):
+        """Create dataset from a flexilims dataseries
 
-        kwargs = Dataset._format_series_to_kwargs(data_series)
+        This function does not call flexilims, but uses the dataseries object directly.
+        Args:
+            dataseries (flexilims.DataSeries): flexilims dataseries object
+            flexilims_session (flexilims.Session, optional): authentication session to
+                access flexilims. Will be added to dataset object.
+        """
+        dataset_type = dataseries.dataset_type
+
+        kwargs = Dataset._format_series_to_kwargs(dataseries)
         name = kwargs.pop("name")
         kwargs["flexilims_session"] = flexilims_session
         if dataset_type in Dataset.SUBCLASSES:
@@ -186,16 +199,6 @@ class Dataset(object):
             short_name = dataset_name[len(origin["name"]) + 1 :]
             genealogy = tuple(origin.genealogy) + (short_name,)
             dataset_path = str(Path(origin["path"]) / short_name)
-            ds = Dataset(
-                path=dataset_path,
-                is_raw="no",
-                dataset_type=dataset_type,
-                genealogy=genealogy,
-                created=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                project=project,
-                origin_id=origin["id"],
-                flexilims_session=flexilims_session,
-            )
             return Dataset(
                 path=dataset_path,
                 is_raw="no",
@@ -214,7 +217,7 @@ class Dataset(object):
                 )
             elif conflicts == "skip" or conflicts == "overwrite":
                 if len(processed) == 1:
-                    return Dataset.from_flexilims(data_series=processed.iloc[0])
+                    return Dataset.from_dataseries(dataseries=processed.iloc[0])
                 else:
                     raise flz.errors.NameNotUniqueError(
                         "{} {} datasets with name starting by {} exists for {}, "
@@ -389,16 +392,6 @@ class Dataset(object):
 
         status = self.flexilims_status()
         attributes = self.extra_attributes.copy()
-        # the following lines are necessary because pandas converts python types to numpy
-        # types, which JSON does not understand and because JSON doesn't like tuples
-        for attribute in attributes:
-            if isinstance(attributes[attribute], np.integer):
-                attributes[attribute] = int(attributes[attribute])
-            if isinstance(attributes[attribute], np.bool_):
-                attributes[attribute] = bool(attributes[attribute])
-            if isinstance(attributes[attribute], tuple):
-                attributes[attribute] = list(attribute)
-        flz.utils.clean_recursively(attributes)
 
         if status == "different":
             if mode == "safe":
@@ -417,7 +410,7 @@ class Dataset(object):
                 if self.origin_id is None:
                     if self.get_flexilims_entry().get("origin_id", None) is not None:
                         raise FlexilimsError("Cannot set origin_id to null")
-
+                utils.clean_recursively(attributes)
                 resp = flz.update_entity(
                     datatype="dataset",
                     id=self.id,
@@ -710,12 +703,11 @@ class Dataset(object):
     @property
     def path_root(self):
         """Get CAMP root path that should apply to this dataset"""
-        if self.is_raw:
-            return Path(flz.config.PARAMETERS["data_root"]["raw"])
-        elif self.is_raw is None:
+        if self.is_raw is None:
             raise AttributeError("`is_raw` must be set to find path.")
-        else:
-            return Path(flz.config.PARAMETERS["data_root"]["processed"])
+        return flz.get_data_root(
+            which="raw" if self.is_raw else "processed", project=self.project
+        )
 
     @property
     def path_full(self):

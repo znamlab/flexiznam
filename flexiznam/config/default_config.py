@@ -14,6 +14,12 @@ DEFAULT_CONFIG = dict(
         "test": "606df1ac08df4d77c72c9aa4",
         "AAVRKO_retina_hva": "60a7757a8901a2357f29080a",
     },
+    project_paths={
+        "example": dict(
+            raw="/camp/project/example_project/raw",
+            processed="/camp/project/example_project/processed",
+        )
+    },
     # a default username can be specified
     flexilims_username="yourusername",
     # Use for data dataset detection
@@ -41,4 +47,9 @@ DEFAULT_CONFIG = dict(
     microscopy_extensions=[".czi", ".png", ".gif", ".tif", ".tiff"],
     # list of extensions accepted as `SequencingData`
     sequencing_extensions=[".fastq.gz", ".fastq", ".fq.gz", ".fq", ".bam", ".sam"],
+    conda_envs=dict(
+        dlc="dlc_nogui",
+        cottage_analysis="cottage_analysis",
+        suite2p="suite2p",
+    ),
 )

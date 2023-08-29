@@ -10,7 +10,7 @@ from flexiznam.config.default_config import DEFAULT_CONFIG
 from getpass import getpass
 
 
-def _find_file(file_name, config_folder=None):
+def _find_file(file_name, config_folder=None, create_if_missing=False):
     """Find a file by looking at various places
 
     Only in config_folder (if provided)
@@ -19,25 +19,37 @@ def _find_file(file_name, config_folder=None):
     - then in the ~/.config folder
     - then in the folder contain the file defining this function
     - then in sys.path
+
+    Args:
+        file_name (str): name of the file to find
+        config_folder (str): folder to look for the file
+        create_if_missing (bool): if True, create the file in the config folder if it
+            does not exist. If False, raise an error if the file is not found
     """
     if config_folder is not None:
         in_config_folder = Path(config_folder) / file_name
         if in_config_folder.is_file():
             return in_config_folder
-        raise ConfigurationError("Cannot find %s in %s" % (file_name, config_folder))
-    local = Path.cwd() / file_name
-    if local.is_file():
-        return local
-    config = Path(__file__).parent.absolute() / "config" / file_name
-    home = Path.home() / ".flexiznam"
-    if home.is_dir() and (home / file_name).is_file():
-        return home / file_name
-    if config.is_file():
-        return config
-    for directory in sys.path:
-        fname = Path(directory) / file_name
-        if fname.is_file():
-            return fname
+        missing_file = in_config_folder
+    else:
+        local = Path.cwd() / file_name
+        if local.is_file():
+            return local
+        config = Path(__file__).parent.absolute() / "config" / file_name
+        home = Path.home() / ".flexiznam"
+        if home.is_dir() and (home / file_name).is_file():
+            return home / file_name
+        if config.is_file():
+            return config
+        for directory in sys.path:
+            fname = Path(directory) / file_name
+            if fname.is_file():
+                return fname
+        missing_file = home / file_name
+    if create_if_missing:
+        with open(missing_file, "w") as f:
+            f.write("")
+        return missing_file
     raise ConfigurationError("Cannot find %s" % file_name)
 
 

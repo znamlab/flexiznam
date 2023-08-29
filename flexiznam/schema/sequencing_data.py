@@ -48,7 +48,7 @@ class SequencingData(Dataset):
             is_raw (bool): does this folder contain raw data?
             verbose (bool=True): print info about what is found
             flexilims_session (flm.Session): session to interact with flexilims
-            project (str): project ID or name
+            project (str): project name
 
         Returns:
             dict of datasets (fzm.schema.sequencing_data.SequencingData)

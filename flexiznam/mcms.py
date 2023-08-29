@@ -59,7 +59,7 @@ def get_procedures(mouse_name, username, password=None):
             elif k == "protocol":
                 if v is not None:
                     proc_dict["protocol_code"] = v["protocolCode"]
-                    proc_dict["project_licence"] = v["projectLicence"]
+                    proc_dict["project_licence"] = v["projectLicenceNumber"]
             elif k == "procedure":
                 proc_dict["procedure_name"] = v["name"]
             else:

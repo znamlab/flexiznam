@@ -112,9 +112,12 @@ def config(template=None, config_folder=None, update=False, add_projects=True):
         click.echo("Configuration file currently used is:\n%s" % fname)
         if update:
             click.echo("Updating file")
-            if template is not None:
-                click.ClickException("Template cannot be used in `--update` mode.")
             prm = config_tools.load_param(param_folder=config_folder)
+            # use create config to add new fields
+            config_tools.create_config(
+                overwrite=True, template=template, config_folder=config_folder, **prm
+            )
+            # use update config to add new projects
             config_tools.update_config(
                 param_file="config.yml",
                 config_folder=config_folder,

@@ -6,6 +6,58 @@
 
 - New `SequencingData` class to handle sequencing data
 - GUI can now be used to add data to flexilims with `flexiznam gui`
+- Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
+- `get_children` can work with name or id (instead of id only)
+
+### Minor
+- `add_mouse` uploads birth and death dates in a human readable format instead.
+- `get_entities` does not raise warnings anymore if `name` is specified and `datatype` 
+is not. This is now supported upstream by `flexilims`
+
+### Bugfixes
+
+- `update_config` actually adds the new fields (i.e. fields that are in the default
+config but not the local config) to the config file
+
+## v0.3.8
+
+### Main changes
+
+- Add `get_data_root` function to get `raw` or `processed` root for a project
+- `get_children` can filter children by attributes before returning results
+- refactor `get_datasets` to be non recursive and add filtering options. Also add 
+  multiple options to filter datasets and format output
+- add `get_datasets_recursively` to get all datasets below a given entity
+
+### Bugfixes
+
+- return empty dataframe if `filter` in `get_children` filters out everything (instead 
+  of crashing)
+- `update_flexilims` correctly uploads tuples parameters
+- `update_flexilims` correctly uploads floats and np.float/np.int parameters
+- `update_flexilims` can overwrite existing datasets (if `conflicts='overwrite'`)
+- Add filelock for token creation to avoid concurrent access and move token to their own
+  file
+
+### Minor
+
+- `harp_dataset.from_folder` will now match csv even if there is nothing before or after
+  `harpmessage` in the file name (i.e. the file is `harpmessage.bin`, and all csvs in 
+  the folder will be matched)
+- private function `config_tools._find_files` has now  a `create_if_missing` argument to 
+  create the file if it does not exist
+
+## v0.3.7
+
+### Main changes
+
+- Separate `Dataset.from_dataseries` and `Dataset.from_flexilims` to avoid confusion
+
+### Minor
+
+- `get_children` output is filtered to contain only relevant columns when   `children_datatype` is not None
+
+### Bugfixes
 
 ## v0.3.5
 

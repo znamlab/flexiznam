@@ -3,6 +3,7 @@ from pathlib import Path, PurePosixPath
 import re
 import numpy as np
 import pandas as pd
+import warnings
 
 SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
@@ -147,16 +148,40 @@ def clean_recursively(
 
     if json_compatible:
         # we don't have a dictionary
-        if isinstance(element, tuple):
+        ds_classes = set(Dataset.SUBCLASSES.values())
+        ds_classes.add(Dataset)
+        floats = (float, np.float32, np.float64)
+        ints = (int, np.int32, np.int64)
+        if (
+            (element is None)
+            or isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, bool)
+            or isinstance(element, list)
+            or any([isinstance(element, cls) for cls in ds_classes])
+        ):
+            pass
+        elif isinstance(element, tuple):
             element = list(element)
         elif isinstance(element, np.ndarray):
             element = element.tolist()
         elif isinstance(element, pathlib.Path):
             element = str(PurePosixPath(element))
-        elif isinstance(element, float) and (not np.isfinite(element)):
-            element = str(element)
+        elif isinstance(element, floats):
+            if not np.isfinite(element):
+                # nan and inf must be uploaded as string
+                element = str(element)
+            else:
+                element = float(element)
+        elif isinstance(element, ints):
+            element = int(element)
         elif isinstance(element, pd.Series or pd.DataFrame):
             raise IOError("Cannot make a pandas object json compatible")
+        else:
+            warnings.warn(
+                f"{element} has unknown type ({type(element)}). Will save as string"
+            )
+            element = str(element)
 
     if isinstance(element, list):
         for i, v in enumerate(element):
@@ -448,8 +473,8 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
             output.append([element.name, element.type, "Folder found", " ".join(ok), 0])
     else:
         try:
-            ds = Dataset.from_flexilims(
-                flexilims_session=flexilims_session, data_series=element
+            ds = Dataset.from_dataseries(
+                flexilims_session=flexilims_session, dataseries=element
             )
             if not ds.path_full.exists():
                 output.append(
