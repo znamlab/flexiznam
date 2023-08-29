@@ -336,7 +336,8 @@ def _check_recursively(
                 data_series[k] = v
             data_series.id = None
             data_series.name = "_".join(origin_genealogy + child_genealogy)
-            ds = flz.Dataset.from_flexilims(data_series=data_series)
+            ds = flz.Dataset.from_dataseries(data_series)
+            ds.project = project
             msg = ds.is_valid(return_reason=True)
             if msg:
                 child_dict["VALIDATION_ERROR"] = f"XXERRORXX {msg}"
