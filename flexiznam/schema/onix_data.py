@@ -79,33 +79,34 @@ class OnixData(Dataset):
 
         data = pd.DataFrame(data)
         output = dict()
-        for ts, df in data.groupby("timestamp"):
-            if (
-                enforce_validity
-                and ("rhd2164" not in df.device_name.values)
-                or ("breakout" not in df.device_name.values)
-            ):
-                if verbose:
-                    print(
-                        "Skipping partial onix dataset %s"
-                        % ts.strftime("%Y-%m-%d_%H_%M_%S")
-                    )
-                continue
-            onix_name = "onix_data_%s" % ts.strftime("%Y-%m-%d_%H_%M_%S")
-            extra_attributes = dict()
-            for device, dev_df in df.groupby("device_name"):
-                extra_attributes[device] = {
-                    s.subname: s.file for s in dev_df.itertuples()
-                }
-            output[onix_name] = OnixData(
-                path=folder,
-                genealogy=folder_genealogy + (onix_name,),
-                extra_attributes=extra_attributes,
-                created=ts.strftime("%Y-%m-%d " "%H:%M:%S"),
-                flexilims_session=flexilims_session,
-                project=project,
-                is_raw=is_raw,
-            )
+        if max(data.timestamp - data.timestamp.min()).total_seconds() > 2:
+            raise IOError(f"Multiple timestamps found in folder {folder}")
+
+        ts = data.timestamp.min()
+        if (
+            enforce_validity
+            and ("rhd2164" not in data.device_name.values)
+            or ("breakout" not in data.device_name.values)
+        ):
+            if verbose:
+                print(
+                    "Skipping partial onix dataset %s"
+                    % ts.strftime("%Y-%m-%d_%H_%M_%S")
+                )
+            return
+        onix_name = "onix_data_%s" % ts.strftime("%Y-%m-%d_%H_%M_%S")
+        extra_attributes = dict()
+        for device, dev_df in data.groupby("device_name"):
+            extra_attributes[device] = {s.subname: s.file for s in dev_df.itertuples()}
+        output[onix_name] = OnixData(
+            path=folder,
+            genealogy=folder_genealogy + (onix_name,),
+            extra_attributes=extra_attributes,
+            created=ts.strftime("%Y-%m-%d " "%H:%M:%S"),
+            flexilims_session=flexilims_session,
+            project=project,
+            is_raw=is_raw,
+        )
         return output
 
     def __init__(
