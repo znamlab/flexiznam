@@ -5,6 +5,7 @@
 ### Main changes
 
 - New `SequencingData` class to handle sequencing data
+- GUI can now be used to add data to flexilims with `flexiznam gui`
 
 ## v0.3.5
 

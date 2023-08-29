@@ -7,6 +7,17 @@ def cli():
 
 
 @cli.command()
+@click.argument("root_folder", type=click.Path(exists=True), default=".")
+def gui(root_folder):
+    """Start the GUI"""
+    from flexiznam.gui import flexigui
+
+    app = flexigui.FlexiGui()
+    app.root_folder.set(root_folder)
+    app.mainloop()
+
+
+@cli.command()
 @click.option("-p", "--project_id", prompt="Enter the project ID", help="Project ID.")
 @click.option(
     "-n",
@@ -28,6 +39,7 @@ def cli():
     show_default=True,
 )
 def add_genealogy(project_id, name, recursive, verbose):
+    """Add genealogy to a flexilims entity"""
     from flexiznam import get_flexilims_session
 
     flm_sess = get_flexilims_session(project_id=project_id)
@@ -60,9 +72,9 @@ def add_mouse(
     flexilims_username=None,
     mcms_username=None,
 ):
+    """Add a single mouse to a project."""
     from flexiznam import main
 
-    """Add a single mouse to a project."""
     click.echo("Trying to add %s in %s" % (mouse_name, project_id))
     main.add_mouse(
         mouse_name=mouse_name,
