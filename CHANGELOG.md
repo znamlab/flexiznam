@@ -1,5 +1,11 @@
 # Change log
 
+## v0.4.0
+
+### Main changes
+
+- `check_flexilims_issues` can now add missing paths
+
 ## v0.3.8
 
 ### Main changes
