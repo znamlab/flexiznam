@@ -16,6 +16,36 @@ from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_recursively
 
 
+def create_yaml(root_folder, project, origin_name, output_file, overwrite=False):
+    """Create a yaml file from a folder
+
+    Args:
+        root_folder (str): Folder to parse
+        project (str): Name of the project
+        origin_name (str): Name of the origin on flexilims
+        output_file (str): Full path to output yaml.
+        overwrite (bool, optional): Overwrite output file if it exists. Defaults to False.
+    """
+    output_file = pathlib.Path(output_file)
+    if (not overwrite) and output_file.exists():
+        s = input("File %s already exists. Overwrite (yes/[no])? " % output_file)
+        if s == "yes":
+            overwrite = True
+        else:
+            raise (
+                FileExistsError(
+                    "File %s already exists and overwrite is not allowed" % output_file
+                )
+            )
+    root_folder = pathlib.Path(root_folder)
+    if not root_folder.is_dir():
+        raise FileNotFoundError("source_dir %s is not a directory" % root_folder)
+
+    data = create_yaml_dict(root_folder, project, origin_name)
+    with open(output_file, "w") as f:
+        yaml.dump(data, f)
+
+
 def create_yaml_dict(
     root_folder,
     project,
@@ -56,8 +86,12 @@ def create_yaml_dict(
         format_yaml=format_yaml,
         parent_dict=dict(),
     )
+    if format_yaml:
+        root_folder = str(root_folder.parent)
+    else:
+        root_folder = root_folder.parent
     out = dict(
-        root_folder=root_folder.parent,
+        root_folder=root_folder,
         origin_name=origin_name,
         children=data,
         project=project,
@@ -132,7 +166,7 @@ def upload_yaml(
         list of names of entities created/updated
 
     """
-    if isinstance(source_yaml, str):
+    if isinstance(source_yaml, str) or isinstance(source_yaml, Path):
         source_yaml = Path(source_yaml)
         with open(source_yaml, "r") as f:
             yaml_data = yaml.safe_load(f)
