@@ -45,8 +45,9 @@ def get_data_root(which, project=None, flexilims_session=None):
         project = flexilims_session.project_id
 
     if project not in PARAMETERS["project_ids"]:
-        project = lookup_project(project, prm=None)
-        assert project is not None, f"Invalid project {project}"
+        proj = lookup_project(project, prm=None)
+        assert proj is not None, f"Invalid project {project}"
+        project = proj
 
     if project in PARAMETERS["project_paths"]:
         return Path(PARAMETERS["project_paths"][project][which])
@@ -803,7 +804,7 @@ def get_entities(
         :py:class:`pandas.DataFrame`: containing all matching entities
 
     """
-    assert (project_id is not None) or (flexilims_session is not None)
+    # assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     results = flexilims_session.get(
@@ -947,6 +948,8 @@ def get_id(name, datatype=None, project_id=None, flexilims_session=None):
     entity = get_entity(
         datatype=datatype, flexilims_session=flexilims_session, name=name
     )
+    if entity is None:
+        raise FlexilimsError("Cannot find entity named `%s`" % name)
     return entity["id"]
 
 
@@ -1086,10 +1089,27 @@ def get_datasets_recursively(
     For example, this is useful if you want to retrieve paths to all *scanimage*
     datasets associated with a given session.
 
+    Args:
+        origin_id (str): hexadecimal ID of the origin session. Not required if
+            origin_name is provided.
+        origin_name (str): text name of the origin session. Not required if origin_id
+            is provided.
+        origin_series (pandas.Series): series of the origin session. Not required if
+            origin_id or origin_name is provided.
+        dataset_type (str): type of the dataseet to filter by. If `None`,
+            will return all datasets.
+        filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        parent_type (str): type of the parent entity. If `None`, will return all
+        filter_parents (dict): dictionary of key-value pairs to filter parents by.
+        return_paths (bool): if True, return a list of paths
+        project_id (str): text name of the project. Not required if
+            `flexilims_session` is provided.
+        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        _output (list): internal argument used for recursion.
+
     Returns:
         dict: Dictionary with direct parent id as keys and lists of associated
             datasets, or dataset paths as values
-
     """
     if origin_series is None:
         if origin_id is None:
@@ -1173,7 +1193,7 @@ def get_datasets(
             otherwise ensure that only one dataset exists online and return it.
         return_paths (bool): if True, return a list of paths
         return_dataseries (bool): if True, a dataframe or a dataseries
-        _output (list): internal argument used for recursion.
+
 
 
     """

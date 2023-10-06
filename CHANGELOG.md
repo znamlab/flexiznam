@@ -8,6 +8,7 @@
 - GUI can now be used to add data to flexilims with `flexiznam gui`
 - Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
 - `get_children` can work with name or id (instead of id only)
+- `check_flexilims_issues` can now add missing paths
 
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.
@@ -18,6 +19,7 @@ is not. This is now supported upstream by `flexilims`
 
 - `update_config` actually adds the new fields (i.e. fields that are in the default
 config but not the local config) to the config file
+
 
 ## v0.3.8
 

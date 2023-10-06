@@ -307,7 +307,10 @@ def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
 @click.option("-t", "--target_file", default=None, help="Path to write csv output.")
 @click.option("-r", "--root_name", default=None, help="Root entity to start the check.")
 @click.option("--flexilims_username", default=None, help="Your username on flexilims.")
-def check_flexilims_issues(project_id, target_file, root_name, flexilims_username):
+@click.option("--add-path/--no-add-path", default=False, help="Add missing paths.")
+def check_flexilims_issues(
+    project_id, target_file, root_name, flexilims_username, add_path
+):
     """Check that database is properly formatted
 
     This will check recursively all mice if `root_name` is not provided. Elements that
@@ -341,3 +344,6 @@ def check_flexilims_issues(project_id, target_file, root_name, flexilims_usernam
     else:
         df = pdf
     df.to_csv(target_file)
+    if add_path:
+        print("Adding missing paths")
+        utils.add_missing_paths(flexilims_session, root_name=root_name)
