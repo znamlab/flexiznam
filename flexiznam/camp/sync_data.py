@@ -16,11 +16,11 @@ from flexiznam.config import PARAMETERS
 from flexiznam.utils import clean_recursively
 
 
-def create_yaml(root_folder, project, origin_name, output_file, overwrite=False):
+def create_yaml(folder_to_parse, project, origin_name, output_file, overwrite=False):
     """Create a yaml file from a folder
 
     Args:
-        root_folder (str): Folder to parse
+        folder_to_parse (str): Folder to parse
         project (str): Name of the project
         origin_name (str): Name of the origin on flexilims
         output_file (str): Full path to output yaml.
@@ -37,17 +37,17 @@ def create_yaml(root_folder, project, origin_name, output_file, overwrite=False)
                     "File %s already exists and overwrite is not allowed" % output_file
                 )
             )
-    root_folder = pathlib.Path(root_folder)
-    if not root_folder.is_dir():
-        raise FileNotFoundError("source_dir %s is not a directory" % root_folder)
+    folder_to_parse = pathlib.Path(folder_to_parse)
+    if not folder_to_parse.is_dir():
+        raise FileNotFoundError("source_dir %s is not a directory" % folder_to_parse)
 
-    data = create_yaml_dict(root_folder, project, origin_name)
+    data = create_yaml_dict(folder_to_parse, project, origin_name)
     with open(output_file, "w") as f:
         yaml.dump(data, f)
 
 
 def create_yaml_dict(
-    root_folder,
+    folder_to_parse,
     project,
     origin_name,
     format_yaml=True,
@@ -57,7 +57,7 @@ def create_yaml_dict(
     Recursively parse a folder and create a yaml dict with the structure of the folder.
 
     Args:
-        root_folder (str): Path to the folder to parse
+        folder_to_parse (str): Path to the folder to parse
         project (str): Name of the project, used as root of the path in the output
         origin_name (str): Name of the origin on flexilims. Must be online and have
             genealogy set.
@@ -76,20 +76,86 @@ def create_yaml_dict(
     assert origin is not None, f"Origin {origin_name} not found in project {project}"
     assert "genealogy" in origin, f"Origin {origin_name} has no genealogy"
     genealogy = origin["genealogy"]
-    root_folder = Path(root_folder)
-    assert root_folder.is_dir(), f"Folder {root_folder} does not exist"
+    folder_to_parse = Path(folder_to_parse)
+    assert folder_to_parse.is_dir(), f"Folder {folder_to_parse} does not exist"
 
     data = _create_yaml_dict(
-        level_folder=root_folder,
+        level_folder=folder_to_parse,
         project=project,
         genealogy=genealogy,
         format_yaml=format_yaml,
         parent_dict=dict(),
     )
     if format_yaml:
-        root_folder = str(root_folder.parent)
+        root_folder = str(folder_to_parse.parent)
     else:
-        root_folder = root_folder.parent
+        root_folder = folder_to_parse.parent
+    out = dict(
+        root_folder=root_folder,
+        origin_name=origin_name,
+        children=data,
+        project=project,
+    )
+    return out
+
+
+def parse_yaml(
+    yaml_file,
+    root_folder=None,
+    origin_name=None,
+    project=None,
+    format_yaml=True,
+):
+    """Parse a yaml file and check validity
+
+    This will add datasets to each existing levels of the yaml, but won't create
+    nested levels
+
+    Args:
+        yaml_file (str): path to the yaml file
+        root_folder (str): path to the root folder. If not provided, will be read from
+            the yaml file. This is the folder that contains the main folder, so "mouse"
+            for a  "session".
+        origin_name (str): name of the origin on flexilims. If not provided, will be
+            read from the yaml file
+        project (str): name of the project. If not provided, will be read from the yaml
+            file
+        format_yaml (bool, optional): Format the output to be yaml compatible if True,
+            otherwise keep dataset as Dataset object and path as pathlib.Path. Defaults
+            to True.
+    Returns
+        dict: yaml dict with datasets added
+    """
+    yaml_data = check_yaml_validity(yaml_file, root_folder, origin_name, project)
+    if root_folder is None:
+        root_folder = Path(yaml_data["root_folder"])
+    assert root_folder.is_dir(), f"Folder {root_folder} does not exist"
+
+    if project is None:
+        project = yaml_data["project"]
+    flm_sess = flz.get_flexilims_session(project_id=project)
+
+    if origin_name is None:
+        origin_name = yaml_data["origin_name"]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        origin = flz.get_entity(name=origin_name, flexilims_session=flm_sess)
+    assert origin is not None, f"Origin {origin_name} not found in project {project}"
+    assert "genealogy" in origin, f"Origin {origin_name} has no genealogy"
+    genealogy = origin["genealogy"]
+
+    assert len(yaml_data["children"]) == 1, "Parsing only one folder is allowed"
+    child = list(yaml_data["children"].keys())[0]
+    data = _create_yaml_dict(
+        level_folder=root_folder / child,
+        project=project,
+        genealogy=genealogy,
+        format_yaml=format_yaml,
+        parent_dict=yaml_data["children"],
+        only_datasets=True,
+    )
+    if format_yaml:
+        root_folder = str(root_folder)
     out = dict(
         root_folder=root_folder,
         origin_name=origin_name,
@@ -204,6 +270,7 @@ def _create_yaml_dict(
     genealogy,
     format_yaml,
     parent_dict,
+    only_datasets=False,
 ):
     """Private function to create a yaml dict from a folder
 
@@ -219,34 +286,59 @@ def _create_yaml_dict(
         format_yaml (bool): format results to be yaml compatible or keep Dataset
             and pathlib.Path objects
         parent_dict (dict): dict of the parent folder. Used for recursion
+        only_datasets (bool): only parse datasets, not folders
     """
 
     level_folder = Path(level_folder)
     assert level_folder.is_dir(), "root_folder must be a directory"
-    level_dict = dict()
+    level_name = level_folder.name
+    if level_name in parent_dict:
+        level_dict = parent_dict[level_name]
+    else:
+        level_dict = dict()
     genealogy = list(genealogy)
 
-    level_name = level_folder.name
     m = re.fullmatch(r"R\d\d\d\d\d\d_?(.*)?", level_name)
     if m:
-        level_dict["type"] = "recording"
-        level_dict["protocol"] = (
-            m[1] if m[1] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
-        )
-        level_dict["recording_type"] = "XXERRORXX error RECORDING TYPE NOT SPECIFIED"
-
+        if "type" in level_dict:
+            assert (
+                level_dict["type"] == "recording"
+            ), "Conflicting types, expected recording"
+        else:
+            level_dict["type"] = "recording"
+        if "protocol" not in level_dict:
+            level_dict["protocol"] = (
+                m[1] if m[1] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
+            )
+        if "recording_type" not in level_dict:
+            level_dict["recording_type"] = "XXERRORXX RECORDING TYPE NOT SPECIFIED"
     elif re.fullmatch(r"S\d*", level_name):
-        level_dict["type"] = "session"
+        if "type" in level_dict:
+            assert (
+                level_dict["type"] == "session"
+            ), "Conflicting types, expected session"
+        else:
+            level_dict["type"] = "session"
     else:
-        level_dict["type"] = "sample"
-    level_dict["genealogy"] = genealogy + [level_name]
-    level_dict["path"] = Path(project, *level_dict["genealogy"])
+        if "type" not in level_dict:
+            level_dict["type"] = "sample"
+    if "genealogy" in level_dict:
+        assert level_dict["genealogy"] == genealogy + [
+            level_name
+        ], f"Conflicting genealogy for {level_name}"
+    else:
+        level_dict["genealogy"] = genealogy + [level_name]
+    if "path" not in level_dict:
+        level_dict["path"] = Path(project, *level_dict["genealogy"])
     if format_yaml:
         level_dict["path"] = str(PurePosixPath(level_dict["path"]))
-    children = dict()
+    children = dict() if "children" not in level_dict else level_dict["children"]
     datasets = Dataset.from_folder(level_folder)
     if datasets:
         for ds_name, ds in datasets.items():
+            if ds_name in children:
+                warnings.warn(f"Dataset {ds_name} already exists in {level_name}. Skip")
+                continue
             ds.genealogy = genealogy + list(ds.genealogy)
             if format_yaml:
                 # find path root
@@ -262,7 +354,14 @@ def _create_yaml_dict(
             else:
                 children[ds_name] = ds
 
-    for child in level_folder.glob("*"):
+    if only_datasets:
+        subfolders = [
+            level_folder / n for n, c in children.items() if c["type"] != "dataset"
+        ]
+    else:
+        subfolders = level_folder.glob("*")
+
+    for child in subfolders:
         if child.is_dir():
             _create_yaml_dict(
                 child,
