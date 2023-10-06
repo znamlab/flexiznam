@@ -100,7 +100,7 @@ def create_yaml_dict(
 
 
 def parse_yaml(
-    yaml_file,
+    yaml_data,
     root_folder=None,
     origin_name=None,
     project=None,
@@ -112,7 +112,7 @@ def parse_yaml(
     nested levels
 
     Args:
-        yaml_file (str): path to the yaml file
+        yaml_file (str): path to the yaml file (or data as dict)
         root_folder (str): path to the root folder. If not provided, will be read from
             the yaml file. This is the folder that contains the main folder, so "mouse"
             for a  "session".
@@ -126,7 +126,10 @@ def parse_yaml(
     Returns
         dict: yaml dict with datasets added
     """
-    yaml_data = check_yaml_validity(yaml_file, root_folder, origin_name, project)
+    if isinstance(yaml_data, str) or isinstance(yaml_data, Path):
+        with open(yaml_data, "r") as f:
+            yaml_data = yaml.safe_load(f)
+
     if root_folder is None:
         root_folder = Path(yaml_data["root_folder"])
     assert root_folder.is_dir(), f"Folder {root_folder} does not exist"
@@ -162,10 +165,29 @@ def parse_yaml(
         children=data,
         project=project,
     )
+    yaml_data = check_yaml_validity(yaml_data, root_folder, origin_name, project)
     return out
 
 
 def check_yaml_validity(yaml_data, root_folder=None, origin_name=None, project=None):
+    """Check that a yaml file is valid
+
+    This will check that the genealogy is correct, that the datasets are valid and
+    that the folder structure is correct
+
+    Args:
+        yaml_file (str): path to the yaml file (or data as dict)
+        root_folder (str): path to the root folder. If not provided, will be read from
+            the yaml file. This is the folder that contains the main folder, so "mouse"
+            for a  "session".
+        origin_name (str): name of the origin on flexilims. If not provided, will be
+            read from the yaml file
+        project (str): name of the project. If not provided, will be read from the yaml
+            file
+
+    Returns:
+        dict: same as input yaml_data, but with errors added
+    """
     if isinstance(yaml_data, str) or isinstance(yaml_data, Path):
         with open(yaml_data, "r") as f:
             yaml_data = yaml.safe_load(f)
@@ -294,6 +316,8 @@ def _create_yaml_dict(
     level_name = level_folder.name
     if level_name in parent_dict:
         level_dict = parent_dict[level_name]
+        if level_dict is None:
+            level_dict = dict()
     else:
         level_dict = dict()
     genealogy = list(genealogy)
@@ -356,7 +380,9 @@ def _create_yaml_dict(
 
     if only_datasets:
         subfolders = [
-            level_folder / n for n, c in children.items() if c["type"] != "dataset"
+            level_folder / n
+            for n, c in children.items()
+            if (c is None) or (c.get("type", "unknown") != "dataset")
         ]
     else:
         subfolders = level_folder.glob("*")
