@@ -180,7 +180,9 @@ def add_password(app, username, password, password_file):
 @click.option(
     "-p", "--project", default="NOT SPECIFIED", help="Project name on flexilims."
 )
-@click.option("-m", "--mouse", default="NOT SPECIFIED", help="Mouse name on flexilims.")
+@click.option(
+    "-o", "--origin", default="NOT SPECIFIED", help="Origin name on flexilims."
+)
 @click.option(
     "--overwrite/--no-overwrite",
     default=False,
@@ -191,38 +193,15 @@ def add_password(app, username, password, password_file):
     default=False,
     help="After creating the yaml skeleton, should I also parse it?",
 )
-@click.option(
-    "-r",
-    "--raw_data_folder",
-    default=None,
-    help="Path to the root folder containing raw data. Only used with " "`--process`",
-)
-def create_yaml(
-    source_dir, target_yaml, project, mouse, overwrite, process, raw_data_folder
-):
+def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
     """Create a yaml file by looking recursively in `root_dir`"""
     from flexiznam import camp
-    import pathlib
 
-    target_yaml = pathlib.Path(target_yaml)
-    if (not overwrite) and target_yaml.exists():
-        s = input("File %s already exists. Overwrite (yes/[no])? " % target_yaml)
-        if s == "yes":
-            overwrite = True
-        else:
-            raise (
-                FileExistsError(
-                    "File %s already exists and overwrite is not allowed" % target_yaml
-                )
-            )
-    source_dir = pathlib.Path(source_dir)
-    if not source_dir.is_dir():
-        raise FileNotFoundError("source_dir %s is not a directory" % source_dir)
-    yml_content = camp.sync_data.create_yaml(
+    camp.sync_data.create_yaml(
         root_folder=source_dir,
-        outfile=target_yaml,
+        output_file=target_yaml,
+        origin_name=origin,
         project=project,
-        mouse=mouse,
         overwrite=overwrite,
     )
     click.echo("Created yml skeleton in %s" % target_yaml)
