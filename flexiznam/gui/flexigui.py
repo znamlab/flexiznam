@@ -182,7 +182,7 @@ class FlexiGui(tk.Tk):
         self.report(f"Parsing folder {folder}...")
         self.root_folder.set(folder)
         data = flz.camp.sync_data.create_yaml_dict(
-            root_folder=folder,
+            folder_to_parse=folder,
             project=self.project.get(),
             origin_name=self.origin_name.get(),
             format_yaml=True,
