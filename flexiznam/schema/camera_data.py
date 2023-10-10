@@ -219,12 +219,14 @@ class CameraData(Dataset):
     def video_file(self, value):
         self.extra_attributes["video_file"] = str(value)
 
-    def is_valid(self):
+    def is_valid(self, return_reason=False):
         """Check that video, metadata and timestamps files exist"""
-        if not (pathlib.Path(self.path) / self.timestamp_file).exists():
-            return False
-        if not (pathlib.Path(self.path) / self.metadata_file).exists():
-            return False
-        if not (pathlib.Path(self.path) / self.video_file).exists():
-            return False
-        return True
+        for attr in ["video_file", "timestamp_file", "metadata_file"]:
+            if attr not in self.extra_attributes:
+                msg = f"Missing attribute {attr}"
+                return msg if return_reason else False
+            fname = getattr(self, attr)
+            if not (self.path_full / fname).exists():
+                msg = f"Unvalid {attr}. {self.path_full / fname} does not exist"
+                return msg if return_reason else False
+        return "" if return_reason else True

@@ -79,31 +79,34 @@ class OnixData(Dataset):
 
         data = pd.DataFrame(data)
         output = dict()
-        for ts, df in data.groupby("timestamp"):
-            if (
-                enforce_validity
-                and ("rhd2164" not in df.device_name.values)
-                or ("breakout" not in df.device_name.values)
-            ):
-                if verbose:
-                    print(
-                        "Skipping partial onix dataset %s"
-                        % ts.strftime("%Y-%m-%d_%H_%M_%S")
-                    )
-                continue
-            onix_name = "onix_data_%s" % ts.strftime("%Y-%m-%d_%H_%M_%S")
-            extra_attributes = dict()
-            for device, dev_df in df.groupby("device_name"):
-                extra_attributes[device] = {s.subname: s.file for s in dev_df.itertuples()}
-            output[onix_name] = OnixData(
-                path=folder,
-                genealogy=folder_genealogy + (onix_name,),
-                extra_attributes=extra_attributes,
-                created=ts.strftime("%Y-%m-%d " "%H:%M:%S"),
-                flexilims_session=flexilims_session,
-                project=project,
-                is_raw=is_raw,
-            )
+        if max(data.timestamp - data.timestamp.min()).total_seconds() > 2:
+            raise IOError(f"Multiple timestamps found in folder {folder}")
+
+        ts = data.timestamp.min()
+        if (
+            enforce_validity
+            and ("rhd2164" not in data.device_name.values)
+            or ("breakout" not in data.device_name.values)
+        ):
+            if verbose:
+                print(
+                    "Skipping partial onix dataset %s"
+                    % ts.strftime("%Y-%m-%d_%H_%M_%S")
+                )
+            return
+        onix_name = "onix_data_%s" % ts.strftime("%Y-%m-%d_%H_%M_%S")
+        extra_attributes = dict()
+        for device, dev_df in data.groupby("device_name"):
+            extra_attributes[device] = {s.subname: s.file for s in dev_df.itertuples()}
+        output[onix_name] = OnixData(
+            path=folder,
+            genealogy=folder_genealogy + (onix_name,),
+            extra_attributes=extra_attributes,
+            created=ts.strftime("%Y-%m-%d " "%H:%M:%S"),
+            flexilims_session=flexilims_session,
+            project=project,
+            is_raw=is_raw,
+        )
         return output
 
     def __init__(
@@ -150,3 +153,30 @@ class OnixData(Dataset):
             id=id,
             flexilims_session=flexilims_session,
         )
+
+    def is_valid(self, return_reason=False):
+        """Check that the onix dataset is valid
+
+        Args:
+            return_reason (bool): if True, return a string with the reason why the
+                dataset is not valid. If False, return True or False
+
+        Returns:
+            bool or str: True if valid, False if not. If return_reason is True, return
+                a string with the reason why the dataset is not valid."""
+
+        ndevices = 0
+        for device_name in OnixData.DEVICE_NAMES:
+            if device_name not in self.extra_attributes:
+                continue
+            ndevices += 1
+            dev_dict = self.extra_attributes[device_name]
+            for v in dev_dict.values():
+                p = self.path_full / v
+                if not p.exists():
+                    msg = f"File {p} does not exist"
+                    return msg if return_reason else False
+        if ndevices == 0:
+            msg = "No devices found"
+            return msg if return_reason else False
+        return "" if return_reason else True

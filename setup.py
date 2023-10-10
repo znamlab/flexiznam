@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="flexiznam",
-    version="v0.3.8",
+    version="v0.4",
     url="https://github.com/znamlab/flexznam",
     license="MIT",
     author="Antonin Blot",
@@ -19,6 +19,7 @@ setup(
         "flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims",
         "pymcms @ git+ssh://git@github.com/znamlab/pymcms.git#egg=pymcms",
         "tifffile",
+        "ttkwidgets",
     ],
     entry_points="""
         [console_scripts]

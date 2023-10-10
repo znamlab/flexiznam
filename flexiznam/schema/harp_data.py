@@ -161,11 +161,18 @@ class HarpData(Dataset):
     def csv_files(self, value):
         self.extra_attributes["csv_files"] = str(value)
 
-    def is_valid(self):
-        """Check that video, metadata and timestamps files exist"""
-        if not (pathlib.Path(self.path) / self.binary_file).exists():
-            return False
+    def is_valid(self, return_reason=False):
+        """Check that video, metadata and timestamps files exist
+
+        Args:
+            return_reason (bool): if True, return a string with the reason why the
+                                  dataset is not valid
+        Returns:"""
+        if not (self.path_full / self.binary_file).exists():
+            msg = f"Missing file {self.binary_file}"
+            return msg if return_reason else False
         for _, file_path in self.csv_files.items():
-            if not (pathlib.Path(self.path) / file_path).exists():
-                return False
-        return True
+            if not (self.path_full / file_path).exists():
+                msg = f"Missing file {file_path}"
+                return msg if return_reason else False
+        return "" if return_reason else True
