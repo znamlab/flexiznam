@@ -157,6 +157,22 @@ class FlexiGui(tk.Tk):
 
     ############# GUI update methods #############
     # These methods are used to actually do stuff with the GUI elements
+    def get_checked_data(self, item=None, checked_data=None):
+        if checked_data is None:
+            checked_data = dict(children=dict())
+            for k in ["project", "origin_name", "root_folder"]:
+                checked_data[k] = self.data[k]
+
+        for child in self.treeview.get_children(item=item):
+            if self.treeview.tag_has("checked", child):
+                name, data = self._entity_by_itemid[child]
+                data = data.copy()
+                if "children" in data:
+                    data["children"] = {}
+                data = self.get_checked_data(item=child, checked_data=data)
+                checked_data["children"][name] = data
+        return checked_data
+
     def report(self, message):
         self.sb_msg.set(message)
         print(message)
@@ -188,9 +204,11 @@ class FlexiGui(tk.Tk):
             format_yaml=True,
         )
         self.report("Parsing done. Validating data...")
-        data = flz.camp.sync_data.check_yaml_validity(data)
+        data, errors = flz.camp.sync_data.check_yaml_validity(data)
         self.data = data
-        self.update_data()
+        self.update_data(remove_unchecked=False)
+        checked = self.get_checked_data(item=None, checked_data=None)
+        assert checked == self.data
         self.report("Done")
 
     def chg_root_folder(self):
@@ -229,17 +247,20 @@ class FlexiGui(tk.Tk):
         self.update_data()
         self.report("Done")
 
-    def update_data(self, name_to_select=None):
+    def update_data(self, name_to_select=None, remove_unchecked=True):
         """Update GUI data from self.data
 
         Args:
             name_to_select (str, optional): Name of item to select in treeview.
                 Defaults to None."""
         self.report("Updating GUI")
+        if remove_unchecked:
+            self.data = self.get_checked_data()
         self.textview.delete("1.0", tk.END)
         self.selected_item.set("None")
         self.treeview.delete(*self.treeview.get_children())
         self._entity_by_itemid = {}
+
         if "project" in self.data:
             self.project.set(self.data["project"])
         if "origin_name" in self.data:
@@ -262,7 +283,6 @@ class FlexiGui(tk.Tk):
                 values=[dtype],
                 open=True,
             )
-            self.treeview.change_state(item, "checked")
             if any(
                 [
                     v.startswith("XXERRORXX")
@@ -272,8 +292,8 @@ class FlexiGui(tk.Tk):
             ):
                 self.contains_errors = True
                 self.report(f"ERROR: {child} contains errors")
-                self.treeview.item(item, tags=("error",))
-
+                self.treeview.item(item, tags=("error", "checked"))
+            self.treeview.change_state(item, "checked")
             self._entity_by_itemid[item] = (child, child_data)
             if name_to_select and child == name_to_select:
                 self.treeview.focus(item)
@@ -313,7 +333,8 @@ class FlexiGui(tk.Tk):
             return
 
         self.report("Validating data...")
-        self.data = flz.camp.sync_data.check_yaml_validity(self.data)
+        self.update_data()
+        data, errors = flz.camp.sync_data.check_yaml_validity(self.get_checked_data())
 
         if self.contains_errors:
             tk.messagebox.showerror(
@@ -323,8 +344,16 @@ class FlexiGui(tk.Tk):
             return
 
         data = dict(self.data)
+        # remove unchecked items
+        for item in self.treeview.get_children():
+            if not self.treeview.tag_has("checked", item):
+                name, _ = self._entity_by_itemid[item]
+                self.report(f"Removing item {name}")
+                data["children"].pop(name)
+
         data["project"] = self.project.get()
         data["root_folder"] = self.root_folder.get()
+
         self.report("Validating data...")
         flz.camp.sync_data.upload_yaml(
             source_yaml=data,
@@ -368,5 +397,33 @@ class FlexiGui(tk.Tk):
 
 
 if __name__ == "__main__":
+
+    def diffofdict(d1, d2, diff=None, level=""):
+        """Find differences between 2 dictionary of dictionaries"""
+
+        if diff is None:
+            diff = []
+        all_keys = set(list(d1.keys()) + list(d2.keys()))
+        for k in all_keys:
+            level = level + k + "."
+            if k not in d2:
+                diff.append(f"{level} (missing in d2)")
+            elif k not in d1:
+                diff.append(f"{level} (missing in d1)")
+            elif isinstance(d1[k], dict):
+                diff = diffofdict(d1[k], d2[k], diff, level)
+            elif d1[k] != d2[k]:
+                diff.append(f"{level} ({d1[k]} != {d2[k]})")
+        return diff
+
     app = FlexiGui()
+    app.root_folder.set(
+        "/Volumes/lab-znamenskiyp/data/instruments/raw_data/projects/blota_onix_pilote/BRYA142.5d/"
+    )
+    app.origin_name.set("BRYA142.5d")
+    app.project.set("blota_onix_pilote")
     app.mainloop()
+    df = diffofdict(app.data["children"], app.get_checked_data()["children"])
+    a = app.data["children"]["S20230915"]["children"]
+    b = app.get_checked_data()["children"]["S20230915"]["children"]
+    a == b

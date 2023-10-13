@@ -165,7 +165,10 @@ def parse_yaml(
         children=data,
         project=project,
     )
-    yaml_data = check_yaml_validity(yaml_data, root_folder, origin_name, project)
+    yaml_data, errors = check_yaml_validity(
+        yaml_data, root_folder, origin_name, project
+    )
+
     return out
 
 
@@ -218,14 +221,14 @@ def check_yaml_validity(yaml_data, root_folder=None, origin_name=None, project=N
         origin = flz.get_entity(name=origin_name, flexilims_session=flm_sess)
     assert hasattr(origin, "genealogy"), f"Origin {origin_name} has no genealogy"
 
-    _check_recursively(
+    errors = _check_recursively(
         yaml_data["children"],
         origin_genealogy=origin["genealogy"],
         root_folder=root_folder,
         project=project,
         genealogy=[],
     )
-    return yaml_data
+    return yaml_data, errors
 
 
 def upload_yaml(
@@ -478,8 +481,16 @@ def _upload_yaml_dict(
 
 
 def _check_recursively(
-    yaml_data, origin_genealogy, root_folder, project, genealogy, fixerrors=False
+    yaml_data,
+    origin_genealogy,
+    root_folder,
+    project,
+    genealogy,
+    fixerrors=False,
+    errors=None,
 ):
+    if errors is None:
+        errors = dict()
     root_folder = Path(root_folder)
 
     for child, child_dict in yaml_data.items():
@@ -489,6 +500,7 @@ def _check_recursively(
         if child_dict["type"] != "dataset":
             if not fname.is_dir():
                 child_dict["PATH_ERROR"] = f"XXERRORXX folder {fname} does not exist"
+                errors[fname] = child_dict
         else:
             data_series = pd.Series(child_dict)
             for k, v in data_series.pop("extra_attributes").items():
@@ -500,6 +512,7 @@ def _check_recursively(
             msg = ds.is_valid(return_reason=True)
             if msg:
                 child_dict["VALIDATION_ERROR"] = f"XXERRORXX {msg}"
+                errors[fname] = child_dict
 
         if child_dict["genealogy"] != origin_genealogy + child_genealogy:
             if fixerrors:
@@ -507,6 +520,7 @@ def _check_recursively(
                 child_dict["genealogy"] = origin_genealogy + child_genealogy
             else:
                 child_dict["GENEALOGY_ERROR"] = f"XXERRORXX genealogy is not correct"
+                errors[fname] = child_dict
         if "children" in child_dict:
             _check_recursively(
                 child_dict["children"],
@@ -514,10 +528,18 @@ def _check_recursively(
                 root_folder,
                 project,
                 genealogy=genealogy + [child],
+                fixerrors=fixerrors,
+                errors=errors,
             )
+    return errors
 
 
 if __name__ == "__main__":
+    example_yml = "/Users/blota/Desktop/test_yaml.yml"
+    out = parse_yaml(example_yml)
+    with open("/Users/blota/Desktop/test_yaml_redump.yml", "w") as f:
+        yaml.dump(out, f)
+
     rel = "blota_onix_pilote/BRAC7448.2d/"
     root_folder = Path(flz.PARAMETERS["data_root"]["raw"]) / rel
     yaml_file = Path(flz.PARAMETERS["data_root"]["processed"]) / rel / "S20230421.yml"
