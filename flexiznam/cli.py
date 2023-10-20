@@ -206,7 +206,7 @@ def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
     )
     click.echo("Created yml skeleton in %s" % target_yaml)
     if process:
-        raise NotImplementedError
+        raise NotImplementedError("Process yaml at creation is not implemented yet")
 
 
 @cli.command()
