@@ -164,7 +164,9 @@ class FlexiGui(tk.Tk):
                 checked_data[k] = self.data[k]
 
         for child in self.treeview.get_children(item=item):
-            if self.treeview.tag_has("checked", child):
+            if self.treeview.tag_has("checked", child) or self.treeview.tag_has(
+                "tristate", child
+            ):
                 name, data = self._entity_by_itemid[child]
                 data = data.copy()
                 if "children" in data:
