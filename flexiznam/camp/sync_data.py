@@ -338,7 +338,14 @@ def _create_yaml_dict(
                 m[1] if m[1] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
             )
         if "recording_type" not in level_dict:
-            level_dict["recording_type"] = "XXERRORXX RECORDING TYPE NOT SPECIFIED"
+            if "camera" in level_dict["protocol"]:
+                level_dict["recording_type"] = "camera"
+            elif "onix" in level_dict["protocol"]:
+                level_dict["recording_type"] = "ephys"
+            elif "harp" in level_dict["protocol"]:
+                level_dict["recording_type"] = "behaviour"
+            else:
+                level_dict["recording_type"] = "NOT SPECIFIED"
     elif re.fullmatch(r"S\d*", level_name):
         if "type" in level_dict:
             assert (
