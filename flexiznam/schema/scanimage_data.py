@@ -240,7 +240,7 @@ class ScanimageData(Dataset):
         # checking file one by one is long, compare sets
         tif_files = set(tif_files)
         existing_file = {
-            f for f in os.listdir(self.path) if f.endswith(("tif", ".tiff"))
+            f for f in os.listdir(self.path_full) if f.endswith(("tif", ".tiff"))
         }
         if tif_files - existing_file:
             msg = "Some tif files do not exist: %s" % (tif_files - existing_file)
