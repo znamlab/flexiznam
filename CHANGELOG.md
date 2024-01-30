@@ -12,6 +12,7 @@
 
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.
+- Add `conflicts` argument to `add_mouse` to overwrite existing mice
 - `get_entities` does not raise warnings anymore if `name` is specified and `datatype` 
 is not. This is now supported upstream by `flexilims`
 

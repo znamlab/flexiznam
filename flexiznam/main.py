@@ -139,6 +139,7 @@ def add_mouse(
     mcms_password=None,
     flexilims_username=None,
     flexilims_password=None,
+    conflicts="abort",
 ):
     """Check if a mouse is already in the database and add it if it isn't
 
@@ -162,6 +163,8 @@ def add_mouse(
                                   flexilims session is not provided
         flexilims_password (str): [optional] password for flexilims, used only if
                                   flexilims session is not provided
+        conflicts (str): `abort`, `skip`, `update` or `overwrite` (see update_entity for
+                        detailed description)
 
     Returns (dict):
         flexilims reply
@@ -175,8 +178,14 @@ def add_mouse(
 
     mice_df = get_entities(flexilims_session=flexilims_session, datatype="mouse")
     if mouse_name in mice_df.index:
-        print("Mouse already online")
-        return mice_df.loc[mouse_name]
+        if conflicts.lower() == "skip":
+            print("Mouse already online")
+            return mice_df.loc[mouse_name]
+        elif conflicts.lower() == "abort":
+            raise FlexilimsError("Mouse already online")
+        is_online = True
+    else:
+        is_online = False
 
     if mouse_info is None:
         mouse_info = {}
@@ -222,12 +231,19 @@ def add_mouse(
     mouse_info["genealogy"] = [mouse_name]
     project_name = lookup_project(flexilims_session.project_id, PARAMETERS)
     mouse_info["path"] = str(Path(project_name) / mouse_name)
-    resp = flexilims_session.post(
-        datatype="mouse",
-        name=mouse_name,
-        attributes=mouse_info,
-        strict_validation=False,
-    )
+    if is_online:
+        resp = update_entity(datatype='mouse',
+                name=mouse_name,
+                mode=conflicts,
+                attributes=mouse_info,
+                flexilims_session=flexilims_session)
+    else:
+        resp = flexilims_session.post(
+            datatype="mouse",
+            name=mouse_name,
+            attributes=mouse_info,
+            strict_validation=False,
+        )
     return resp
 
 
