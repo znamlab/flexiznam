@@ -1,8 +1,8 @@
 import re
 import pandas as pd
-from pymcms.main import McmsSession
+from requests.exceptions import InvalidURL
 from flexiznam.config import PARAMETERS, get_password
-
+from pymcms.main import McmsSession
 
 def get_mouse_info(mouse_name, username, password=None):
     """Load mouse info from mcms in a dataframe
@@ -18,7 +18,11 @@ def get_mouse_info(mouse_name, username, password=None):
     if password is None:
         password = get_password(username=username, app="mcms")
     mcms_sess = McmsSession(username=username, password=password)
-    original_data = mcms_sess.get_animal(name=mouse_name)
+    try:
+        original_data = mcms_sess.get_animal(name=mouse_name)
+    except InvalidURL:
+        raise InvalidURL(f"Mouse {mouse_name} not found under your PPL")
+
     # convert to camel case for flexlilims
     mouse_data = {}
     pattern = re.compile(r"(?<!^)(?=[A-Z])")

@@ -15,6 +15,7 @@
 - Add `conflicts` argument to `add_mouse` to overwrite existing mice
 - `get_entities` does not raise warnings anymore if `name` is specified and `datatype` 
 is not. This is now supported upstream by `flexilims`
+- Clearer error message when mouse info cannot be found in MCMS
 
 ### Bugfixes
 
