@@ -414,7 +414,7 @@ class Dataset(object):
                 resp = flz.update_entity(
                     datatype="dataset",
                     id=self.id,
-                    name=self.full_name,
+                    name=self.dataset_name,
                     origin_id=self.origin_id,
                     mode=mode,
                     attributes=attributes,
