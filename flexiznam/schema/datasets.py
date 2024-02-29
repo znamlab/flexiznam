@@ -434,7 +434,7 @@ class Dataset(object):
             path=str(PurePosixPath(self.path)),
             is_raw="yes" if self.is_raw else "no",
             project_id=self.project_id,
-            dataset_name=self.full_name,
+            dataset_name=self.dataset_name,
             attributes=attributes,
             flexilims_session=self.flexilims_session,
             conflicts="abort",
