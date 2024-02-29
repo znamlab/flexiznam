@@ -9,8 +9,8 @@ from flexilims.utils import SPECIAL_CHARACTERS
 import flexiznam
 import yaml
 from flexiznam import mcms
-from flexiznam.config import PARAMETERS, get_password, add_password
-from flexiznam.errors import NameNotUniqueError, FlexilimsError, ConfigurationError
+from flexiznam.config import PARAMETERS, get_password
+from flexiznam.errors import NameNotUniqueError, FlexilimsError
 
 
 warnings.simplefilter("always", DeprecationWarning)

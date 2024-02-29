@@ -1,9 +1,7 @@
 import pathlib
 from datetime import datetime
 from pathlib import Path, PurePosixPath
-import numpy as np
 import pandas as pd
-from flexilims.utils import check_flexilims_validity
 import flexiznam as flz
 from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError

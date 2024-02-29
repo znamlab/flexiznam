@@ -1,4 +1,3 @@
-import pytest
 from flexiznam.schema.scanimage_data import ScanimageData
 from tests.tests_resources.data_for_testing import DATA_ROOT
 

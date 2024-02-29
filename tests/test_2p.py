@@ -20,7 +20,6 @@ from tests.tests_resources.data_for_testing import (
     TEST_PROJECT,
 )
 import flexiznam as fzn
-from flexiznam import camp
 
 MOUSE = "mouse_physio_2p"
 SESSION = "S20211102"

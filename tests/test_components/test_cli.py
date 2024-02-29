@@ -1,4 +1,3 @@
-import pytest
 import pathlib
 import yaml
 from click.testing import CliRunner

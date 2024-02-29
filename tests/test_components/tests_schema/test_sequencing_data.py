@@ -1,6 +1,5 @@
-import pytest
 from flexiznam.schema.sequencing_data import SequencingData
-from tests.tests_resources.data_for_testing import DATA_ROOT, PROJECT_ID
+from tests.tests_resources.data_for_testing import DATA_ROOT
 
 # Test creation of all dataset types.
 #

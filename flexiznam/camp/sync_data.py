@@ -1,19 +1,13 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
-import os
 import pathlib
 from pathlib import Path, PurePosixPath
 import re
-import copy
 import warnings
 import pandas as pd
 import yaml
-from yaml.parser import ParserError
 
 import flexiznam as flz
-from flexiznam.errors import SyncYmlError, FlexilimsError
 from flexiznam.schema import Dataset
-from flexiznam.config import PARAMETERS
-from flexiznam.utils import clean_recursively
 
 
 def create_yaml(folder_to_parse, project, origin_name, output_file, overwrite=False):
@@ -526,7 +520,7 @@ def _check_recursively(
                 print(f"Fixing genealogy for {child}")
                 child_dict["genealogy"] = origin_genealogy + child_genealogy
             else:
-                child_dict["GENEALOGY_ERROR"] = f"XXERRORXX genealogy is not correct"
+                child_dict["GENEALOGY_ERROR"] = "XXERRORXX genealogy is not correct"
                 errors[fname] = child_dict
         if "children" in child_dict:
             _check_recursively(

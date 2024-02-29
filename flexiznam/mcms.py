@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 from requests.exceptions import InvalidURL
-from flexiznam.config import PARAMETERS, get_password
+from flexiznam.config import get_password
 from pymcms.main import McmsSession
 
 

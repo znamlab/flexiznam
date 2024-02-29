@@ -319,7 +319,6 @@ def check_flexilims_issues(
     """
     from flexiznam.main import get_flexilims_session
     from flexiznam import utils
-    import pathlib
     import pandas as pd
 
     flexilims_session = get_flexilims_session(

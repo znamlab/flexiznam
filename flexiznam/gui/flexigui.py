@@ -1,6 +1,5 @@
 import os
 import tkinter as tk
-from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
 import yaml
 from pathlib import Path

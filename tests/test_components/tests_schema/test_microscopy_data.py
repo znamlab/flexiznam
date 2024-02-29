@@ -1,4 +1,3 @@
-import pytest
 from flexiznam.schema.microscopy_data import MicroscopyData
 from tests.tests_resources.data_for_testing import DATA_ROOT
 

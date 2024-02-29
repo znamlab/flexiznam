@@ -1,4 +1,3 @@
-import pytest
 from flexiznam.schema.harp_data import HarpData
 from tests.tests_resources.data_for_testing import DATA_ROOT
 
