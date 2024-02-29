@@ -21,7 +21,7 @@ class VisStimData(Dataset):
     ):
         """Create a visual stimulation dataset by loading info from folder
 
-        A visual stimulation dataset is a folder containing at least a `FrameLog.csv` 
+        A visual stimulation dataset is a folder containing at least a `FrameLog.csv`
         file and any number of other associated csvs.
 
         Args:
@@ -38,15 +38,15 @@ class VisStimData(Dataset):
         """
 
         csv_files = list(pathlib.Path(folder).glob("*.csv"))
-        
+
         fnames = [f.name for f in csv_files]
-        if 'framelog.csv' not in [f.lower() for f in fnames]:
+        if "framelog.csv" not in [f.lower() for f in fnames]:
             raise IOError("Cannot find FrameLog.csv file")
-        
-        log_file = [f for f in csv_files if f.name.lower() == 'framelog.csv'][0]
+
+        log_file = [f for f in csv_files if f.name.lower() == "framelog.csv"][0]
         if verbose:
             print(f"Found FrameLog.csv file: {log_file}")
-            
+
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)
         elif isinstance(folder_genealogy, list):
@@ -136,4 +136,4 @@ class VisStimData(Dataset):
             if not (self.path_full / file_path).exists():
                 msg = f"Missing file {file_path}"
                 return msg if return_reason else False
-        return  "" if return_reason else True
+        return "" if return_reason else True

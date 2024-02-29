@@ -232,11 +232,13 @@ def add_mouse(
     project_name = lookup_project(flexilims_session.project_id, PARAMETERS)
     mouse_info["path"] = str(Path(project_name) / mouse_name)
     if is_online:
-        resp = update_entity(datatype='mouse',
-                name=mouse_name,
-                mode=conflicts,
-                attributes=mouse_info,
-                flexilims_session=flexilims_session)
+        resp = update_entity(
+            datatype="mouse",
+            name=mouse_name,
+            mode=conflicts,
+            attributes=mouse_info,
+            flexilims_session=flexilims_session,
+        )
     else:
         resp = flexilims_session.post(
             datatype="mouse",

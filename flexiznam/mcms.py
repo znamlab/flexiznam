@@ -4,6 +4,7 @@ from requests.exceptions import InvalidURL
 from flexiznam.config import PARAMETERS, get_password
 from pymcms.main import McmsSession
 
+
 def get_mouse_info(mouse_name, username, password=None):
     """Load mouse info from mcms in a dataframe
 
