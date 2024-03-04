@@ -53,12 +53,24 @@ def _find_file(file_name, config_folder=None, create_if_missing=False):
     raise ConfigurationError("Cannot find %s" % file_name)
 
 
-def load_param(param_folder=None, config_file="config.yml"):
-    """Read parameter file from config folder"""
+def load_param(param_folder=None, config_file="config.yml", verbose=False):
+    """Read parameter file from config folder
+    
+    Args:
+        param_folder (str, optional): folder to look for the file. Defaults to None.
+        config_file (str, optional): name of the file to find. Defaults to "config.yml".
+        verbose (bool, optional): if True, print the path of the file being read. 
+            Defaults to False.
+    
+    Returns:
+        dict: parameters read from the file
+    """
     if param_folder is None:
         param_file = _find_file(config_file)
     else:
         param_file = Path(param_folder) / config_file
+    if verbose:
+        print(f"Reading parameters from {param_file}")
     with open(param_file, "r") as yml_file:
         prm = yaml.safe_load(yml_file)
     return prm
