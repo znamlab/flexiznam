@@ -16,6 +16,7 @@
 - `get_entities` does not raise warnings anymore if `name` is specified and `datatype` 
 is not. This is now supported upstream by `flexilims`
 - Clearer error message when mouse info cannot be found in MCMS
+- `load_param` can print the file used to read config with the `verbose` flag.
 
 ### Bugfixes
 
