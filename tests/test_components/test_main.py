@@ -429,3 +429,15 @@ def test_update_entity(flm_sess):
         datatype="dataset", name=dataset_name, flexilims_session=flm_sess
     )
     assert repr(new_entity) == repr(original_entity)
+    with pytest.raises(FlexilimsError) as err:
+        flz.update_entity(
+            "dataset",
+            name=dataset_name,
+            flexilims_session=flm_sess,
+            attributes={
+                "path": "new/path",
+                "dataset_type": "scanimage",
+                "project": "random",
+                "createdBy": "BAD",
+            },
+        )

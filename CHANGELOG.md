@@ -23,6 +23,13 @@ is not. This is now supported upstream by `flexilims`
 - `update_config` actually adds the new fields (i.e. fields that are in the default
 config but not the local config) to the config file
 
+
+## v0.3.10
+
+### Main changes
+
+- Make `update_entity` safer by crashing if reserved fields are used as attributes.
+
 ## v0.3.9
 
 ### Main changes

@@ -772,7 +772,11 @@ def update_entity(
         raise AttributeError("`mode` must be `overwrite` or `update`")
     if id is None:
         id = entity["id"]
-
+    for attr in full_attributes:
+        if attr in entity:
+            raise FlexilimsError(
+                "Attribute `%s` is a flexilims reserved keyword" % attr
+            )
     rep = flexilims_session.update_one(
         id=id,
         datatype=datatype,
