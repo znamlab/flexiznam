@@ -23,6 +23,11 @@ is not. This is now supported upstream by `flexilims`
 - `update_config` actually adds the new fields (i.e. fields that are in the default
 config but not the local config) to the config file
 
+## v0.3.9
+
+### Main changes
+
+- Replace crash for conflicting attributes by a warning
 
 ## v0.3.8
 
@@ -89,7 +94,7 @@ config but not the local config) to the config file
 - Fix [#88](https://github.com/znamlab/flexiznam/issues/88). Now make attributes JSON
   compatible before uploading to flexilims. This will replace special characters in
   attribute names by `_` in the database.
-- Fix [[#102](https://github.com/znamlab/flexiznam/issues/102). `add_mouse` now works
+- Fix [#102](https://github.com/znamlab/flexiznam/issues/102). `add_mouse` now works
   with mice that have special character in their allele.
 - `add_recording` and `add_sample` add the value online with the full name (including
   genealogy) rather than the short name.
