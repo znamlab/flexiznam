@@ -1,5 +1,11 @@
 # Change log
 
+## v0.3.9
+
+### Main changes
+
+- Replace crash for conflicting attributes by a warning
+
 ## v0.3.8
 
 ### Main changes
