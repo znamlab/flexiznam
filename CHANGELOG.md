@@ -1,5 +1,12 @@
 # Change log
 
+
+## v0.3.10
+
+### Main changes
+
+- Make `update_entity` safer by crashing if reserved fields are used as attributes.
+
 ## v0.3.9
 
 ### Main changes
