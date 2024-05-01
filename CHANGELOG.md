@@ -23,6 +23,13 @@ is not. This is now supported upstream by `flexilims`
 - `update_config` actually adds the new fields (i.e. fields that are in the default
 config but not the local config) to the config file
 
+## v0.3.11
+
+### Bugfixes
+
+- Fix bugs related to raw_data for projects not in main folder
+- Add mouse works with alive animals
+
 
 ## v0.3.10
 
@@ -75,6 +82,23 @@ config but not the local config) to the config file
 - `get_children` output is filtered to contain only relevant columns when   `children_datatype` is not None
 
 ### Bugfixes
+## v0.3.6
+
+### Main changes
+
+- New `SequencingData` class to handle sequencing data
+- Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
+- `get_children` can work with name or id (instead of id only)
+
+### Minor
+- `add_mouse` uploads birth and death dates in a human readable format instead.
+- `get_entities` does not raise warnings anymore if `name` is specified and `datatype`
+is not. This is now supported upstream by `flexilims`
+
+### Bugfixes
+
+- `update_config` actually adds the new fields (i.e. fields that are in the default
+config but not the local config) to the config file
 
 ## v0.3.5
 
