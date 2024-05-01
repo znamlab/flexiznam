@@ -105,7 +105,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     session_data = _clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
-        raw_data_folder = Path(PARAMETERS["data_root"]["raw"])
+        raw_data_folder = flz.get_data_root('raw', session_data["project"])
         raw_data_folder /= session_data["project"]
 
     if session_data["path"] is not None:
