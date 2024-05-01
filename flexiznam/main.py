@@ -207,12 +207,13 @@ def add_mouse(
         # format birthdate
         for date_type in ["birth_date", "death_date"]:
             d = mcms_info[date_type]
-            d = datetime.datetime.fromisoformat(d)
-            # birthdate is at midnight or 23 depending on the time zone
-            if d.hour <= 12:
-                date = d.strftime("%Y-%m-%d")
-            else:
-                date = (d + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            if d is not None:
+                d = datetime.datetime.fromisoformat(d)
+                # birthdate is at midnight or 23 depending on the time zone
+                if d.hour <= 12:
+                    date = d.strftime("%Y-%m-%d")
+                else:
+                    date = (d + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
             mcms_info[date_type] = date
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
         mouse_info = dict(mcms_info, **mouse_info)
