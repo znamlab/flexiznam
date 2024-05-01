@@ -173,6 +173,10 @@ def upload_yaml(
     """
     
     output = []
+    if raw_data_folder is None:
+        raw_data_folder = flz.get_data_root('raw', session_data["project"])
+        raw_data_folder /= session_data["project"]
+
     # if there are errors, I cannot safely parse the yaml
     errors = find_xxerrorxx(yml_file=source_yaml)
     if errors:
