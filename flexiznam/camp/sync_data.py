@@ -105,7 +105,7 @@ def parse_yaml(path_to_yaml, raw_data_folder=None, verbose=True):
     session_data = _clean_yaml(path_to_yaml)
 
     if raw_data_folder is None:
-        raw_data_folder = flz.get_data_root('raw', session_data["project"])
+        raw_data_folder = flz.get_data_root("raw", session_data["project"])
         raw_data_folder /= session_data["project"]
 
     if session_data["path"] is not None:
@@ -171,17 +171,15 @@ def upload_yaml(
         list of names of entities created/updated
 
     """
-    
+
     output = []
-    if raw_data_folder is None:
-        raw_data_folder = flz.get_data_root('raw', session_data["project"])
-        raw_data_folder /= session_data["project"]
 
     # if there are errors, I cannot safely parse the yaml
     errors = find_xxerrorxx(yml_file=source_yaml)
     if errors:
         raise SyncYmlError("The yaml file still contains error. Fix it")
     session_data = parse_yaml(source_yaml, raw_data_folder, verbose)
+
     # parsing can created errors, check again
     errors = find_xxerrorxx(yml_file=source_yaml)
     if errors:
@@ -293,7 +291,6 @@ def upload_yaml(
     def add_samples(samples, parent, output=None):
         # we'll need a utility function to deal with recursion
         for short_sample_name, sample_data in samples.items():
-
             # we always use `skip` to add samples
             sample_rep = flz.add_sample(
                 parent["id"],
@@ -442,7 +439,7 @@ def _trim_paths(session_data, raw_data_folder):
             trim_sample_paths(sample_data["samples"])
 
     if raw_data_folder is None:
-        raw_data_folder = Path(PARAMETERS["data_root"]["raw"])
+        raw_data_folder = flz.get_data_root("raw", session_data["project"])
     if "path" in session_data.keys():
         session_data["path"] = str(
             PurePosixPath(Path(session_data["path"]).relative_to(raw_data_folder))
