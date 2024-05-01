@@ -55,13 +55,13 @@ def _find_file(file_name, config_folder=None, create_if_missing=False):
 
 def load_param(param_folder=None, config_file="config.yml", verbose=False):
     """Read parameter file from config folder
-    
+
     Args:
         param_folder (str, optional): folder to look for the file. Defaults to None.
         config_file (str, optional): name of the file to find. Defaults to "config.yml".
-        verbose (bool, optional): if True, print the path of the file being read. 
+        verbose (bool, optional): if True, print the path of the file being read.
             Defaults to False.
-    
+
     Returns:
         dict: parameters read from the file
     """
@@ -167,7 +167,7 @@ def update_config(
             project_ids.update(kwargs["project_ids"])
         kwargs["project_ids"] = project_ids
         all_ids = {}
-        for (pname, pid) in kwargs["project_ids"].items():
+        for pname, pid in kwargs["project_ids"].items():
             if pid in all_ids:
                 warnings.warn(f"PIDs {pname} and {all_ids[pid]} have the same ID")
             all_ids[pid] = pname
