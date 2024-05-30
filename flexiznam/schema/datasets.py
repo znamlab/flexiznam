@@ -135,6 +135,18 @@ class Dataset(object):
     ):
         """Creates a dataset of a given type as a child of a parent entity
 
+        This function will create a dataset with a unique name based on the origin name
+        and the dataset type. If a dataset of this type already exists, the behaviour is
+        defined by the `conflicts` argument. If `extra_arguments` is provided, only
+        consider datasets that have the exact same extra_arguments when resolving
+        conflicts (see next paragraph for details).
+
+        Conflicts can be resolved in the following ways:
+        - `abort`: raise an error if a dataset of this type already exists
+
+
+
+
         Args:
             project (str): Name of the project or hexadecimal project_id
             origin_type (str): sample type of the origin
@@ -145,17 +157,8 @@ class Dataset(object):
                 file
             base_name (str): How is this dataset name? Use dataset_type if base_name is
                              None (default)
-            conflicts (str): What to do if a dataset of this type already exists
-                as a child of the parent entity? Behaviour modified by `extra_arguments`
-                `append`
-                    Create a new dataset with a new name and path
-                `abort` or None
-                    Through a :py:class:`flexiznam.errors.NameNotUniqueError` and
-                    exit
-                `skip` or `overwrite`
-                    Return a Dataset corresponding to the existing entry if there
-                    is exactly one existing entry, otherwise throw a
-                    :py:class:`flexiznam.errors.NameNotUniqueError`
+            conflicts (str): How to resolve conflicts? One of `abort`, `skip`, `append`,
+                `overwrite`. Default is `abort`
             flexilims_session (:py:class:`flexilims.Flexilims`): authentication session
                 to connect to flexilims
             extra_arguments (dict): additional arguments. If provided, change the
@@ -207,9 +210,16 @@ class Dataset(object):
             valid_processed = processed
 
         already_processed = len(processed) > 0
-        if (not already_processed) or (
-            (not len(valid_processed)) and conflicts == "append"
+
+        def _create_new_ds(
+            origin,
+            base_name,
+            project,
+            flexilims_session,
+            dataset_type,
+            extra_attributes,
         ):
+            """Inner function to create a new dataset object"""
             dataset_root = "%s_%s" % (origin["name"], base_name)
             dataset_name = flz.generate_name(
                 "dataset",
@@ -229,27 +239,64 @@ class Dataset(object):
                 project=project,
                 origin_id=origin["id"],
                 flexilims_session=flexilims_session,
+                extra_attributes=extra_attributes,
             )
-        else:
-            # There are some datasets of this type already online
-            if (conflicts is None) or (conflicts == "abort"):
-                raise flz.errors.DatasetError(
-                    f"Dataset(s) of type {dataset_type} already exist(s):"
-                    + f" {processed.loc[:, 'name']}"
-                )
-            elif conflicts == "skip" and len(valid_processed) == 1:
-                # If skip, ensure extra_arguments are the same
-                return Dataset.from_dataseries(dataseries=valid_processed[0])
-            elif conflicts == "overwrite" and len(processed) == 1:
-                # If overwrite, ensure there is only one dataset of this type as we
-                # won't be able to guess which one should be replaced
+
+        # CONFLICTS RESOLUTION
+        # There are no datasets, create one
+        if not already_processed:
+            return _create_new_ds(
+                origin,
+                base_name,
+                project,
+                flexilims_session,
+                dataset_type,
+                extra_arguments,
+            )
+        # There are some datasets of this type already online and we abort
+        if (conflicts is None) or (conflicts == "abort"):
+            raise flz.errors.DatasetError(
+                f"Dataset(s) of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        # Three cases left: skip, append, overwrite
+        if conflicts == "overwrite":
+            # If overwrite, ensure there is only one dataset of this type as we
+            # won't be able to guess which one should be replaced
+            if len(processed) == 1:
                 return Dataset.from_dataseries(dataseries=processed.iloc[0])
-            else:
-                txt = f"{len(processed)} {dataset_type} datasets with name starting by"
-                txt += f" {base_name} exists for {origin['name']}"
-                if extra_arguments:
-                    txt += f", {len(valid_processed)} matching extra_arguments"
-                raise flz.errors.NameNotUniqueError(txt)
+            raise flz.errors.NameNotUniqueError(
+                f"Multiple datasets of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        if conflicts == "skip":
+            # If skip and we have an exact match, return it
+            if len(valid_processed) == 1:
+                return Dataset.from_dataseries(dataseries=valid_processed[0])
+            # If there is no match, create a new dataset
+            if len(valid_processed) == 0:
+                return _create_new_ds(
+                    origin,
+                    base_name,
+                    project,
+                    flexilims_session,
+                    dataset_type,
+                    extra_arguments,
+                )
+            raise flz.errors.NameNotUniqueError(
+                f"Multiple datasets of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        if conflicts == "append":
+            # Create a new dataset
+            return _create_new_ds(
+                origin,
+                base_name,
+                project,
+                flexilims_session,
+                dataset_type,
+                extra_arguments,
+            )
 
     @staticmethod
     def _format_series_to_kwargs(flm_series):
