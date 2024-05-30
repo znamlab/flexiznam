@@ -9,6 +9,8 @@
 - Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
 - `get_children` can work with name or id (instead of id only)
 - `check_flexilims_issues` can now add missing paths
+- `Dataset.from_origin` has a new `extra_attributes` argument to match online datasets
+  with specific attributes only.
 
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.

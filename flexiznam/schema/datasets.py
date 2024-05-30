@@ -131,20 +131,22 @@ class Dataset(object):
         base_name=None,
         conflicts=None,
         flexilims_session=None,
+        extra_arguments=None,
     ):
         """Creates a dataset of a given type as a child of a parent entity
 
         Args:
             project (str): Name of the project or hexadecimal project_id
             origin_type (str): sample type of the origin
-            origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
+            origin_id (str): hexadecimal ID of the origin. This or origin_name must be
+                provided
             origin_name (str): name of the origin. This or origin_id must be provided
-            dataset_type (str): type of dataset to create. Must be defined in the config file
+            dataset_type (str): type of dataset to create. Must be defined in the config
+                file
             base_name (str): How is this dataset name? Use dataset_type if base_name is
                              None (default)
             conflicts (str): What to do if a dataset of this type already exists
-                as a child of the parent entity?
-
+                as a child of the parent entity? Behaviour modified by `extra_arguments`
                 `append`
                     Create a new dataset with a new name and path
                 `abort` or None
@@ -152,9 +154,13 @@ class Dataset(object):
                     exit
                 `skip` or `overwrite`
                     Return a Dataset corresponding to the existing entry if there
-                    is exactly one existing entry, otherwise through a
+                    is exactly one existing entry, otherwise throw a
                     :py:class:`flexiznam.errors.NameNotUniqueError`
-            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims
+            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session
+                to connect to flexilims
+            extra_arguments (dict): additional arguments. If provided, change the
+                `conflicts` behaviour to consider only datasets that have the exact
+                same extra_arguments.
 
         Returns:
             :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
@@ -185,8 +191,25 @@ class Dataset(object):
             processed = processed[
                 [g[-1].startswith(base_name) for g in processed.genealogy]
             ]
+
+        # If extra_arguments is provided, only consider datasets that have the exact
+        # same extra_arguments
+        if extra_arguments is not None:
+            valid_processed = []
+            for _, proc in processed.iterrows():
+                online = Dataset._format_series_to_kwargs(proc)["extra_attributes"]
+                differences = utils.compare_dictionaries_recursively(
+                    utils.clean_recursively(extra_arguments), online
+                )
+                if not differences:
+                    valid_processed.append(proc)
+        else:
+            valid_processed = processed
+
         already_processed = len(processed) > 0
-        if (not already_processed) or (conflicts == "append"):
+        if (not already_processed) or (
+            (not len(valid_processed)) and conflicts == "append"
+        ):
             dataset_root = "%s_%s" % (origin["name"], base_name)
             dataset_name = flz.generate_name(
                 "dataset",
@@ -208,21 +231,25 @@ class Dataset(object):
                 flexilims_session=flexilims_session,
             )
         else:
+            # There are some datasets of this type already online
             if (conflicts is None) or (conflicts == "abort"):
                 raise flz.errors.DatasetError(
                     f"Dataset(s) of type {dataset_type} already exist(s):"
                     + f" {processed.loc[:, 'name']}"
                 )
-            elif conflicts == "skip" or conflicts == "overwrite":
-                if len(processed) == 1:
-                    return Dataset.from_dataseries(dataseries=processed.iloc[0])
-                else:
-                    raise flz.errors.NameNotUniqueError(
-                        "{} {} datasets with name starting by {} exists for {}, "
-                        "which one to return?".format(
-                            len(processed), dataset_type, base_name, origin["name"]
-                        )
-                    )
+            elif conflicts == "skip" and len(valid_processed) == 1:
+                # If skip, ensure extra_arguments are the same
+                return Dataset.from_dataseries(dataseries=valid_processed[0])
+            elif conflicts == "overwrite" and len(processed) == 1:
+                # If overwrite, ensure there is only one dataset of this type as we
+                # won't be able to guess which one should be replaced
+                return Dataset.from_dataseries(dataseries=processed.iloc[0])
+            else:
+                txt = f"{len(processed)} {dataset_type} datasets with name starting by"
+                txt += f" {base_name} exists for {origin['name']}"
+                if extra_arguments:
+                    txt += f", {len(valid_processed)} matching extra_arguments"
+                raise flz.errors.NameNotUniqueError(txt)
 
     @staticmethod
     def _format_series_to_kwargs(flm_series):
