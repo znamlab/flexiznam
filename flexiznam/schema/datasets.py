@@ -131,20 +131,16 @@ class Dataset(object):
         base_name=None,
         conflicts=None,
         flexilims_session=None,
-        extra_arguments=None,
+        extra_attributes=None,
+        ignore_attributes=(),
     ):
         """Creates a dataset of a given type as a child of a parent entity
 
         This function will create a dataset with a unique name based on the origin name
         and the dataset type. If a dataset of this type already exists, the behaviour is
-        defined by the `conflicts` argument. If `extra_arguments` is provided, only
-        consider datasets that have the exact same extra_arguments when resolving
-        conflicts (see next paragraph for details).
-
-        Conflicts can be resolved in the following ways:
-        - `abort`: raise an error if a dataset of this type already exists
-
-
+        defined by the `conflicts` argument. If `extra_attributes` is provided, only
+        consider datasets that have the exact same extra_attributes when resolving
+        conflicts.
 
 
         Args:
@@ -161,9 +157,11 @@ class Dataset(object):
                 `overwrite`. Default is `abort`
             flexilims_session (:py:class:`flexilims.Flexilims`): authentication session
                 to connect to flexilims
-            extra_arguments (dict): additional arguments. If provided, change the
+            extra_attributes (dict): additional arguments. If provided, change the
                 `conflicts` behaviour to consider only datasets that have the exact
-                same extra_arguments.
+                same extra_attributes.
+            ignore_attributes (list): list of arguments to ignore when comparing datasets
+                for conflicts resolution. Used only if `extra_attributes` is provided.
 
         Returns:
             :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
@@ -195,15 +193,17 @@ class Dataset(object):
                 [g[-1].startswith(base_name) for g in processed.genealogy]
             ]
 
-        # If extra_arguments is provided, only consider datasets that have the exact
-        # same extra_arguments
-        if extra_arguments is not None:
+        # If extra_attributes is provided, only consider datasets that have the exact
+        # same extra_attributes
+        if extra_attributes is not None:
             valid_processed = []
+            to_compare = utils.clean_recursively(
+                extra_attributes.copy(), keys=ignore_attributes
+            )
             for _, proc in processed.iterrows():
                 online = Dataset._format_series_to_kwargs(proc)["extra_attributes"]
-                differences = utils.compare_dictionaries_recursively(
-                    utils.clean_recursively(extra_arguments), online
-                )
+                online = utils.clean_recursively(online, keys=ignore_attributes)
+                differences = utils.compare_dictionaries_recursively(to_compare, online)
                 if not differences:
                     valid_processed.append(proc)
         else:
@@ -251,7 +251,7 @@ class Dataset(object):
                 project,
                 flexilims_session,
                 dataset_type,
-                extra_arguments,
+                extra_attributes,
             )
         # There are some datasets of this type already online and we abort
         if (conflicts is None) or (conflicts == "abort"):
@@ -263,6 +263,8 @@ class Dataset(object):
         if conflicts == "overwrite":
             # If overwrite, ensure there is only one dataset of this type as we
             # won't be able to guess which one should be replaced
+            if len(valid_processed) == 1:
+                return Dataset.from_dataseries(dataseries=valid_processed[0])
             if len(processed) == 1:
                 return Dataset.from_dataseries(dataseries=processed.iloc[0])
             raise flz.errors.NameNotUniqueError(
@@ -281,7 +283,7 @@ class Dataset(object):
                     project,
                     flexilims_session,
                     dataset_type,
-                    extra_arguments,
+                    extra_attributes,
                 )
             raise flz.errors.NameNotUniqueError(
                 f"Multiple datasets of type {dataset_type} already exist(s):"
@@ -295,7 +297,7 @@ class Dataset(object):
                 project,
                 flexilims_session,
                 dataset_type,
-                extra_arguments,
+                extra_attributes,
             )
 
     @staticmethod
