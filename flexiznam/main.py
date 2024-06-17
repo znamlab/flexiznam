@@ -1317,3 +1317,33 @@ def format_results(results, return_list=False):
     if return_list:
         return results
     return pd.DataFrame(results)
+
+
+def delete_recursively(source_id, flexilims_session, do_it=False):
+    """Delete an entity and all its children recursively
+
+    Args:
+        source_id (str): hexadecimal ID of the entity to delete
+        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        do_it (bool): if True, will actually delete the entities
+
+    Returns:
+        list: hexadecimal IDs of the entities to delete
+
+    """
+    to_delete = []
+
+    def _get_children(parent_id):
+        children = get_children(
+            parent_id=parent_id, flexilims_session=flexilims_session
+        )
+        for _, child in children.iterrows():
+            to_delete.append(child["id"])
+            if child["type"] != "dataset":
+                _get_children(child["id"])
+
+    _get_children(source_id)
+    if do_it:
+        for child_id in to_delete:
+            flexilims_session.delete(child_id)
+    return to_delete
