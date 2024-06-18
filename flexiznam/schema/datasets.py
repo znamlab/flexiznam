@@ -190,7 +190,7 @@ class Dataset(object):
         )
         if len(processed):
             processed = processed[
-                [g[-1].startswith(base_name) for g in processed.genealogy]
+                [g[-1].startswith(base_name + "_") for g in processed.genealogy]
             ]
 
         # If extra_attributes is provided, only consider datasets that have the exact
