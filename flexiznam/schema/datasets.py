@@ -133,6 +133,7 @@ class Dataset(object):
         flexilims_session=None,
         extra_attributes=None,
         ignore_attributes=(),
+        verbose=False,
     ):
         """Creates a dataset of a given type as a child of a parent entity
 
@@ -162,6 +163,7 @@ class Dataset(object):
                 same extra_attributes.
             ignore_attributes (list): list of arguments to ignore when comparing datasets
                 for conflicts resolution. Used only if `extra_attributes` is provided.
+            verbose (bool): print debug information
 
         Returns:
             :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
@@ -245,6 +247,8 @@ class Dataset(object):
         # CONFLICTS RESOLUTION
         # There are no datasets, create one
         if not already_processed:
+            if verbose:
+                print("No datasets of type %s found. Creating new" % dataset_type)
             return _create_new_ds(
                 origin,
                 base_name,
@@ -264,8 +268,12 @@ class Dataset(object):
             # If overwrite, ensure there is only one dataset of this type as we
             # won't be able to guess which one should be replaced
             if len(valid_processed) == 1:
+                if verbose:
+                    print("Overwriting dataset %s" % valid_processed.iloc[0].name)
                 return Dataset.from_dataseries(dataseries=valid_processed[0])
             if len(processed) == 1:
+                if verbose:
+                    print("Overwriting dataset %s" % processed.iloc[0].name)
                 return Dataset.from_dataseries(dataseries=processed.iloc[0])
             raise flz.errors.NameNotUniqueError(
                 f"Multiple datasets of type {dataset_type} already exist(s):"
@@ -274,9 +282,13 @@ class Dataset(object):
         if conflicts == "skip":
             # If skip and we have an exact match, return it
             if len(valid_processed) == 1:
+                if verbose:
+                    print("Skip. Returning dataset %s" % valid_processed.iloc[0].name)
                 return Dataset.from_dataseries(dataseries=valid_processed[0])
             # If there is no match, create a new dataset
             if len(valid_processed) == 0:
+                if verbose:
+                    print("No matching dataset found. Creating new dataset")
                 return _create_new_ds(
                     origin,
                     base_name,
@@ -291,6 +303,8 @@ class Dataset(object):
             )
         if conflicts == "append":
             # Create a new dataset
+            if verbose:
+                print("Appending dataset")
             return _create_new_ds(
                 origin,
                 base_name,
