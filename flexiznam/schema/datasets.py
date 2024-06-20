@@ -269,7 +269,7 @@ class Dataset(object):
             # won't be able to guess which one should be replaced
             if len(valid_processed) == 1:
                 if verbose:
-                    print("Overwriting dataset %s" % valid_processed.iloc[0].name)
+                    print("Overwriting dataset %s" % valid_processed[0].name)
                 return Dataset.from_dataseries(dataseries=valid_processed[0])
             if len(processed) == 1:
                 if verbose:
@@ -283,7 +283,7 @@ class Dataset(object):
             # If skip and we have an exact match, return it
             if len(valid_processed) == 1:
                 if verbose:
-                    print("Skip. Returning dataset %s" % valid_processed.iloc[0].name)
+                    print("Skip. Returning dataset %s" % valid_processed[0].name)
                 return Dataset.from_dataseries(dataseries=valid_processed[0])
             # If there is no match, create a new dataset
             if len(valid_processed) == 0:
