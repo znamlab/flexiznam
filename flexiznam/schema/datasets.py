@@ -270,11 +270,15 @@ class Dataset(object):
             if len(valid_processed) == 1:
                 if verbose:
                     print("Overwriting dataset %s" % valid_processed[0].name)
-                return Dataset.from_dataseries(dataseries=valid_processed[0])
+                dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
+                dataset.extra_attributes = extra_attributes
+                return dataset
             if len(processed) == 1:
                 if verbose:
                     print("Overwriting dataset %s" % processed.iloc[0].name)
-                return Dataset.from_dataseries(dataseries=processed.iloc[0])
+                dataset = Dataset.from_dataseries(dataseries=processed.iloc[0])
+                dataset.extra_attributes = extra_attributes
+                return dataset
             raise flz.errors.NameNotUniqueError(
                 f"Multiple datasets of type {dataset_type} already exist(s):"
                 + f" {processed.loc[:, 'name']}"
