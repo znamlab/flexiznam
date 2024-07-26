@@ -1331,7 +1331,7 @@ def delete_recursively(source_id, flexilims_session, do_it=False):
         list: hexadecimal IDs of the entities to delete
 
     """
-    to_delete = []
+    to_delete = [source_id]
 
     def _get_children(parent_id):
         children = get_children(
