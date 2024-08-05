@@ -209,7 +209,7 @@ class Dataset(object):
                 if not differences:
                     valid_processed.append(proc)
         else:
-            valid_processed = processed
+            valid_processed = [ser for _, ser in processed.iterrows()]
 
         already_processed = len(processed) > 0
 
