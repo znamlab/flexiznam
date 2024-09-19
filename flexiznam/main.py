@@ -10,7 +10,7 @@ import flexiznam
 import yaml
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
-from flexiznam.errors import NameNotUniqueError, FlexilimsError
+from flexiznam.errors import NameNotUniqueError, FlexilimsError, ConfigurationError
 
 
 warnings.simplefilter("always", DeprecationWarning)
@@ -93,6 +93,18 @@ def get_flexilims_session(
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
     """
+    offline_mode = PARAMETERS.get("offline_mode", False)
+    if offline_mode:
+        yaml_file = PARAMETERS.get("offline_yaml", None)
+        if yaml_file is None:
+            raise ConfigurationError("offline_mode is set but offline_yaml is not")
+        yaml_file = Path(yaml_file)
+        if not yaml_file.exists():
+            yaml_file = get_data_root("processed") / yaml_file
+        if not yaml_file.exists():
+            raise ConfigurationError(f"offline_yaml file {yaml_file} not found")
+        flexilims_session = flm.OfflineFlexilims(yaml_file)
+        return flexilims_session
 
     if project_id is not None:
         project_id = _format_project(project_id, PARAMETERS)
