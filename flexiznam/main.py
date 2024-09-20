@@ -76,6 +76,7 @@ def get_flexilims_session(
     password=None,
     reuse_token=True,
     timeout=10,
+    offline_mode=None,
 ):
     """Open a new flexilims session by creating a new authentication token.
 
@@ -88,12 +89,19 @@ def get_flexilims_session(
             read from the secrets file, or failing that triggers an input prompt.
         reuse_token (bool): (optional) if True, try to reuse an existing token
         timeout (int): (optional) timeout in seconds for the portalocker lock. Default
-            to 10.
+                to 10.
+        offline_mode (bool): (optional) if True, will use an offline session. In this
+            case, the `offline_yaml` parameter must be set in the config file. If
+            not provided, will look for the `offline_mode` parameter in the config
+            file. Default to None.
+        
 
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
     """
-    offline_mode = PARAMETERS.get("offline_mode", False)
+    if offline_mode is None:
+        offline_mode = PARAMETERS.get("offline_mode", False)
+        
     if offline_mode:
         yaml_file = PARAMETERS.get("offline_yaml", None)
         if yaml_file is None:
