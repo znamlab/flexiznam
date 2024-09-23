@@ -690,7 +690,7 @@ class Dataset(object):
         self._flexilims_session = value
         if value is None:
             return
-        if hasattr(value, "project_id"):
+        if hasattr(value, "project_id") and (value.project_id is not None):
             if self.project_id is None:
                 self.project_id = value.project_id
             elif self.project_id != value.project_id:

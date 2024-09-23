@@ -94,30 +94,32 @@ def get_flexilims_session(
             case, the `offline_yaml` parameter must be set in the config file. If
             not provided, will look for the `offline_mode` parameter in the config
             file. Default to None.
-        
+
 
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
     """
+
+    if project_id is not None:
+        project_id = _format_project(project_id, PARAMETERS)
+    else:
+        warnings.warn("Starting flexilims session without setting project_id.")
+
     if offline_mode is None:
         offline_mode = PARAMETERS.get("offline_mode", False)
-        
+
     if offline_mode:
         yaml_file = PARAMETERS.get("offline_yaml", None)
         if yaml_file is None:
             raise ConfigurationError("offline_mode is set but offline_yaml is not")
         yaml_file = Path(yaml_file)
         if not yaml_file.exists():
-            yaml_file = get_data_root("processed") / yaml_file
+            yaml_file = get_data_root("processed", project=project_id) / yaml_file
         if not yaml_file.exists():
             raise ConfigurationError(f"offline_yaml file {yaml_file} not found")
-        flexilims_session = flm.OfflineFlexilims(yaml_file)
+        flexilims_session = flm.OfflineFlexilims(yaml_file, project_id=project_id)
         return flexilims_session
 
-    if project_id is not None:
-        project_id = _format_project(project_id, PARAMETERS)
-    else:
-        warnings.warn("Starting flexilims session without setting project_id.")
     if username is None:
         username = PARAMETERS["flexilims_username"]
     if password is None:
