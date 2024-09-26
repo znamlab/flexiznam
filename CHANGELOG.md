@@ -41,20 +41,6 @@ config but not the local config) to the config file
 
 - Make `update_entity` safer by crashing if reserved fields are used as attributes.
 
-## v0.3.11
-
-### Bugfixes
-
-- Fix bugs related to raw_data for projects not in main folder
-- Add mouse works with alive animals
-
-
-## v0.3.10
-
-### Main changes
-
-- Make `update_entity` safer by crashing if reserved fields are used as attributes.
-
 ## v0.3.9
 
 ### Main changes
