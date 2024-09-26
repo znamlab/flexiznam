@@ -12,6 +12,7 @@
 - `Dataset.from_origin` has a new `extra_attributes` argument to match online datasets
   with specific attributes only.
 - `delete_recursively` can delete all children of an entity
+- Offline mode using downloaded copy of the database
 
 ### Minor
 - `add_mouse` uploads birth and death dates in a human readable format instead.
