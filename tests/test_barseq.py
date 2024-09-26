@@ -17,7 +17,6 @@ from tests.tests_resources.data_for_testing import (
     TEST_PROJECT,
 )
 import flexiznam as fzn
-from flexiznam import camp
 
 MOUSE = "mouse_barseq"
 YAML = "yaml_automatic_skeleton.yml"

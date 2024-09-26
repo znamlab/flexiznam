@@ -1,13 +1,11 @@
 import datetime
-import os
 import pathlib
-import re
 
 from flexiznam.schema.datasets import Dataset
 
 
-class HarpData(Dataset):
-    DATASET_TYPE = "harp"
+class VisStimData(Dataset):
+    DATASET_TYPE = "visstim"
 
     @classmethod
     def from_folder(
@@ -19,7 +17,10 @@ class HarpData(Dataset):
         flexilims_session=None,
         project=None,
     ):
-        """Create a harp dataset by loading info from folder
+        """Create a visual stimulation dataset by loading info from folder
+
+        A visual stimulation dataset is a folder containing at least a `FrameLog.csv`
+        file and any number of other associated csvs.
 
         Args:
             folder (str): path to the folder
@@ -34,59 +35,33 @@ class HarpData(Dataset):
             dict of dataset (flz.schema.harp_data.HarpData)
         """
 
-        fnames = [f for f in os.listdir(folder) if f.endswith((".csv", ".bin"))]
-        bin_files = [f for f in fnames if f.endswith(".bin")]
-        csv_files = [f for f in fnames if f.endswith(".csv")]
-        if not bin_files:
-            raise IOError("Cannot find binary file")
+        csv_files = list(pathlib.Path(folder).glob("*.csv"))
+
+        fnames = [f.name for f in csv_files]
+        if "framelog.csv" not in [f.lower() for f in fnames]:
+            raise IOError("Cannot find FrameLog.csv file")
+
+        log_file = [f for f in csv_files if f.name.lower() == "framelog.csv"][0]
+        if verbose:
+            print(f"Found FrameLog.csv file: {log_file}")
 
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)
         elif isinstance(folder_genealogy, list):
             folder_genealogy = tuple(folder_genealogy)
         output = {}
-        matched_files = set()
-        for bin_file in bin_files:
-            m = re.match(r"(.*?)_?harpmessage_?(.*?).bin", bin_file)
-            if not m:
-                if verbose:
-                    print(
-                        "%s is not a binary harp file: `_harpmessage_` is not in "
-                        "file name." % bin_file
-                    )
-                continue
-
-            pattern = "(.*)".join(m.groups()) + ".csv"
-            matches = [re.match(pattern, f) for f in csv_files]
-            associated_csv = {
-                m.groups()[0].strip("_"): f for f, m in zip(csv_files, matches) if m
-            }
-            if matched_files.intersection(associated_csv.values()):
-                raise IOError("A csv file matched with multiple binary files.")
-            matched_files.update(associated_csv.values())
-
-            bin_path = pathlib.Path(folder) / bin_file
-            created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
-            extra_attributes = dict(
-                binary_file=bin_file,
-                csv_files=associated_csv,
-            )
-            genealogy = folder_genealogy + (bin_file[:-4],)
-            output[bin_file[:-4]] = HarpData(
-                genealogy=genealogy,
-                is_raw=is_raw,
-                path=folder,
-                extra_attributes=extra_attributes,
-                created=created.strftime("%Y-%m-%d %H:%M:%S"),
-                flexilims_session=flexilims_session,
-                project=project,
-            )
-        if verbose:
-            unmatched = set(csv_files) - matched_files
-            if unmatched and verbose:
-                print("%d csv files did not match any binary file:" % len(unmatched))
-                for m in unmatched:
-                    print("    %s" % m)
+        extra_attributes = dict(csv_files={f.stem: f.name for f in csv_files})
+        genealogy = folder_genealogy + ("visstim",)
+        created = datetime.datetime.fromtimestamp(log_file.stat().st_mtime)
+        output["visstim"] = VisStimData(
+            genealogy=genealogy,
+            is_raw=is_raw,
+            path=folder,
+            extra_attributes=extra_attributes,
+            created=created.strftime("%Y-%m-%d %H:%M:%S"),
+            flexilims_session=flexilims_session,
+            project=project,
+        )
         return output
 
     def __init__(
@@ -102,7 +77,7 @@ class HarpData(Dataset):
         id=None,
         flexilims_session=None,
     ):
-        """Create a Harp dataset
+        """Create a VisStim dataset
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
@@ -121,21 +96,16 @@ class HarpData(Dataset):
             flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
-            binary_file: File name of the binary file.
             csv_files (optional): Dictionary of csv files associated to the binary file.
                                   Keys are identifier provided for convenience,
                                   values are the full file name
         """
-        if "binary_file" not in extra_attributes:
-            raise IOError(
-                "Harp dataset require `binary_file` in their extra_attributes"
-            )
 
         super().__init__(
             genealogy=genealogy,
             path=path,
             is_raw=is_raw,
-            dataset_type=HarpData.DATASET_TYPE,
+            dataset_type=VisStimData.DATASET_TYPE,
             extra_attributes=extra_attributes,
             created=created,
             project=project,
@@ -146,14 +116,6 @@ class HarpData(Dataset):
         )
 
     @property
-    def binary_file(self):
-        return self.extra_attributes.get("binary_file", None)
-
-    @binary_file.setter
-    def binary_file(self, value):
-        self.extra_attributes["binary_file"] = str(value)
-
-    @property
     def csv_files(self):
         return self.extra_attributes.get("csv_files", None)
 
@@ -162,15 +124,12 @@ class HarpData(Dataset):
         self.extra_attributes["csv_files"] = str(value)
 
     def is_valid(self, return_reason=False):
-        """Check that video, metadata and timestamps files exist
+        """Check that all csv files exist
 
         Args:
             return_reason (bool): if True, return a string with the reason why the
                                   dataset is not valid
         Returns:"""
-        if not (self.path_full / self.binary_file).exists():
-            msg = f"Missing file {self.binary_file}"
-            return msg if return_reason else False
         for _, file_path in self.csv_files.items():
             if not (self.path_full / file_path).exists():
                 msg = f"Missing file {file_path}"

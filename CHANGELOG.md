@@ -1,5 +1,46 @@
 # Change log
 
+## v0.4
+
+### Main changes
+
+- New `SequencingData` class to handle sequencing data
+- GUI can now be used to add data to flexilims with `flexiznam gui`
+- Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
+- `get_children` can work with name or id (instead of id only)
+- `check_flexilims_issues` can now add missing paths
+- `Dataset.from_origin` has a new `extra_attributes` argument to match online datasets
+  with specific attributes only.
+- `delete_recursively` can delete all children of an entity
+- Offline mode using downloaded copy of the database
+
+### Minor
+- `add_mouse` uploads birth and death dates in a human readable format instead.
+- Add `conflicts` argument to `add_mouse` to overwrite existing mice
+- `get_entities` does not raise warnings anymore if `name` is specified and `datatype`
+is not. This is now supported upstream by `flexilims`
+- Clearer error message when mouse info cannot be found in MCMS
+- `load_param` can print the file used to read config with the `verbose` flag.
+
+### Bugfixes
+
+- `update_config` actually adds the new fields (i.e. fields that are in the default
+config but not the local config) to the config file
+
+## v0.3.11
+
+### Bugfixes
+
+- Fix bugs related to raw_data for projects not in main folder
+- Add mouse works with alive animals
+
+
+## v0.3.10
+
+### Main changes
+
+- Make `update_entity` safer by crashing if reserved fields are used as attributes.
+
 ## v0.3.11
 
 ### Bugfixes
@@ -84,6 +125,7 @@ config but not the local config) to the config file
   `return_paths=False`
 - New `OnixData` class to handle Onix data
 - `get_flexilims_session` can now re-use token from a previous session
+- Add a GUI module.
 
 ### Minor
 - More generic `clean_recursively` replaces the `clean_dictionary_recursively`. It
@@ -92,8 +134,8 @@ config but not the local config) to the config file
 - `Dataset.format(mode='yaml')` ensure yaml compatibility. (path to str, tuple to list,
   etc...)
 - `add_experimental_session` can be done with `parent_id` (or `parent_name`).
-- `add_dataset` can add a dataset to a mouse.
-- `get_password` syntax changed to match the `add_password` syntax.
+- `add_dataset` can add a dataset to a mouse and does not require genealogy.
+
 
 ### Bugfixes
 - Fix [#68](https://github.com/znamlab/flexiznam/issues/68). Dataset.format returns
@@ -101,8 +143,10 @@ config but not the local config) to the config file
 - Fix [#88](https://github.com/znamlab/flexiznam/issues/88). Now make attributes JSON
   compatible before uploading to flexilims. This will replace special characters in
   attribute names by `_` in the database.
-- Fix [[#102](https://github.com/znamlab/flexiznam/issues/102). `add_mouse` now works
+- Fix [#102](https://github.com/znamlab/flexiznam/issues/102). `add_mouse` now works
   with mice that have special character in their allele.
+- `add_recording` and `add_sample` add the value online with the full name (including
+  genealogy) rather than the short name.
 
 ## v0.3.4
 

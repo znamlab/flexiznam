@@ -30,7 +30,7 @@ DEFAULT_CONFIG = dict(
     # list of all datatypes
     datatypes=["mouse", "session", "recording", "dataset", "sample"],
     # should we limit the valid dataset types?
-    enforce_dataset_types=True,
+    enforce_dataset_types=False,
     # if we enforce, what is the list of valid dataset type
     dataset_types=[
         "scanimage",

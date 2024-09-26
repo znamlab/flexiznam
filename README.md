@@ -38,7 +38,7 @@ To set up the flexilims and mcms integration, the config file must be edited. Fi
 flexiznam config
 ```
 
-This should create a `~/.flexiznam/config.yml` file. Edit it with your favorite text editor to change `flexilims_username`, `mcms_username` and, 
+This should create a `~/.flexiznam/config.yml` file. Edit it with your favorite text editor to change `flexilims_username`, `mcms_username` and,
 if neeed `data_root`.
 
 You can then add passwords to make it simpler by running (one by one):
@@ -78,7 +78,7 @@ If you used `pip -e .` to install, updating can be done with:
 
 ```
 cd flexiznam
-git pull 
+git pull
 pip install -e . --upgrade
 flexiznam config --update
 ```

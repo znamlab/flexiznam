@@ -6,7 +6,7 @@ import portalocker
 import pytest
 import flexiznam as flz
 import yaml
-from flexiznam.config import PARAMETERS, get_password
+from flexiznam.config import PARAMETERS
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 

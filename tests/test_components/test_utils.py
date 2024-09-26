@@ -2,7 +2,6 @@ import os
 import pytest
 import numpy as np
 from pathlib import Path
-import pandas as pd
 import tempfile
 from flexiznam.config import config_tools, DEFAULT_CONFIG
 from flexiznam import utils

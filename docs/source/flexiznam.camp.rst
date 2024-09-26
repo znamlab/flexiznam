@@ -8,7 +8,7 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   
+
 flexiznam.camp.sync\_data module
 --------------------------------
 

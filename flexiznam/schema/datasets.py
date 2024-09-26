@@ -1,9 +1,7 @@
 import pathlib
 from datetime import datetime
 from pathlib import Path, PurePosixPath
-import numpy as np
 import pandas as pd
-from flexilims.utils import check_flexilims_validity
 import flexiznam as flz
 from flexiznam import utils
 from flexiznam.errors import FlexilimsError, DatasetError
@@ -133,30 +131,39 @@ class Dataset(object):
         base_name=None,
         conflicts=None,
         flexilims_session=None,
+        extra_attributes=None,
+        ignore_attributes=(),
+        verbose=False,
     ):
         """Creates a dataset of a given type as a child of a parent entity
+
+        This function will create a dataset with a unique name based on the origin name
+        and the dataset type. If a dataset of this type already exists, the behaviour is
+        defined by the `conflicts` argument. If `extra_attributes` is provided, only
+        consider datasets that have the exact same extra_attributes when resolving
+        conflicts.
+
 
         Args:
             project (str): Name of the project or hexadecimal project_id
             origin_type (str): sample type of the origin
-            origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
+            origin_id (str): hexadecimal ID of the origin. This or origin_name must be
+                provided
             origin_name (str): name of the origin. This or origin_id must be provided
-            dataset_type (str): type of dataset to create. Must be defined in the config file
+            dataset_type (str): type of dataset to create. Must be defined in the config
+                file
             base_name (str): How is this dataset name? Use dataset_type if base_name is
                              None (default)
-            conflicts (str): What to do if a dataset of this type already exists
-                as a child of the parent entity?
-
-                `append`
-                    Create a new dataset with a new name and path
-                `abort` or None
-                    Through a :py:class:`flexiznam.errors.NameNotUniqueError` and
-                    exit
-                `skip` or `overwrite`
-                    Return a Dataset corresponding to the existing entry if there
-                    is exactly one existing entry, otherwise through a
-                    :py:class:`flexiznam.errors.NameNotUniqueError`
-            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims
+            conflicts (str): How to resolve conflicts? One of `abort`, `skip`, `append`,
+                `overwrite`. Default is `abort`
+            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session
+                to connect to flexilims
+            extra_attributes (dict): additional arguments. If provided, change the
+                `conflicts` behaviour to consider only datasets that have the exact
+                same extra_attributes.
+            ignore_attributes (list): list of arguments to ignore when comparing datasets
+                for conflicts resolution. Used only if `extra_attributes` is provided.
+            verbose (bool): print debug information
 
         Returns:
             :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
@@ -185,10 +192,36 @@ class Dataset(object):
         )
         if len(processed):
             processed = processed[
-                [g[-1].startswith(base_name) for g in processed.genealogy]
+                [g[-1].startswith(base_name + "_") for g in processed.genealogy]
             ]
+
+        # If extra_attributes is provided, only consider datasets that have the exact
+        # same extra_attributes
+        if extra_attributes is not None:
+            valid_processed = []
+            to_compare = utils.clean_recursively(
+                extra_attributes.copy(), keys=ignore_attributes
+            )
+            for _, proc in processed.iterrows():
+                online = Dataset._format_series_to_kwargs(proc)["extra_attributes"]
+                online = utils.clean_recursively(online, keys=ignore_attributes)
+                differences = utils.compare_dictionaries_recursively(to_compare, online)
+                if not differences:
+                    valid_processed.append(proc)
+        else:
+            valid_processed = [ser for _, ser in processed.iterrows()]
+
         already_processed = len(processed) > 0
-        if (not already_processed) or (conflicts == "append"):
+
+        def _create_new_ds(
+            origin,
+            base_name,
+            project,
+            flexilims_session,
+            dataset_type,
+            extra_attributes,
+        ):
+            """Inner function to create a new dataset object"""
             dataset_root = "%s_%s" % (origin["name"], base_name)
             dataset_name = flz.generate_name(
                 "dataset",
@@ -208,23 +241,82 @@ class Dataset(object):
                 project=project,
                 origin_id=origin["id"],
                 flexilims_session=flexilims_session,
+                extra_attributes=extra_attributes,
             )
-        else:
-            if (conflicts is None) or (conflicts == "abort"):
-                raise flz.errors.DatasetError(
-                    f"Dataset(s) of type {dataset_type} already exist(s):"
-                    + f" {processed.loc[:, 'name']}"
+
+        # CONFLICTS RESOLUTION
+        # There are no datasets, create one
+        if not already_processed:
+            if verbose:
+                print("No datasets of type %s found. Creating new" % dataset_type)
+            return _create_new_ds(
+                origin,
+                base_name,
+                project,
+                flexilims_session,
+                dataset_type,
+                extra_attributes,
+            )
+        # There are some datasets of this type already online and we abort
+        if (conflicts is None) or (conflicts == "abort"):
+            raise flz.errors.DatasetError(
+                f"Dataset(s) of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        # Three cases left: skip, append, overwrite
+        if conflicts == "overwrite":
+            # If overwrite, ensure there is only one dataset of this type as we
+            # won't be able to guess which one should be replaced
+            if len(valid_processed) == 1:
+                if verbose:
+                    print("Overwriting dataset %s" % valid_processed[0].name)
+                dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
+                dataset.extra_attributes = extra_attributes
+                return dataset
+            if len(processed) == 1:
+                if verbose:
+                    print("Overwriting dataset %s" % processed.iloc[0].name)
+                dataset = Dataset.from_dataseries(dataseries=processed.iloc[0])
+                dataset.extra_attributes = extra_attributes
+                return dataset
+            raise flz.errors.NameNotUniqueError(
+                f"Multiple datasets of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        if conflicts == "skip":
+            # If skip and we have an exact match, return it
+            if len(valid_processed) == 1:
+                if verbose:
+                    print("Skip. Returning dataset %s" % valid_processed[0].name)
+                return Dataset.from_dataseries(dataseries=valid_processed[0])
+            # If there is no match, create a new dataset
+            if len(valid_processed) == 0:
+                if verbose:
+                    print("No matching dataset found. Creating new dataset")
+                return _create_new_ds(
+                    origin,
+                    base_name,
+                    project,
+                    flexilims_session,
+                    dataset_type,
+                    extra_attributes,
                 )
-            elif conflicts == "skip" or conflicts == "overwrite":
-                if len(processed) == 1:
-                    return Dataset.from_dataseries(dataseries=processed.iloc[0])
-                else:
-                    raise flz.errors.NameNotUniqueError(
-                        "{} {} datasets with name starting by {} exists for {}, "
-                        "which one to return?".format(
-                            len(processed), dataset_type, base_name, origin["name"]
-                        )
-                    )
+            raise flz.errors.NameNotUniqueError(
+                f"Multiple datasets of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        if conflicts == "append":
+            # Create a new dataset
+            if verbose:
+                print("Appending dataset")
+            return _create_new_ds(
+                origin,
+                base_name,
+                project,
+                flexilims_session,
+                dataset_type,
+                extra_attributes,
+            )
 
     @staticmethod
     def _format_series_to_kwargs(flm_series):
@@ -328,13 +420,16 @@ class Dataset(object):
         elif project_id is not None:
             self.project_id = project_id
 
-    def is_valid(self):
-        """
-        Dummy method definition. Should be reimplemented in children classes
+    def is_valid(self, return_reason=False):
+        """Check if the file path is valid for this dataset
 
+        Should be reimplemented in children classes.
         Should return True if the dataset is found a valid, false otherwise
         """
-        raise NotImplementedError("`is_valid` is not defined for generic datasets")
+        if not self.path_full.exists():
+            msg = f"Path {self.path_full} does not exist"
+            return msg if return_reason else False
+        return "" if return_reason else True
 
     def associated_files(self, folder=None):
         """Give a list of all files associated with this dataset
@@ -431,10 +526,9 @@ class Dataset(object):
             dataset_type=self.dataset_type,
             created=self.created,
             path=str(PurePosixPath(self.path)),
-            genealogy=self.genealogy,
             is_raw="yes" if self.is_raw else "no",
             project_id=self.project_id,
-            dataset_name=self.full_name,
+            dataset_name=self.dataset_name,
             attributes=attributes,
             flexilims_session=self.flexilims_session,
             conflicts="abort",
@@ -596,7 +690,7 @@ class Dataset(object):
         self._flexilims_session = value
         if value is None:
             return
-        if hasattr(value, "project_id"):
+        if hasattr(value, "project_id") and (value.project_id is not None):
             if self.project_id is None:
                 self.project_id = value.project_id
             elif self.project_id != value.project_id:

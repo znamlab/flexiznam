@@ -7,6 +7,17 @@ def cli():
 
 
 @cli.command()
+@click.argument("root_folder", type=click.Path(exists=True), default=".")
+def gui(root_folder):
+    """Start the GUI"""
+    from flexiznam.gui import flexigui
+
+    app = flexigui.FlexiGui()
+    app.root_folder.set(root_folder)
+    app.mainloop()
+
+
+@cli.command()
 @click.option("-p", "--project_id", prompt="Enter the project ID", help="Project ID.")
 @click.option(
     "-n",
@@ -28,6 +39,7 @@ def cli():
     show_default=True,
 )
 def add_genealogy(project_id, name, recursive, verbose):
+    """Add genealogy to a flexilims entity"""
     from flexiznam import get_flexilims_session
 
     flm_sess = get_flexilims_session(project_id=project_id)
@@ -60,9 +72,9 @@ def add_mouse(
     flexilims_username=None,
     mcms_username=None,
 ):
+    """Add a single mouse to a project."""
     from flexiznam import main
 
-    """Add a single mouse to a project."""
     click.echo("Trying to add %s in %s" % (mouse_name, project_id))
     main.add_mouse(
         mouse_name=mouse_name,
@@ -168,7 +180,9 @@ def add_password(app, username, password, password_file):
 @click.option(
     "-p", "--project", default="NOT SPECIFIED", help="Project name on flexilims."
 )
-@click.option("-m", "--mouse", default="NOT SPECIFIED", help="Mouse name on flexilims.")
+@click.option(
+    "-o", "--origin", default="NOT SPECIFIED", help="Origin name on flexilims."
+)
 @click.option(
     "--overwrite/--no-overwrite",
     default=False,
@@ -179,43 +193,20 @@ def add_password(app, username, password, password_file):
     default=False,
     help="After creating the yaml skeleton, should I also parse it?",
 )
-@click.option(
-    "-r",
-    "--raw_data_folder",
-    default=None,
-    help="Path to the root folder containing raw data. Only used with " "`--process`",
-)
-def create_yaml(
-    source_dir, target_yaml, project, mouse, overwrite, process, raw_data_folder
-):
+def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
     """Create a yaml file by looking recursively in `root_dir`"""
     from flexiznam import camp
-    import pathlib
 
-    target_yaml = pathlib.Path(target_yaml)
-    if (not overwrite) and target_yaml.exists():
-        s = input("File %s already exists. Overwrite (yes/[no])? " % target_yaml)
-        if s == "yes":
-            overwrite = True
-        else:
-            raise (
-                FileExistsError(
-                    "File %s already exists and overwrite is not allowed" % target_yaml
-                )
-            )
-    source_dir = pathlib.Path(source_dir)
-    if not source_dir.is_dir():
-        raise FileNotFoundError("source_dir %s is not a directory" % source_dir)
-    yml_content = camp.sync_data.create_yaml(
+    camp.sync_data.create_yaml(
         root_folder=source_dir,
-        outfile=target_yaml,
+        output_file=target_yaml,
+        origin_name=origin,
         project=project,
-        mouse=mouse,
         overwrite=overwrite,
     )
     click.echo("Created yml skeleton in %s" % target_yaml)
     if process:
-        raise NotImplementedError
+        raise NotImplementedError("Process yaml at creation is not implemented yet")
 
 
 @cli.command()
@@ -316,7 +307,10 @@ def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
 @click.option("-t", "--target_file", default=None, help="Path to write csv output.")
 @click.option("-r", "--root_name", default=None, help="Root entity to start the check.")
 @click.option("--flexilims_username", default=None, help="Your username on flexilims.")
-def check_flexilims_issues(project_id, target_file, root_name, flexilims_username):
+@click.option("--add-path/--no-add-path", default=False, help="Add missing paths.")
+def check_flexilims_issues(
+    project_id, target_file, root_name, flexilims_username, add_path
+):
     """Check that database is properly formatted
 
     This will check recursively all mice if `root_name` is not provided. Elements that
@@ -325,7 +319,6 @@ def check_flexilims_issues(project_id, target_file, root_name, flexilims_usernam
     """
     from flexiznam.main import get_flexilims_session
     from flexiznam import utils
-    import pathlib
     import pandas as pd
 
     flexilims_session = get_flexilims_session(
@@ -350,3 +343,6 @@ def check_flexilims_issues(project_id, target_file, root_name, flexilims_usernam
     else:
         df = pdf
     df.to_csv(target_file)
+    if add_path:
+        print("Adding missing paths")
+        utils.add_missing_paths(flexilims_session, root_name=root_name)
