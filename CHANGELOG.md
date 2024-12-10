@@ -1,5 +1,11 @@
 # Change log
 
+## v0.4.1
+
+### Bugfix
+
+- Add new `dateUpdated` flexilims field. It was added in the last database update.
+
 ## v0.4
 
 ### Main changes
