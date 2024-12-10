@@ -1318,7 +1318,7 @@ def format_results(results, return_list=False):
 
     This will crash if any attribute is also present in the flexilims reply,
     i.e. if an attribute is named:
-    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated',
+    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'dateUpdated',
     'origin_id', 'objects', 'customEntities', or 'project'
 
     Args:
