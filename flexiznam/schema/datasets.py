@@ -328,6 +328,7 @@ class Dataset(object):
             "incrementalId",
             "createdBy",
             "dateCreated",
+            "dateUpdated",
             "origin_id",
             "objects",
             "customEntities",
@@ -547,7 +548,7 @@ class Dataset(object):
         Status can be 'up-to-date', 'different' or 'not online'
 
         This function does not check flexilims these only value:
-        'createdBy', 'objects', 'dateCreated', 'customEntities',
+        'createdBy', 'objects', 'dateCreated', 'dateUpdated', 'customEntities',
         'incrementalId', 'id', 'origin_id'
         """
         series = self.get_flexilims_entry()
@@ -577,6 +578,7 @@ class Dataset(object):
                 "createdBy",
                 "objects",
                 "dateCreated",
+                "dateUpdated",
                 "customEntities",
                 "incrementalId",
                 "id",
