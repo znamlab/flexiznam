@@ -26,14 +26,17 @@ def test_get_path():
     )
     p = flz.get_data_root(which="processed", project=None, flexilims_session=sess)
     assert p == Path(PARAMETERS["data_root"]["processed"])
+    # test a project specific path
     p = flz.get_data_root(which="raw", project="example", flexilims_session=None)
-    assert p == Path("/camp/project/example_project/raw")
+    assert p != Path(PARAMETERS["data_root"]["raw"])
+    assert p == Path(PARAMETERS["project_paths"]["example"]["raw"])
     with pytest.raises(AssertionError):
         flz.get_data_root(which="processed", project=None, flexilims_session=None)
     with pytest.raises(ValueError):
         flz.get_data_root(which="crap", project="test", flexilims_session=None)
     with pytest.raises(AssertionError):
         p = flz.get_data_root(which="raw", project="random", flexilims_session=None)
+    
 
 
 def test_get_flexilims_session():
@@ -441,3 +444,5 @@ def test_update_entity(flm_sess):
                 "createdBy": "BAD",
             },
         )
+if __name__ == "__main__":
+    pytest.main(["-v", __file__])
