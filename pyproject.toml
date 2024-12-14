@@ -41,6 +41,7 @@ dev = [
   "setuptools_scm",
   "imageio",
 ]
+
 [build-system]
 requires = [
     "setuptools>=45",
