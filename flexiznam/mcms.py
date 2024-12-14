@@ -1,8 +1,10 @@
 import re
+
 import pandas as pd
-from requests.exceptions import InvalidURL
-from flexiznam.config import get_password
 from pymcms.main import McmsSession
+from requests.exceptions import InvalidURL
+
+from flexiznam.config import get_password
 
 
 def get_mouse_info(mouse_name, username, password=None):

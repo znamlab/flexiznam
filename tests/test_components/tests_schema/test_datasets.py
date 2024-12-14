@@ -1,13 +1,15 @@
-import pytest
 import pathlib
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import pytest
+
 import flexiznam
-from flexiznam.schema import Dataset, microscopy_data
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
-from tests.tests_resources.data_for_testing import TEST_PROJECT, PROJECT_ID
+from flexiznam.schema import Dataset, microscopy_data
 from tests.test_components.test_main import MOUSE_ID
+from tests.tests_resources.data_for_testing import PROJECT_ID, TEST_PROJECT
 
 # Test the generic dataset class.
 

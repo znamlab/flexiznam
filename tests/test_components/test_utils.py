@@ -1,10 +1,12 @@
 import os
-import pytest
-import numpy as np
-from pathlib import Path
 import tempfile
-from flexiznam.config import config_tools, DEFAULT_CONFIG
+from pathlib import Path
+
+import numpy as np
+import pytest
+
 from flexiznam import utils
+from flexiznam.config import DEFAULT_CONFIG, config_tools
 
 
 def test_create_config():

@@ -1,8 +1,10 @@
 """File to handle acquisition yaml file and create datasets on flexilims"""
+
 import pathlib
-from pathlib import Path, PurePosixPath
 import re
 import warnings
+from pathlib import Path, PurePosixPath
+
 import pandas as pd
 import yaml
 

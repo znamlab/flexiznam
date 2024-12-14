@@ -2,8 +2,8 @@ import datetime
 import pathlib
 import warnings
 
-from flexiznam.schema.datasets import Dataset
 from flexiznam.config import PARAMETERS
+from flexiznam.schema.datasets import Dataset
 
 
 class SequencingData(Dataset):

@@ -3,12 +3,14 @@ Example file to upload a barseq dataset
 
 The example data is found in demo_project
 """
+
 import copy
 
 import pandas as pd
 import yaml
 
-from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
+import flexiznam as fzn
+from flexiznam.camp.sync_data import create_yaml, parse_yaml, upload_yaml
 from flexiznam.utils import clean_recursively
 from tests.tests_resources import flexilims_session
 from tests.tests_resources.data_for_testing import (
@@ -16,7 +18,6 @@ from tests.tests_resources.data_for_testing import (
     PROCESSED_ROOT,
     TEST_PROJECT,
 )
-import flexiznam as fzn
 
 MOUSE = "mouse_barseq"
 YAML = "yaml_automatic_skeleton.yml"
