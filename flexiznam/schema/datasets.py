@@ -1,6 +1,7 @@
 import pathlib
 from datetime import datetime
 from pathlib import Path, PurePosixPath
+from typing import Dict
 
 import pandas as pd
 
@@ -19,7 +20,7 @@ class Dataset(object):
     schema.__init__.py
     """
 
-    SUBCLASSES = dict()
+    SUBCLASSES: Dict[str, object] = dict()
 
     @classmethod
     def from_folder(cls, folder, verbose=False, flexilims_session=None, project=None):
@@ -163,12 +164,14 @@ class Dataset(object):
             extra_attributes (dict): additional arguments. If provided, change the
                 `conflicts` behaviour to consider only datasets that have the exact
                 same extra_attributes.
-            ignore_attributes (list): list of arguments to ignore when comparing datasets
-                for conflicts resolution. Used only if `extra_attributes` is provided.
+            ignore_attributes (list): list of arguments to ignore when comparing
+                datasets for conflicts resolution. Used only if `extra_attributes` is
+                provided.
             verbose (bool): print debug information
 
         Returns:
-            :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
+            :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT
+            updating flexilims)
 
         """
         if base_name is None:
@@ -211,7 +214,7 @@ class Dataset(object):
                 if not differences:
                     valid_processed.append(proc)
         else:
-            valid_processed = [ser for _, ser in processed.iterrows()]
+            valid_processed = [series for _, series in processed.iterrows()]
 
         already_processed = len(processed) > 0
 
@@ -651,7 +654,10 @@ class Dataset(object):
 
     @property
     def project_id(self):
-        """Hexadecimal ID of the parent project. Must be defined in config project list"""
+        """Hexadecimal ID of the parent project.
+
+        Must be defined in config project list
+        """
         return self._project_id
 
     @project_id.setter
@@ -727,12 +733,6 @@ class Dataset(object):
             return self.genealogy[-1]
         else:
             return None
-
-    @full_name.setter
-    def full_name(self, value):
-        raise DatasetError(
-            "Full name cannot be set directly. Set self.genealogy instead"
-        )
 
     @property
     def dataset_type(self):

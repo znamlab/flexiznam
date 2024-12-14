@@ -217,7 +217,7 @@ def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
     required=True,
     help="Manually generated yaml to seed automatic method.",
 )
-@click.option("-t", "--target_yaml", default=None, help="Path to outpout YAML file.")
+@click.option("-t", "--target_yaml", default=None, help="Path to output YAML file.")
 @click.option(
     "-r",
     "--raw_data_folder",
