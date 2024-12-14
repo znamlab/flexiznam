@@ -1,4 +1,4 @@
-#
+#!/bin/bash
 SRCDOCS=$PWD/docs/build/html
 
 cd $PWD/docs
