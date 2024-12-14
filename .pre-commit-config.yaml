@@ -31,6 +31,7 @@ repos:
                 - types-setuptools
                 - types-decorator
                 - types-PyYAML
+                - types-requests
     - repo: https://github.com/mgedmin/check-manifest
       rev: "0.49"
       hooks:

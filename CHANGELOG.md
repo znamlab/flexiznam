@@ -12,7 +12,7 @@
 
 - New `SequencingData` class to handle sequencing data
 - GUI can now be used to add data to flexilims with `flexiznam gui`
-- Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
+- Add a `conda_envs` field in the config file to use in conjunction with `znamutils`
 - `get_children` can work with name or id (instead of id only)
 - `check_flexilims_issues` can now add missing paths
 - `Dataset.from_origin` has a new `extra_attributes` argument to match online datasets
@@ -97,7 +97,7 @@ config but not the local config) to the config file
 ### Main changes
 
 - New `SequencingData` class to handle sequencing data
-- Add a `conda_envs` field in the config file to use in conjuction with `znamutils`
+- Add a `conda_envs` field in the config file to use in conjunction with `znamutils`
 - `get_children` can work with name or id (instead of id only)
 
 ### Minor
@@ -116,7 +116,7 @@ config but not the local config) to the config file
 - `flz.get_datasets` can return `Dataset` objects instead of path strings if
   `return_paths=False`
 - New `OnixData` class to handle Onix data
-- `get_flexilims_session` can now re-use token from a previous session
+- `get_flexilims_session` can now reuse token from a previous session
 - Add a GUI module.
 
 ### Minor
@@ -225,7 +225,7 @@ config but not the local config) to the config file
 - Add `flz.utils.add_genealogy` to add a `genealogy` field to flexilims entries. This
   field contains the list of parents ([mouse, session, recording] for instance) up to
   the short name of the current entity
-- Add `flz.utilis.add_missing_paths` to update flexilims to add `path` attribute to
+- Add `flz.utils.add_missing_paths` to update flexilims to add `path` attribute to
   non-dataset entities that have a genealogy defined. The path is set to `project /
   Path(*genealogy)` if this folder exists in the processed or raw root directory.
 
