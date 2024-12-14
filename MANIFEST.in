@@ -1,0 +1,22 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+recursive-include flexiznam *.py # Python code
+recursive-include flexiznam *.yml
+
+# Include notebooks but not "temp_" debug notebooks
+recursive-exclude notebooks temp_*
+recursive-exclude notebooks/.ipynb_checkpoints *
+recursive-include notebooks *.ipynb
+
+exclude pytest.ini
+exclude .pre-commit-config.yaml
+exclude update_docs.sh
+recursive-exclude * *.jpeg
+recursive-exclude * *.png
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude tests *
+recursive-exclude docs *
+recursive-exclude tests *
+recursive-exclude .vscode *
