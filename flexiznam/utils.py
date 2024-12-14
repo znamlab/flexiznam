@@ -6,11 +6,11 @@ from pathlib import Path, PurePosixPath
 import numpy as np
 import pandas as pd
 
-SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
-
 import flexiznam as flz
 from flexiznam.errors import DatasetError, FlexilimsError
 from flexiznam.schema import Dataset
+
+SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
 
 def compare_series(
@@ -72,9 +72,9 @@ def compare_series(
 
 
 def compare_dictionaries_recursively(first_dict, second_dict, output=None):
-    """Compare two dictionnaries recursively
+    """Compare two dictionaries recursively
 
-    Will return a dictionnary with only fields that have are different
+    Will return a dictionary with only fields that have are different
 
     Args:
         first_dict (dict): First dictionary
@@ -140,7 +140,7 @@ def clean_recursively(
                     new_key = re.sub(SPECIAL_CHARACTERS, "_", k)
                     print(
                         f"Warning: key `{k}` contains special characters and is "
-                        + f"unvalid JSON. Will use {new_key} instead"
+                        + f"invalid JSON. Will use {new_key} instead"
                     )
                     element[new_key] = element.pop(k)
                     k = new_key
@@ -213,8 +213,8 @@ def check_flexilims_paths(
 ):
     """Check that paths defined on flexilims exist
 
-    For datasets, check that the exact path exists, for the rest check if either `raw` or
-    `process` path exist (as mouse, sample etc can be found in both or either folder).
+    For datasets, check that the exact path exists, for the rest check if either `raw`
+    or `process` path exist (as mouse, sample etc can be found in both or either folder)
 
     Args:
         flexilims_session (flm.Session): flexilims session object, must define project
@@ -224,7 +224,7 @@ def check_flexilims_paths(
         error_only (bool): Return only issue (default True). Otherwise list valid paths
 
     Returns:
-        error_df (pd.DataFrame): list of unvalid paths
+        error_df (pd.DataFrame): list of invalid paths
 
     """
 
@@ -344,7 +344,7 @@ def add_genealogy(
             parts.append(parent["name"])
         parts = parts[::-1]
         cut = ""
-        # transform parts in genealogy by cutting begining
+        # transform parts in genealogy by cutting beginning
         for i, part in enumerate(parts):
             parts[i] = part[len(cut) :]
             cut = part + "_"
@@ -482,7 +482,7 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
                     [
                         element.name,
                         element.type,
-                        "dataset path unvalid",
+                        "dataset path invalid",
                         ds.path_full,
                         1,
                     ]
