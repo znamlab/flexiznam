@@ -206,7 +206,7 @@ def test_from_dataseries(flm_sess):
     )
     assert ds.flexilims_session == flm_sess
     assert ds.full_name == "minimal_series"
-    assert type(ds) == Dataset
+    assert type(ds) is Dataset
     series = pd.Series(
         name="test_microscopy",
         data=dict(
@@ -229,7 +229,7 @@ def test_from_dataseries(flm_sess):
     assert ds.flexilims_session == flm_sess
     assert ds.full_name == "test_microscopy"
     assert ds.dataset_name == "microscopy"
-    assert type(ds) == microscopy_data.MicroscopyData
+    assert type(ds) is microscopy_data.MicroscopyData
 
 
 def test_from_origin(flm_sess):
@@ -247,7 +247,7 @@ def test_from_origin(flm_sess):
     assert ds0.dataset_name == "suite2p_rois_0"
     ds0.update_flexilims()
     # now from_origin should raise an error if abort
-    with pytest.raises(DatasetError) as err:
+    with pytest.raises(DatasetError):
         Dataset.from_origin(
             origin_type="recording",
             origin_name=origin_name,
@@ -278,7 +278,7 @@ def test_from_origin(flm_sess):
     assert ds1.id is not None
     assert ds1.id != ds0.id
     # now we have 2 datasets, skip and overwrite should raise an error
-    with pytest.raises(NameNotUniqueError) as err:
+    with pytest.raises(NameNotUniqueError):
         Dataset.from_origin(
             origin_type="recording",
             origin_name=origin_name,
@@ -286,7 +286,7 @@ def test_from_origin(flm_sess):
             conflicts="skip",
             flexilims_session=flm_sess,
         )
-    with pytest.raises(NameNotUniqueError) as err:
+    with pytest.raises(NameNotUniqueError):
         Dataset.from_origin(
             origin_type="recording",
             origin_name=origin_name,
@@ -438,7 +438,7 @@ def test_dataset_type_enforcer():
     orignal_value = PARAMETERS["enforce_dataset_types"]
     PARAMETERS["enforce_dataset_types"] = True
     valid_dstype = PARAMETERS["dataset_types"][0]
-    ds = Dataset(
+    Dataset(
         path="fake/path",
         is_raw="no",
         dataset_type=valid_dstype,
@@ -448,7 +448,7 @@ def test_dataset_type_enforcer():
         flexilims_session=None,
     )
     with pytest.raises(DatasetError) as err:
-        ds = Dataset(
+        Dataset(
             path="fake/path",
             is_raw="no",
             dataset_type="badtypeJJJJJ",
@@ -461,7 +461,7 @@ def test_dataset_type_enforcer():
         'dataset_type "badtypeJJJJJ" not valid. Valid types are:'
     )
     PARAMETERS["enforce_dataset_types"] = False
-    ds = Dataset(
+    Dataset(
         path="fake/path",
         is_raw="no",
         dataset_type="badtypeJJJJJ",
