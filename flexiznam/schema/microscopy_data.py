@@ -2,6 +2,7 @@ import datetime
 import os
 import pathlib
 import warnings
+
 from flexiznam.config import PARAMETERS
 from flexiznam.schema.datasets import Dataset
 from flexiznam.schema.scanimage_data import parse_si_filename

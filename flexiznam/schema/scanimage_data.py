@@ -1,12 +1,13 @@
 import datetime
+import math
 import os
 import pathlib
 import re
 import warnings
 
 from tifffile import TiffFile, TiffFileError
+
 from flexiznam.schema.datasets import Dataset
-import math
 
 
 class ScanimageData(Dataset):

@@ -1,13 +1,15 @@
 import os.path
-from pathlib import Path
 import sys
-import yaml
 import warnings
 from copy import deepcopy
-import flexiznam
-from flexiznam.errors import ConfigurationError
-from flexiznam.config.default_config import DEFAULT_CONFIG
 from getpass import getpass
+from pathlib import Path
+
+import yaml
+
+import flexiznam
+from flexiznam.config.default_config import DEFAULT_CONFIG
+from flexiznam.errors import ConfigurationError
 
 
 def _find_file(file_name, config_folder=None, create_if_missing=False):

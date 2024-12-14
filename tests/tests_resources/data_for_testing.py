@@ -1,7 +1,8 @@
 """A list of file coming from one experiment"""
-from pathlib import Path
-from flexiznam.config import PARAMETERS
 
+from pathlib import Path
+
+from flexiznam.config import PARAMETERS
 
 MOUSE_ID = "6437dcb13ded9c65df142a12"  # actual physio2p mouse
 MOUSE_TEMP = "647a1aec7ddb34517470d3e6"  # some random mouse where I can change data

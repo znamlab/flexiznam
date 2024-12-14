@@ -1,14 +1,15 @@
 import pathlib
-from pathlib import Path, PurePosixPath
 import re
+import warnings
+from pathlib import Path, PurePosixPath
+
 import numpy as np
 import pandas as pd
-import warnings
 
 SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
 import flexiznam as flz
-from flexiznam.errors import FlexilimsError, DatasetError
+from flexiznam.errors import DatasetError, FlexilimsError
 from flexiznam.schema import Dataset
 
 

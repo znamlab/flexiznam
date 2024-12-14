@@ -1,7 +1,7 @@
 import pytest
 from requests.exceptions import InvalidURL
-from flexiznam import mcms
 
+from flexiznam import mcms
 
 USERNAME = "ab8"
 

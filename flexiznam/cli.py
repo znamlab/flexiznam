@@ -103,9 +103,10 @@ def add_mouse(
 )
 def config(template=None, config_folder=None, update=False, add_projects=True):
     """Create a configuration file if none exists."""
-    from flexiznam.config import config_tools
-    from flexiznam import errors
     import yaml
+
+    from flexiznam import errors
+    from flexiznam.config import config_tools
 
     try:
         fname = config_tools._find_file("config.yml", config_folder=config_folder)
@@ -122,7 +123,7 @@ def config(template=None, config_folder=None, update=False, add_projects=True):
                 param_file="config.yml",
                 config_folder=config_folder,
                 add_all_projects=add_projects,
-                **prm
+                **prm,
             )
     except errors.ConfigurationError:
         click.echo("No configuration file. Creating one.")
@@ -230,8 +231,9 @@ def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
 )
 def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder=None):
     """Parse source_yaml and autogenerate a full yaml containing all datasets"""
-    from flexiznam import camp
     import pathlib
+
+    from flexiznam import camp
 
     source_yaml = pathlib.Path(source_yaml)
     if target_yaml is None:
@@ -290,8 +292,9 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder
 )
 def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     """Create entries on flexilims corresponding to yaml"""
-    from flexiznam import camp, errors
     import pathlib
+
+    from flexiznam import camp, errors
 
     source_yaml = pathlib.Path(source_yaml)
     try:
@@ -317,9 +320,10 @@ def check_flexilims_issues(
     are not descendent of mice will NOT be check if root_name is not selected
     appropriately.
     """
-    from flexiznam.main import get_flexilims_session
-    from flexiznam import utils
     import pandas as pd
+
+    from flexiznam import utils
+    from flexiznam.main import get_flexilims_session
 
     flexilims_session = get_flexilims_session(
         project_id=project_id, username=flexilims_username

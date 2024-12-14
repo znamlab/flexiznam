@@ -1,7 +1,8 @@
 import pytest
+
+import flexiznam
 from tests.tests_resources import flexilims_session
 from tests.tests_resources.data_for_testing import TEST_PROJECT
-import flexiznam
 
 
 @pytest.fixture

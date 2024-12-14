@@ -1,17 +1,19 @@
 import datetime
 import pathlib
 from pathlib import Path
+
 import pandas as pd
 import portalocker
 import pytest
-import flexiznam as flz
 import yaml
+
+import flexiznam as flz
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
-from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 
 # Test functions from main.py
 from flexiznam.schema import Dataset, HarpData, ScanimageData
+from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
 
 # this needs to change every time I reset flexlilims
 
@@ -36,7 +38,6 @@ def test_get_path():
         flz.get_data_root(which="crap", project="test", flexilims_session=None)
     with pytest.raises(AssertionError):
         p = flz.get_data_root(which="raw", project="random", flexilims_session=None)
-    
 
 
 def test_get_flexilims_session():
@@ -444,5 +445,7 @@ def test_update_entity(flm_sess):
                 "createdBy": "BAD",
             },
         )
+
+
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

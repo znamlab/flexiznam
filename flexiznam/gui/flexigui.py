@@ -1,8 +1,10 @@
 import os
 import tkinter as tk
-from ttkwidgets import CheckboxTreeview
-import yaml
 from pathlib import Path
+
+import yaml
+from ttkwidgets import CheckboxTreeview
+
 import flexiznam as flz
 import flexiznam.camp.sync_data
 

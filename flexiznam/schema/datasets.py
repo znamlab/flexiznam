@@ -1,11 +1,13 @@
 import pathlib
 from datetime import datetime
 from pathlib import Path, PurePosixPath
+
 import pandas as pd
+
 import flexiznam as flz
 from flexiznam import utils
-from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.config import PARAMETERS
+from flexiznam.errors import DatasetError, FlexilimsError
 
 
 class Dataset(object):

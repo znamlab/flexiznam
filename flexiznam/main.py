@@ -1,17 +1,18 @@
 import datetime
 import re
-import portalocker
 import warnings
-import pandas as pd
-import flexilims as flm
 from pathlib import Path
-from flexilims.utils import SPECIAL_CHARACTERS
-import flexiznam
+
+import flexilims as flm
+import pandas as pd
+import portalocker
 import yaml
+from flexilims.utils import SPECIAL_CHARACTERS
+
+import flexiznam
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
-from flexiznam.errors import NameNotUniqueError, FlexilimsError, ConfigurationError
-
+from flexiznam.errors import ConfigurationError, FlexilimsError, NameNotUniqueError
 
 warnings.simplefilter("always", DeprecationWarning)
 
