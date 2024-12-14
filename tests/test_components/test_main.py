@@ -57,8 +57,8 @@ def test_get_flexilims_session():
     sess = flz.get_flexilims_session(project_id=None, reuse_token=True)
     assert sess.session.headers["Authorization"].split(" ")[1] == token
 
-    # manualy lock the token file to test timeout
-    with portalocker.Lock(token_file, "r+", timeout=10) as file_handle:
+    # manually lock the token file to test timeout
+    with portalocker.Lock(token_file, "r+", timeout=10) as _:
         with pytest.raises(portalocker.exceptions.LockException):
             sess = flz.get_flexilims_session(
                 project_id=None, reuse_token=True, timeout=0.1

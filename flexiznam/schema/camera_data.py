@@ -25,16 +25,16 @@ class CameraData(Dataset):
 
         Args:
             folder (str): path to the folder
-            camera_name (str): name of the camera, all file names must start by this name
+            camera_name (str): name of the camera, all file names must start by this
+                name
             folder_genealogy (tuple): genealogy of the folder, if None assume that
-                                      the genealogy is just (folder,), i.e. no parents
+                the genealogy is just (folder,), i.e. no parents
             is_raw (bool): does this folder contain raw data?
             verbose (bool=True): print info about what is found
             flexilims_session (flm.Session): session to interact with flexilims
             project (str): project ID or name
             enforce_validity (bool): True by default. Refuse to create camera dataset
-                                     if they don't have a video, metadata and timestamp
-                                     file
+                if they don't have a video, metadata and timestamp file
 
         Returns:
             dict of datasets (fzm.schema.camera_data.CameraData)
@@ -155,14 +155,14 @@ class CameraData(Dataset):
             path: folder containing the dataset or path to file (valid only for single
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
             id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
@@ -170,11 +170,11 @@ class CameraData(Dataset):
 
         Expected extra_attributes:
             video_file: file name of the video file, usually
-                        camera_name_data.bin/.avi/.mp4
+                camera_name_data.bin/.avi/.mp4
             timestamp_file (optional): file name of the timestamp file, usually
-                            camera_name_timestamps.csv
+                camera_name_timestamps.csv
             metadata_file (optional): file name of the metadata file, usually
-                           camera_name_metadata.txt
+                camera_name_metadata.txt
         """
         if "video_file" not in extra_attributes:
             raise IOError(
@@ -227,6 +227,6 @@ class CameraData(Dataset):
                 return msg if return_reason else False
             fname = getattr(self, attr)
             if not (self.path_full / fname).exists():
-                msg = f"Unvalid {attr}. {self.path_full / fname} does not exist"
+                msg = f"Invalid {attr}. {self.path_full / fname} does not exist"
                 return msg if return_reason else False
         return "" if return_reason else True

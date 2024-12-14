@@ -43,7 +43,12 @@ class FlexiGui(tk.Tk):
     def _create_frames(self):
         self.frames["T"] = tk.Frame(self)
         self.frames["T"].grid(
-            row=0, column=0, padx=10, pady=5, columnspan=2, sticky="nwe"
+            row=0,
+            column=0,
+            padx=10,
+            pady=5,
+            columnspan=2,
+            sticky="nwe",  # codespell:ignore nwe
         )
         self.frames["T"].rowconfigure(0, weight=1)
         self.frames["T"].rowconfigure(1, weight=1)
@@ -91,8 +96,8 @@ class FlexiGui(tk.Tk):
         )
         self.selected_item = tk.StringVar()
         self.selected_item.set("None")
-        l = tk.Label(self.frames["R"], textvariable=self.selected_item)
-        l.grid(row=0, column=1, sticky="new")
+        label = tk.Label(self.frames["R"], textvariable=self.selected_item)
+        label.grid(row=0, column=1, sticky="new")
         self.textview = tk.Text(self.frames["R"], width=40, height=10, wrap="none")
         self.textview.grid(row=1, column=0, sticky="nsew", columnspan=2)
         self.textview.bind("<<Modified>>", self.on_textview_change)
