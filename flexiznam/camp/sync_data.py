@@ -20,7 +20,8 @@ def create_yaml(folder_to_parse, project, origin_name, output_file, overwrite=Fa
         project (str): Name of the project
         origin_name (str): Name of the origin on flexilims
         output_file (str): Full path to output yaml.
-        overwrite (bool, optional): Overwrite output file if it exists. Defaults to False.
+        overwrite (bool, optional): Overwrite output file if it exists. Defaults to
+            False.
     """
     output_file = pathlib.Path(output_file)
     if (not overwrite) and output_file.exists():

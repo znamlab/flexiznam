@@ -65,7 +65,7 @@ class ScanimageData(Dataset):
                 non_si_tiff.append(fname)
                 tif_files.remove(fname)
                 continue
-            # We have a SI file, remove all files from this acquisition from the tif list
+            # We have a SI file, remove all files from this acquisition from the list
             this_acq = [t for t in tif_files if t.startswith(parsed_name["acq_uid"])]
             # remove matched files to not re-read metadata
             for file in this_acq:
@@ -147,16 +147,16 @@ class ScanimageData(Dataset):
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
-                  file datasets)
+                file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
             id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
@@ -215,7 +215,8 @@ class ScanimageData(Dataset):
     def tif_files(self):
         """List of tif files
 
-        Tif files are sorted alphabetically automatically done when setting this property
+        Tif files are sorted alphabetically automatically done when setting this
+        property
         """
         return self.extra_attributes["tif_files"]
 
@@ -265,10 +266,11 @@ def parse_si_filename(path2file):
 
     - file_stem is the string entered in the SI acq windows and is always present.
     - acq_num is the acquisition number, in the form of 5 digit ('000001' for instance)
-      and is always present.
+        and is always present.
     - file_num is formatted like acq_num but is present only if the number of frame per
       file is not infinite (if obj.hLinScan.logFramesPerFile is not inf)
-    - channel if 'chanX' and present only if we save multiple channels in different files
+    - channel if 'chanX' and present only if we save multiple channels in different
+        files
     - extension is always '.tif'
 
     This function reads the metadata and returns the individual elements of the

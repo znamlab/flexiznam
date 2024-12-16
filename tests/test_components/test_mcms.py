@@ -14,4 +14,4 @@ def test_get_mouse_df():
 
 
 def test_get_procedures():
-    proc = mcms.get_procedures(mouse_name="BRAC7437.6d", username=USERNAME)
+    mcms.get_procedures(mouse_name="BRAC7437.6d", username=USERNAME)
