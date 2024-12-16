@@ -56,9 +56,10 @@ def test_parse_yaml():
 
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace(".yml", "_parsed.yml")
     # If the parsed has changed and you want to overwrite it, you can do:
-    # fzn.camp.sync_data.write_session_data_as_yaml(parsed, target_file=saved_parsed_yaml,
+    # fzn.camp.sync_data.write_session_data_as_yaml(parsed,
+    # target_file=saved_parsed_yaml,
     #                                               overwrite=True)
-    # parsed contains datasets, we need to make them  into str to compare with saved data
+    # parsed contains datasets, we need to make them into str to compare with saved data
     parsed_str = copy.deepcopy(parsed)
     clean_recursively(parsed_str, keys=["name"], format_dataset=True)
 

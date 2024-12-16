@@ -4,7 +4,7 @@ This file is used to generate the initial config file
 
 DEFAULT_CONFIG = dict(
     # MCMS configuration:
-    download_folder="~/Downloads",  # folder use to download files by your default web browser
+    download_folder="~/Downloads",  # folder used to download files by the web browser
     mcms_username="yourusername",
     # Flexilims configuration
     # If you want to access projects by name, add their hexadecimal ID here:

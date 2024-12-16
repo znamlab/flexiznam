@@ -83,22 +83,21 @@ class VisStimData(Dataset):
             path: folder containing the dataset or path to file (valid only for single
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
             id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
             csv_files (optional): Dictionary of csv files associated to the binary file.
-                                  Keys are identifier provided for convenience,
-                                  values are the full file name
+                Keys are identifier, values are the full file name
         """
 
         super().__init__(
