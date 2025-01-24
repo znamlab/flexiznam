@@ -1093,38 +1093,6 @@ def get_children(
     return results
 
 
-def get_child_dataset(flz_session, parent_name, dataset_type):
-    """
-    Get the last dataset of a given type for a given parent entity.
-
-    Args:
-        flz_session (flexilims_session): flexilims session
-        parent_name (str): name of the parent entity
-        dataset_type (str): type of the dataset
-
-    Returns:
-        Dataset: the last dataset of the given type for the given parent entity
-
-    """
-    all_children = get_children(
-        parent_name=parent_name,
-        children_datatype="dataset",
-        flexilims_session=flz_session,
-    )
-    selected_datasets = all_children[all_children["dataset_type"] == dataset_type]
-    if len(selected_datasets) == 0:
-        raise ValueError(f"No {dataset_type} dataset found for session {parent_name}")
-    elif len(selected_datasets) > 1:
-        print(
-            f"{len(selected_datasets)} {dataset_type} datasets found for session "
-            + f"{parent_name}"
-        )
-        print("Will return the last one...")
-    return flexiznam.Dataset.from_dataseries(
-        selected_datasets.iloc[-1], flexilims_session=flz_session
-    )
-
-
 def get_datasets_recursively(
     origin_id=None,
     origin_name=None,
