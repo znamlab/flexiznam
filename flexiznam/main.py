@@ -25,6 +25,36 @@ def _format_project(project_id, prm):
     return project_id
 
 
+def get_processed_path(data_path):
+    """Return the path to the processed data.
+
+    Args:
+        data_path (str): Relative path to data
+
+    Returns:
+        pathlib.Path: Path to processed data
+
+    """
+    project = Path(data_path).parts[0]
+    processed_path = get_data_root("processed", project=project)
+    return processed_path / data_path
+
+
+def get_raw_path(data_path):
+    """Return the path to the raw data.
+
+    Args:
+        data_path (str): Relative path to data
+
+    Returns:
+        pathlib.Path: Path to raw data
+
+    """
+    project = Path(data_path).parts[0]
+    raw_path = get_data_root("raw", project=project)
+    return raw_path / data_path
+
+
 def get_data_root(which, project=None, flexilims_session=None):
     """Get raw or processed path for a project
 
