@@ -1,5 +1,21 @@
 # Change log
 
+## v0.4.2
+
+### Main changes
+
+- Add `get_processed_path` and `get_raw_path` to get the path of a dataset
+
+### Minor
+
+- Remove unused `get_child_dataset` function. Use argument of `get_dataset` instead.
+- Switch to pyproject.toml for dependencies and clean code.
+
+### Bugfix
+
+- Add new `dateUpdated` flexilims field. It was added in the last database update.
+
+
 ## v0.4.1
 
 ### Bugfix
