@@ -10,10 +10,9 @@ described in the [CHANGELOG](CHANGELOG.md).
 To create a standalone installation, in you favorite `conda` or `venv`, clone the
 repository and `pip` install:
 
-```
+```bash
 git clone git@github.com:znamlab/flexiznam.git
 cd flexiznam
-pip install -r requirements.txt
 pip install -e .
 ```
 
@@ -128,3 +127,16 @@ When updating chromium, `get_mouse_df` and `add_mouse` can stop working. Updatin
 [downloaded](https://chromedriver.chromium.org/downloads) and put in the `webbot`
 install folder. You can `import webbot` and check `webbot.__file__` to find where is
 that folder. See https://github.com/nateshmbhat/webbot/issues/87
+
+# Development install
+
+To install the package in development mode, clone the repository and install it with
+`pip`:
+
+```bash
+git clone git@github.com:znamlab/flexiznam.git
+cd flexiznam
+pip install -e ".[dev]"
+```
+
+This will add the development dependencies to the installation.
