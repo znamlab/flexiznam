@@ -253,7 +253,10 @@ class Dataset(object):
         # There are no datasets, create one
         if not already_processed:
             if verbose:
-                print("No datasets of type %s found. Creating new" % dataset_type)
+                msg = "No datasets of type %s" % dataset_type
+                if base_name != dataset_type:
+                    msg += " with base name %s" % base_name
+                print(msg + " found. Creating new dataset")
             return _create_new_ds(
                 origin,
                 base_name,
