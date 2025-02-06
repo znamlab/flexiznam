@@ -49,7 +49,37 @@ flexiznam config
 This should create a `~/.flexiznam/config.yml` file. Edit it with your favorite text
 editor to change `flexilims_username`, `mcms_username` and, if needed `data_root`.
 
-You can then add passwords to make it simpler by running (one by one):
+### Specifying the data root
+
+Different project might be stored on different servers and their mount point might
+vary from machine to machine. To solve this issue we use the flexiznam configuration
+to specify these root mount points. For more detail see the
+[data organization](https://flexiznam.znamlab.org/organization.html) page on the docs.
+
+To set the global data root, edit the `data_root` field in the config file. This will
+be the root of the data path for all projects. If you have different data roots for
+different projects, you can specify them in the `project_paths` field. This should be a
+dictionary with the project name as key and the data root as value. For example:
+
+```yaml
+# Global data root, needs to be set
+data_root:
+  processed: /nemo/lab/znamenskiyp/home/shared/projects
+  raw: /nemo/lab/znamenskiyp/data/instruments/raw_data/projects
+
+# Optional, specific paths for specific projects
+project_paths:
+  becalia_rabies_barseq:
+    processed: /nemo/project/proj-znamenp-barseq/processed
+    raw: /nemo/project/proj-znamenp-barseq/raw
+```
+
+Other information are required to interact with the flexilims and mcms. This can be done automatically if the password are saved. See below for more information.
+
+### Saving passwords to access flexilims and mcms
+
+You can add passwords to make interaction with MCMS and flexilims simpler by running
+(one by one):
 
 ```
 flexiznam add-password -a mcms
