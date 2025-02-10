@@ -706,6 +706,8 @@ def add_dataset(
         the flexilims response
 
     """
+    if parent_id is None:
+        raise AttributeError("`parent_id` must be provided to add dataset.")
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     valid_conflicts = ("abort", "skip", "append", "overwrite", "update")
