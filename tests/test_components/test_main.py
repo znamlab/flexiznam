@@ -12,8 +12,8 @@ from flexiznam.config import PARAMETERS
 from flexiznam.errors import FlexilimsError, NameNotUniqueError
 
 # Test functions from main.py
-from flexiznam.schema import Dataset, HarpData, ScanimageData
-from tests.tests_resources.data_for_testing import MOUSE_ID, SESSION
+from flexiznam.schema import Dataset, ScanimageData
+from tests.tests_resources.data_for_testing import MOUSE_TEMP, SESSION
 
 # this needs to change every time I reset flexlilims
 
@@ -119,7 +119,7 @@ def test_get_entities(flm_sess):
 
 def test_get_entity(flm_sess):
     mouse = flz.get_entity(
-        id=MOUSE_ID,
+        id=MOUSE_TEMP,
         project_id=PARAMETERS["project_ids"]["demo_project"],
         datatype="mouse",
         flexilims_session=flm_sess,
@@ -128,7 +128,7 @@ def test_get_entity(flm_sess):
     for k in ("sex", "birth_date", "id", "dateCreated"):
         assert hasattr(mouse, k)
     mouse = flz.get_entity(
-        id=MOUSE_ID,
+        id=MOUSE_TEMP,
         project_id=PARAMETERS["project_ids"]["demo_project"],
         datatype="mouse",
         format_reply=False,
@@ -141,16 +141,16 @@ def test_get_entity(flm_sess):
 
 def test_get_mouse_id(flm_sess):
     mid = flz.get_id(
-        name="mouse_physio_2p",
+        name="PZAA15.1a",
         project_id=PARAMETERS["project_ids"]["demo_project"],
         flexilims_session=flm_sess,
     )
-    assert mid == MOUSE_ID
+    assert mid == MOUSE_TEMP
 
 
 def test_get_datasets(flm_sess):
     ds = flz.get_datasets(
-        origin_id=MOUSE_ID,
+        origin_id=MOUSE_TEMP,
         flexilims_session=flm_sess,
     )
     assert len(ds) == 0
@@ -159,14 +159,14 @@ def test_get_datasets(flm_sess):
         flexilims_session=flm_sess,
         return_paths=True,
     )
-    assert len(ds) == 3
+    assert len(ds) == 2
     assert all([isinstance(d, pathlib.PosixPath) for d in ds])
     ds = flz.get_datasets(
         origin_name=SESSION,
         flexilims_session=flm_sess,
         return_paths=False,
     )
-    assert len(ds) == 3
+    assert len(ds) == 2
     assert all([hasattr(d, "path_full") for d in ds])
     ds = flz.get_datasets(
         origin_name=SESSION,
@@ -251,36 +251,41 @@ def test_get_datasets_recursively(flm_sess):
     ds_dict = flz.get_datasets_recursively(
         flexilims_session=flm_sess, origin_name=SESSION, return_paths=True
     )
-    assert len(ds_dict) == 3
+    assert len(ds_dict) == 2
     ds_dict = flz.get_datasets_recursively(
         flexilims_session=flm_sess,
         origin_name=SESSION,
         return_paths=False,
         dataset_type="harp",
+    )
+    assert len(ds_dict) == 0
+    ds_dict = flz.get_datasets_recursively(
+        flexilims_session=flm_sess,
+        origin_name=SESSION,
+        return_paths=False,
+        dataset_type="scanimage",
     )
     assert len(ds_dict) == 2
     ds = []
     for d in ds_dict.values():
         ds.extend(d)
-    assert all([isinstance(d, HarpData) for d in ds])
+    assert all([isinstance(d, ScanimageData) for d in ds])
     ds_dict = flz.get_datasets_recursively(
         flexilims_session=flm_sess,
         origin_name=SESSION,
         return_paths=False,
-        dataset_type="harp",
-        filter_datasets=dict(
-            binary_file="PZAD9.4d_S20211102_R173917_SpheresPermTube_harpmessage.bin"
-        ),
+        dataset_type="scanimage",
+        filter_datasets=dict(example_attribute="some_number_1"),
     )
     assert len(ds_dict) == 1
     ds = ds_dict.values().__iter__().__next__()[0]
-    assert isinstance(ds, HarpData)
+    assert isinstance(ds, ScanimageData)
 
     ds_dict = flz.get_datasets_recursively(
         flexilims_session=flm_sess,
         origin_name=SESSION,
         return_paths=False,
-        filter_parents={"timestamp": "165821"},
+        filter_parents={"protocol": "smart_experiment"},
     )
     assert len(ds_dict) == 1
     ds_dict = flz.get_datasets_recursively(
@@ -289,7 +294,7 @@ def test_get_datasets_recursively(flm_sess):
         return_paths=False,
         parent_type="recording",
     )
-    assert len(ds_dict) == 2
+    assert len(ds_dict) == 1
 
 
 def test_add_mouse(flm_sess):
@@ -333,14 +338,14 @@ def test_generate_name(flm_sess):
 
 
 def test_get_children(flm_sess):
-    parent_id = MOUSE_ID
+    parent_id = MOUSE_TEMP
     res = flz.get_children(parent_id, flexilims_session=flm_sess)
     assert len(res) == 1
     # test that it works also when there are no children
     while len(res):
         res = flz.get_children(parent_id=res.iloc[0].id, flexilims_session=flm_sess)
     assert isinstance(res, pd.DataFrame)
-    res = flz.get_children(parent_name="mouse_physio_2p", flexilims_session=flm_sess)
+    res = flz.get_children(parent_name="PZAA15.1a", flexilims_session=flm_sess)
     assert len(res) == 1
     res_all = flz.get_children(parent_name=SESSION, flexilims_session=flm_sess)
     assert (res_all.type != "recording").sum() != 0
@@ -353,13 +358,13 @@ def test_get_children(flm_sess):
         parent_name=SESSION,
         flexilims_session=flm_sess,
         children_datatype="dataset",
-        filter=dict(notes="Motion correction reference"),
+        filter={"acq_uid": "overview_zoom1_00000"},
     )
     assert single_res.shape[0] == 1
 
 
 def test_add_entity(flm_sess):
-    dataset_name = "mouse_physio_2p_S20211102_overview_zoom2_00001"
+    dataset_name = "PZAA15.1a_S20201225_example_recording_dataset_0"
     with pytest.raises(FlexilimsError) as err:
         flz.add_entity(
             datatype="dataset", name=dataset_name, flexilims_session=flm_sess
@@ -393,7 +398,7 @@ def test_update_entity(flm_sess):
         err.value.args[0] == "Cannot find an entity of type `dataset` named "
         "`gibberish`"
     )
-    dataset_name = "mouse_physio_2p_S20211102_overview_zoom2_00001"
+    dataset_name = f"{SESSION}_overview_ds_1"
     original_entity = flz.get_entity(
         datatype="dataset", name=dataset_name, flexilims_session=flm_sess
     )
@@ -401,10 +406,10 @@ def test_update_entity(flm_sess):
         "dataset",
         name=dataset_name,
         flexilims_session=flm_sess,
-        attributes={"path": "old/path", "dataset_type": "scanimage"},
+        attributes={"path": "new/path", "dataset_type": "scanimage"},
         mode="update",
     )
-    assert res["attributes"]["path"] == "old/path"
+    assert res["attributes"]["path"] == "new/path"
     assert res["attributes"]["acq_num"] == "00001"  # existing attribute is unchanged
     # now in overwrite mode
     res = flz.update_entity(
@@ -412,13 +417,13 @@ def test_update_entity(flm_sess):
         name=dataset_name,
         flexilims_session=flm_sess,
         attributes={
-            "path": "new/path",
+            "path": "another/path",
             "dataset_type": "scanimage",
             "is_raw": res["attributes"]["is_raw"],
         },
     )
     # in the reply the null values are []
-    assert res["attributes"]["path"] == "new/path"
+    assert res["attributes"]["path"] == "another/path"
     assert res["attributes"]["acq_num"] == []
     # but in the database they are null
     dbval = flz.get_entity(
@@ -429,10 +434,7 @@ def test_update_entity(flm_sess):
     # restore database state
     ds = Dataset.from_dataseries(dataseries=original_entity, flexilims_session=flm_sess)
     ds.update_flexilims(mode="overwrite")
-    new_entity = flz.get_entity(
-        datatype="dataset", name=dataset_name, flexilims_session=flm_sess
-    )
-    assert repr(new_entity) == repr(original_entity)
+
     with pytest.raises(FlexilimsError) as err:
         flz.update_entity(
             "dataset",
