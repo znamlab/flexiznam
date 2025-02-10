@@ -394,25 +394,11 @@ class Dataset(object):
             id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
         """
-        if extra_attributes is None:
-            extra_attributes = {}
-        else:
-            extra_attributes = dict(extra_attributes)
-            double_args = [
-                kw
-                for kw in ("path", "is_raw", "dataset_type", "genealogy", "created")
-                if kw in extra_attributes
-            ]
-            if len(double_args):
-                raise DatasetError(
-                    "Mandatory attribute(s) present in "
-                    "extra_attributes: %s" % (double_args)
-                )
 
         self._project = None
         self._project_id = None
         self._flexilims_session = None
-        self.extra_attributes = extra_attributes
+        self._extra_attributes = extra_attributes
         self.genealogy = genealogy
         self.path = Path(path)
         self.is_raw = is_raw
@@ -710,6 +696,35 @@ class Dataset(object):
                 raise DatasetError(
                     "Cannot use a flexilims_session from a different " "project"
                 )
+
+    @property
+    def extra_attributes(self):
+        """Extra attributes of the dataset
+
+        This is a dictionary that can contain any extra information about the dataset.
+        It cannot contain flexilims reserved keywords such as 'createdBy', 'objects',
+        'dateCreated', 'dateUpdated', 'customEntities', 'incrementalId', 'id',
+        'origin_id', 'path', 'is_raw', 'dataset_type', 'genealogy', 'project'
+        """
+        return self._extra_attributes
+
+    @extra_attributes.setter
+    def extra_attributes(self, value):
+        if value is None:
+            self._extra_attributes = dict()
+            return
+        extra_attributes = dict(value)
+        double_args = [
+            kw
+            for kw in ("path", "is_raw", "dataset_type", "genealogy", "created")
+            if kw in extra_attributes
+        ]
+        if len(double_args):
+            raise DatasetError(
+                "Mandatory attribute(s) present in "
+                "extra_attributes: %s" % (double_args)
+            )
+        self._extra_attributes = value
 
     @property
     def full_name(self):

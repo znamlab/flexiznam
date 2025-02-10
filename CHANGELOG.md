@@ -1,5 +1,11 @@
 # Change log
 
+## v0.4.3
+
+### Bugfix
+
+- `extra_attributes` of datasets is now always a dictionary and cannot be set to `None`
+
 ## v0.4.2
 
 ### Main changes
