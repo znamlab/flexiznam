@@ -1,12 +1,12 @@
 [project]
 name = "flexiznam"
 authors = [{name = "Znamenskiy lab", email= "antonin.blot@crick.ac.uk"}]
-description = "Tools for processing in situ sequencing data"
+description = "Handle Znamenskiy lab database"
 readme = "README.md"
 requires-python = ">=3.9.0"
 dynamic = ["version"]
 dependencies = [
-            "Click",
+        "Click",
         "pandas",
         "portalocker",
         "webbot",
