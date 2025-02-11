@@ -20,6 +20,7 @@ if not DATA_ROOT.is_dir():
 # Clear the database
 if True:
     id_to_keep = dict(mouse=[MOUSE_ID, MOUSE_TEMP])
+    name_to_keep = "mouse_physio_2p_S20211102_R173917_SpheresPermTube_face_camera"
     datatype_to_remove = ["mouse", "recording", "session", "sample", "dataset"]
 
     session = get_flexilims_session(project_id=PROJECT_ID)
@@ -29,6 +30,8 @@ if True:
         for entity in entities:
             if entity["id"] in to_keep:
                 print(f"Keeping {entity['name']}")
+            elif entity["name"] in name_to_keep:
+                print(f"Keeping `{entity['name']}")
             else:
                 print(f"Deleting `{entity['name']}`, id: {entity['id']}")
                 print(session.delete(entity["id"]))
