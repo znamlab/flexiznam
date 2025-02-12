@@ -279,12 +279,15 @@ class Dataset(object):
                 if verbose:
                     print("Overwriting dataset %s" % valid_processed[0].name)
                 dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
-                dataset.extra_attributes = extra_attributes
+                if extra_attributes is not None:
+                    dataset.extra_attributes = extra_attributes
                 return dataset
             if len(processed) == 1:
                 if verbose:
                     print("Overwriting dataset %s" % processed.iloc[0].name)
                 dataset = Dataset.from_dataseries(dataseries=processed.iloc[0])
+                if extra_attributes is not None:
+                    dataset.extra_attributes = extra_attributes
                 dataset.extra_attributes = extra_attributes
                 return dataset
             raise flz.errors.NameNotUniqueError(
