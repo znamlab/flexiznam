@@ -4,8 +4,8 @@
 
 ### Main changes
 
-- Add an option for inverse filtering in `get_datasets`. Use `exclude_datasets` to
-  filter out dataset with a specified value of an attribute.
+- Add an option for inverse filtering in `get_datasets` and `get_datasets_recursively`.
+  Use `exclude_datasets` to filter out dataset with a specified value of an attribute.
 
 ### Bugfix
 

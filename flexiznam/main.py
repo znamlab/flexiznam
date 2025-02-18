@@ -1131,6 +1131,7 @@ def get_datasets_recursively(
     origin_series=None,
     dataset_type=None,
     filter_datasets=None,
+    exclude_datasets=None,
     parent_type=None,
     filter_parents=None,
     return_paths=False,
@@ -1153,6 +1154,7 @@ def get_datasets_recursively(
         dataset_type (str): type of the dataseet to filter by. If `None`,
             will return all datasets.
         filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        exclude_datasets (dict): dictionary of key-value pairs to exclude datasets by.
         parent_type (str): type of the parent entity. If `None`, will return all
         filter_parents (dict): dictionary of key-value pairs to filter parents by.
         return_paths (bool): if True, return a list of paths
@@ -1193,6 +1195,7 @@ def get_datasets_recursively(
             flexilims_session=flexilims_session,
             return_paths=return_paths,
             filter_datasets=filter_datasets,
+            exclude_datasets=exclude_datasets,
         )
         # add only if there are datasets
         if len(ds):
