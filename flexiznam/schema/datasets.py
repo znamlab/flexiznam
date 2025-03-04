@@ -401,15 +401,7 @@ class Dataset(object):
         self._project = None
         self._project_id = None
         self._flexilims_session = None
-        self._extra_attributes = extra_attributes
-        self.genealogy = genealogy
-        self.path = Path(path)
-        self.is_raw = is_raw
-        self.dataset_type = str(dataset_type)
-        self.created = created
-        self.origin_id = origin_id
         self.flexilims_session = flexilims_session
-        self.id = id
         if project is not None:
             self.project = project
             if project_id is not None:
@@ -417,6 +409,15 @@ class Dataset(object):
                     raise DatasetError("project_id does not correspond to project")
         elif project_id is not None:
             self.project_id = project_id
+
+        self._extra_attributes = extra_attributes
+        self.genealogy = genealogy
+        self.path = Path(path)
+        self.dataset_type = str(dataset_type)
+        self.created = created
+        self.origin_id = origin_id
+        self.id = id
+        self.is_raw = is_raw
 
     def is_valid(self, return_reason=False):
         """Check if the file path is valid for this dataset
@@ -709,6 +710,8 @@ class Dataset(object):
         'dateCreated', 'dateUpdated', 'customEntities', 'incrementalId', 'id',
         'origin_id', 'path', 'is_raw', 'dataset_type', 'genealogy', 'project'
         """
+        if self._extra_attributes is None:
+            self._extra_attributes = dict()
         return self._extra_attributes
 
     @extra_attributes.setter
@@ -800,6 +803,8 @@ class Dataset(object):
         crash if it doesn't work"""
         if value is None:
             paths = PARAMETERS["data_root"]
+            if self.project in PARAMETERS["project_paths"]:
+                paths = PARAMETERS["project_paths"][self.project]
             if Path(paths["raw"]) in self.path.parents:
                 value = "yes"
             elif Path(paths["processed"]) in self.path.parents:

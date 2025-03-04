@@ -10,6 +10,7 @@
 ### Bugfix
 
 - `extra_attributes` of datasets is now always a dictionary and cannot be set to `None`
+- `gui` can handle project paths defined in `"project_paths"` in the config file
 
 ## v0.4.2
 

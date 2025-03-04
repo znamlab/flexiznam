@@ -364,7 +364,7 @@ def _create_yaml_dict(
     if format_yaml:
         level_dict["path"] = str(PurePosixPath(level_dict["path"]))
     children = dict() if "children" not in level_dict else level_dict["children"]
-    datasets = Dataset.from_folder(level_folder)
+    datasets = Dataset.from_folder(level_folder, project=project)
     if datasets:
         for ds_name, ds in datasets.items():
             if ds_name in children:
