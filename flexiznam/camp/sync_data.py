@@ -460,18 +460,21 @@ def _upload_yaml_dict(
 
             if verbose:
                 print(f"Adding dataset `{entity}`, type `{dataset_type}`")
-            new_entity = flz.add_dataset(
-                parent_id=origin["id"],
-                dataset_type=dataset_type,
-                created=created,
-                path=path,
-                is_raw=is_raw,
-                flexilims_session=flexilims_session,
-                dataset_name=entity,
-                attributes=entity_data["extra_attributes"],
-                strict_validation=False,
-                conflicts=conflicts,
-            )
+            try:
+                new_entity = flz.add_dataset(
+                    parent_id=origin["id"],
+                    dataset_type=dataset_type,
+                    created=created,
+                    path=path,
+                    is_raw=is_raw,
+                    flexilims_session=flexilims_session,
+                    dataset_name=entity,
+                    attributes=entity_data["extra_attributes"],
+                    strict_validation=False,
+                    conflicts=conflicts,
+                )
+            except OSError as e:
+                raise OSError(f"Error adding dataset {entity}: {e}")
 
         _upload_yaml_dict(
             yaml_dict=children,

@@ -11,6 +11,9 @@
 
 - `extra_attributes` of datasets is now always a dictionary and cannot be set to `None`
 - `gui` can handle project paths defined in `"project_paths"` in the config file
+- `HarpData` and `VisStimData` fix invalid names in csv. The handle in extra
+  attributes is now the name of the file, replacing special characters by `_`.
+- clearer error message when one dataset cannot be parsed during upload.
 
 ## v0.4.2
 

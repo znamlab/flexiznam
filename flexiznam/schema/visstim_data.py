@@ -1,5 +1,7 @@
 import datetime
 import pathlib
+import re
+import warnings
 
 from flexiznam.schema.datasets import Dataset
 
@@ -34,7 +36,7 @@ class VisStimData(Dataset):
         Returns:
             dict of dataset (flz.schema.harp_data.HarpData)
         """
-
+        unvalid_chars = re.compile(r'[\',\.@"+=\!#$%^&*<>?/\|}{~:]')
         csv_files = list(pathlib.Path(folder).glob("*.csv"))
 
         fnames = [f.name for f in csv_files]
@@ -50,14 +52,25 @@ class VisStimData(Dataset):
         elif isinstance(folder_genealogy, list):
             folder_genealogy = tuple(folder_genealogy)
         output = {}
-        extra_attributes = dict(csv_files={f.stem: f.name for f in csv_files})
+        matched_csv_files = {f.stem: f.name for f in csv_files}
+        valid_csv = dict()
+        for fname, value in matched_csv_files.items():
+            if unvalid_chars.search(fname):
+                new_fname = re.sub(unvalid_chars, "_", fname)
+                warnings.warn(f"Invalid characters in {fname}. Renaming to {new_fname}")
+                valid_csv[new_fname] = value
+            else:
+                valid_csv[fname] = value
+        if not valid_csv:
+            raise IOError("No valid CSV files found in the folder.")
+
         genealogy = folder_genealogy + ("visstim",)
         created = datetime.datetime.fromtimestamp(log_file.stat().st_mtime)
         output["visstim"] = VisStimData(
             genealogy=genealogy,
             is_raw=is_raw,
             path=folder,
-            extra_attributes=extra_attributes,
+            extra_attributes=dict(csv_files=valid_csv),
             created=created.strftime("%Y-%m-%d %H:%M:%S"),
             flexilims_session=flexilims_session,
             project=project,
