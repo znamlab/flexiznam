@@ -15,6 +15,10 @@
   attributes is now the name of the file, replacing special characters by `_`.
 - clearer error message when one dataset cannot be parsed during upload.
 
+### Minor
+
+- Relax requirement for python because of suite2p
+
 ## v0.4.2
 
 ### Main changes
