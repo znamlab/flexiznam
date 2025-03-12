@@ -426,10 +426,10 @@ if __name__ == "__main__":
 
     app = FlexiGui()
     app.root_folder.set(
-        "/Volumes/lab-znamenskiyp/data/instruments/raw_data/projects/blota_onix_pilote/BRYA142.5d/"
+        "/Volumes/proj-znamenp-3dvision/raw/colasa_3d-vision_revisions/PZAG16.3c/S20250220"
     )
-    app.origin_name.set("BRYA142.5d")
-    app.project.set("blota_onix_pilote")
+    app.origin_name.set("PZAG16.3c")
+    app.project.set("colasa_3d-vision_revisions")
     app.mainloop()
     df = diffofdict(app.data["children"], app.get_checked_data()["children"])
     a = app.data["children"]["S20230915"]["children"]

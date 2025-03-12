@@ -1,5 +1,24 @@
 # Change log
 
+## v0.4.3
+
+### Main changes
+
+- Add an option for inverse filtering in `get_datasets` and `get_datasets_recursively`.
+  Use `exclude_datasets` to filter out dataset with a specified value of an attribute.
+
+### Bugfix
+
+- `extra_attributes` of datasets is now always a dictionary and cannot be set to `None`
+- `gui` can handle project paths defined in `"project_paths"` in the config file
+- `HarpData` and `VisStimData` fix invalid names in csv. The handle in extra
+  attributes is now the name of the file, replacing special characters by `_`.
+- clearer error message when one dataset cannot be parsed during upload.
+
+### Minor
+
+- Relax requirement for python because of suite2p
+
 ## v0.4.2
 
 ### Main changes

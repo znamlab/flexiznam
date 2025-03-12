@@ -253,7 +253,10 @@ class Dataset(object):
         # There are no datasets, create one
         if not already_processed:
             if verbose:
-                print("No datasets of type %s found. Creating new" % dataset_type)
+                msg = "No datasets of type %s" % dataset_type
+                if base_name != dataset_type:
+                    msg += " with base name %s" % base_name
+                print(msg + " found. Creating new dataset")
             return _create_new_ds(
                 origin,
                 base_name,
@@ -276,12 +279,15 @@ class Dataset(object):
                 if verbose:
                     print("Overwriting dataset %s" % valid_processed[0].name)
                 dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
-                dataset.extra_attributes = extra_attributes
+                if extra_attributes is not None:
+                    dataset.extra_attributes = extra_attributes
                 return dataset
             if len(processed) == 1:
                 if verbose:
                     print("Overwriting dataset %s" % processed.iloc[0].name)
                 dataset = Dataset.from_dataseries(dataseries=processed.iloc[0])
+                if extra_attributes is not None:
+                    dataset.extra_attributes = extra_attributes
                 dataset.extra_attributes = extra_attributes
                 return dataset
             raise flz.errors.NameNotUniqueError(
@@ -391,33 +397,11 @@ class Dataset(object):
             id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
         """
-        if extra_attributes is None:
-            extra_attributes = {}
-        else:
-            extra_attributes = dict(extra_attributes)
-            double_args = [
-                kw
-                for kw in ("path", "is_raw", "dataset_type", "genealogy", "created")
-                if kw in extra_attributes
-            ]
-            if len(double_args):
-                raise DatasetError(
-                    "Mandatory attribute(s) present in "
-                    "extra_attributes: %s" % (double_args)
-                )
 
         self._project = None
         self._project_id = None
         self._flexilims_session = None
-        self.extra_attributes = extra_attributes
-        self.genealogy = genealogy
-        self.path = Path(path)
-        self.is_raw = is_raw
-        self.dataset_type = str(dataset_type)
-        self.created = created
-        self.origin_id = origin_id
         self.flexilims_session = flexilims_session
-        self.id = id
         if project is not None:
             self.project = project
             if project_id is not None:
@@ -425,6 +409,15 @@ class Dataset(object):
                     raise DatasetError("project_id does not correspond to project")
         elif project_id is not None:
             self.project_id = project_id
+
+        self._extra_attributes = extra_attributes
+        self.genealogy = genealogy
+        self.path = Path(path)
+        self.dataset_type = str(dataset_type)
+        self.created = created
+        self.origin_id = origin_id
+        self.id = id
+        self.is_raw = is_raw
 
     def is_valid(self, return_reason=False):
         """Check if the file path is valid for this dataset
@@ -709,6 +702,37 @@ class Dataset(object):
                 )
 
     @property
+    def extra_attributes(self):
+        """Extra attributes of the dataset
+
+        This is a dictionary that can contain any extra information about the dataset.
+        It cannot contain flexilims reserved keywords such as 'createdBy', 'objects',
+        'dateCreated', 'dateUpdated', 'customEntities', 'incrementalId', 'id',
+        'origin_id', 'path', 'is_raw', 'dataset_type', 'genealogy', 'project'
+        """
+        if self._extra_attributes is None:
+            self._extra_attributes = dict()
+        return self._extra_attributes
+
+    @extra_attributes.setter
+    def extra_attributes(self, value):
+        if value is None:
+            self._extra_attributes = dict()
+            return
+        extra_attributes = dict(value)
+        double_args = [
+            kw
+            for kw in ("path", "is_raw", "dataset_type", "genealogy", "created")
+            if kw in extra_attributes
+        ]
+        if len(double_args):
+            raise DatasetError(
+                "Mandatory attribute(s) present in "
+                "extra_attributes: %s" % (double_args)
+            )
+        self._extra_attributes = value
+
+    @property
     def full_name(self):
         """Full name of the dataset as it would appear on Flexilims.
 
@@ -779,6 +803,8 @@ class Dataset(object):
         crash if it doesn't work"""
         if value is None:
             paths = PARAMETERS["data_root"]
+            if self.project in PARAMETERS["project_paths"]:
+                paths = PARAMETERS["project_paths"][self.project]
             if Path(paths["raw"]) in self.path.parents:
                 value = "yes"
             elif Path(paths["processed"]) in self.path.parents:

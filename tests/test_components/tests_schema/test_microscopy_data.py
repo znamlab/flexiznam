@@ -1,5 +1,5 @@
 from flexiznam.schema.microscopy_data import MicroscopyData
-from tests.tests_resources.data_for_testing import DATA_ROOT
+from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
 
 # Test creation of all dataset types.
 #
@@ -12,7 +12,7 @@ from tests.tests_resources.data_for_testing import DATA_ROOT
 
 def test_from_folder():
     raw_folder = DATA_ROOT / "mouse_physio_2p"
-    ds = MicroscopyData.from_folder(raw_folder, verbose=False)
+    ds = MicroscopyData.from_folder(raw_folder, verbose=False, project=TEST_PROJECT)
     assert len(ds) == 1
     d = ds["wf_overview.PNG"]
     assert d.full_name == "mouse_physio_2p_wf_overview.PNG"

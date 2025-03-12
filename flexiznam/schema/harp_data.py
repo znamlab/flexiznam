@@ -2,6 +2,7 @@ import datetime
 import os
 import pathlib
 import re
+import warnings
 
 from flexiznam.schema.datasets import Dataset
 
@@ -33,6 +34,7 @@ class HarpData(Dataset):
         Returns:
             dict of dataset (flz.schema.harp_data.HarpData)
         """
+        unvalid_chars = re.compile(r'[\',\.@"+=\!#$%^&*<>?/\|}{~:]')
 
         fnames = [f for f in os.listdir(folder) if f.endswith((".csv", ".bin"))]
         bin_files = [f for f in fnames if f.endswith(".bin")]
@@ -63,13 +65,24 @@ class HarpData(Dataset):
             }
             if matched_files.intersection(associated_csv.values()):
                 raise IOError("A csv file matched with multiple binary files.")
-            matched_files.update(associated_csv.values())
+            valid_csv = dict()
+            for match in associated_csv:
+                # special characters in the file name are replaced by underscores
+                if re.search(unvalid_chars, match):
+                    new_name = re.sub(r"[^\w\s]", "_", match)
+                    warnings.warn(
+                        f"Special characters in {match} were replaced by underscores"
+                    )
+                    valid_csv[new_name] = associated_csv[match]
+                else:
+                    valid_csv[match] = associated_csv[match]
+            matched_files.update(valid_csv.values())
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
             extra_attributes = dict(
                 binary_file=bin_file,
-                csv_files=associated_csv,
+                csv_files=valid_csv,
             )
             genealogy = folder_genealogy + (bin_file[:-4],)
             output[bin_file[:-4]] = HarpData(

@@ -706,6 +706,8 @@ def add_dataset(
         the flexilims response
 
     """
+    if parent_id is None:
+        raise AttributeError("`parent_id` must be provided to add dataset.")
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     valid_conflicts = ("abort", "skip", "append", "overwrite", "update")
@@ -1129,6 +1131,7 @@ def get_datasets_recursively(
     origin_series=None,
     dataset_type=None,
     filter_datasets=None,
+    exclude_datasets=None,
     parent_type=None,
     filter_parents=None,
     return_paths=False,
@@ -1151,6 +1154,7 @@ def get_datasets_recursively(
         dataset_type (str): type of the dataseet to filter by. If `None`,
             will return all datasets.
         filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        exclude_datasets (dict): dictionary of key-value pairs to exclude datasets by.
         parent_type (str): type of the parent entity. If `None`, will return all
         filter_parents (dict): dictionary of key-value pairs to filter parents by.
         return_paths (bool): if True, return a list of paths
@@ -1191,6 +1195,7 @@ def get_datasets_recursively(
             flexilims_session=flexilims_session,
             return_paths=return_paths,
             filter_datasets=filter_datasets,
+            exclude_datasets=exclude_datasets,
         )
         # add only if there are datasets
         if len(ds):
@@ -1225,6 +1230,7 @@ def get_datasets(
     project_id=None,
     flexilims_session=None,
     filter_datasets=None,
+    exclude_datasets=None,
     allow_multiple=True,
     return_paths=False,
     return_dataseries=False,
@@ -1241,6 +1247,8 @@ def get_datasets(
             `flexilims_session` is provided.
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
         filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        exclude_datasets (dict): dictionary of key-value pairs to exclude datasets by.
+            This acts as inverse filter.
         allow_multiple (bool): if True, allow multiple datasets to be returned,
             otherwise ensure that only one dataset exists online and return it.
         return_paths (bool): if True, return a list of paths
@@ -1269,6 +1277,14 @@ def get_datasets(
         flexilims_session=flexilims_session,
         filter=filter_datasets,
     )
+
+    if exclude_datasets is not None:
+        keep_dataset = pd.Series(True, index=datasets.index)
+        for key, value in exclude_datasets.items():
+            if key not in datasets.columns:
+                continue
+            keep_dataset &= datasets[key] != value
+        datasets = datasets[keep_dataset]
 
     if not return_dataseries:
         datasets = [
