@@ -5,6 +5,10 @@
 # Pycharm files
 .idea
 
+# local environement
+envs
+pkgs
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
