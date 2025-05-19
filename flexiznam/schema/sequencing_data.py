@@ -1,29 +1,26 @@
 import datetime
-import os
 import pathlib
 import warnings
 
 from flexiznam.config import PARAMETERS
 from flexiznam.schema.datasets import Dataset
-from flexiznam.schema.scanimage_data import parse_si_filename
 
 
-class MicroscopyData(Dataset):
-    """Subclass to handle detection of ex vivo microscopy images
-
-    It should deal with all images except scanimage datasets (which are handled by
-    scanimage_data.ScanimageData)
-
-    Extensions added to VALID_EXTENSIONS are considered as single file datasets
-    """
-
-    DATASET_TYPE = "microscopy"
+class SequencingData(Dataset):
+    DATASET_TYPE = "sequencing"
     try:
-        VALID_EXTENSIONS = PARAMETERS["microscopy_extensions"]
+        VALID_EXTENSIONS = PARAMETERS["sequencing_extensions"]
     except KeyError:
-        VALID_EXTENSIONS = {".czi", ".png", ".gif", ".tif", ".tiff"}
+        VALID_EXTENSIONS = [
+            ".fastq.gz",
+            ".fastq",
+            ".fq.gz",
+            ".fq",
+            ".bam",
+            ".sam",
+        ]
         warnings.warn(
-            "Could not find `microscopy_extensions` in config. Please update "
+            "Could not find `sequencing_extensions` in config. Please update "
             "config file",
             stacklevel=2,
         )
@@ -37,7 +34,10 @@ class MicroscopyData(Dataset):
         flexilims_session=None,
         project=None,
     ):
-        """Create Microscopy datasets by loading info from folder
+        """Create a sequencing dataset by loading info from folder
+
+        All files with extensions defined in the "sequencing_extensions" parameter
+        of the config file are considered as valid datasets
 
         Args:
             folder (str): path to the folder
@@ -46,52 +46,37 @@ class MicroscopyData(Dataset):
             is_raw (bool): does this folder contain raw data?
             verbose (bool=True): print info about what is found
             flexilims_session (flm.Session): session to interact with flexilims
-            project (str): project ID or name
+            project (str): project name
 
         Returns:
-            dict of dataset (flz.schema.microscopy_data.MicroscopyData)
+            dict of datasets (fzm.schema.sequencing_data.SequencingData)
         """
         folder = pathlib.Path(folder)
-        if not folder.is_dir():
-            raise IOError("%s is not a folder" % folder)
-        fnames = [
-            f
-            for f in os.listdir(folder)
-            if f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))
-        ]
+        assert folder.is_dir()
 
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)
         elif isinstance(folder_genealogy, list):
             folder_genealogy = tuple(folder_genealogy)
+        datasets = dict()
+        valid_files = []
+        for ext in SequencingData.VALID_EXTENSIONS:
+            valid_files.extend([(ext, fl) for fl in folder.glob(f"*{ext}")])
 
-        # filter out SI tifs
-        si_fnames = []
-        for f in fnames:
-            if not (f.lower().endswith("tif") or f.lower().endswith("tiff")):
-                continue
-            if parse_si_filename(folder / f) is None:
-                continue
-            else:
-                si_fnames.append(f)
-        [fnames.remove(f) for f in si_fnames]
-        if verbose:
-            print("Ignored %d SI tif" % len(si_fnames))
-
-        output = dict()
-        for fname in fnames:
-            dataset_path = pathlib.Path(folder) / fname
-            genealogy = folder_genealogy + (fname,)
-            created = datetime.datetime.fromtimestamp(dataset_path.stat().st_mtime)
-            output[fname] = MicroscopyData(
-                genealogy=genealogy,
+        for ext, file in valid_files:
+            created = datetime.datetime.fromtimestamp(file.stat().st_mtime)
+            ds_name = file.name.replace(ext, "")
+            if verbose:
+                print("Found sequencing dataset %s" % ds_name)
+            datasets[ds_name] = SequencingData(
+                path=file,
                 is_raw=is_raw,
-                path=dataset_path,
-                created=created.strftime("%Y-%m-%d %H:%M:%S"),
+                genealogy=folder_genealogy + (ds_name,),
                 flexilims_session=flexilims_session,
                 project=project,
+                created=created.strftime("%Y-%m-%d %H:%M:%S"),
             )
-        return output
+        return datasets
 
     def __init__(
         self,
@@ -106,7 +91,7 @@ class MicroscopyData(Dataset):
         id=None,
         flexilims_session=None,
     ):
-        """Create a Microscopy dataset
+        """Create a Sequencing dataset
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
@@ -123,22 +108,20 @@ class MicroscopyData(Dataset):
             origin_id: hexadecimal code for the origin on flexilims.
             id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
-
-        Expected extra_attributes:
-            None
         """
+
         super().__init__(
             genealogy=genealogy,
             path=path,
             is_raw=is_raw,
-            dataset_type=MicroscopyData.DATASET_TYPE,
+            dataset_type=SequencingData.DATASET_TYPE,
             extra_attributes=extra_attributes,
             created=created,
             project=project,
-            project_id=project_id,
+            flexilims_session=flexilims_session,
             origin_id=origin_id,
             id=id,
-            flexilims_session=flexilims_session,
+            project_id=project_id,
         )
 
     def is_valid(self, return_reason=False):

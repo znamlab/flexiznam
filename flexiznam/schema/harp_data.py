@@ -2,6 +2,7 @@ import datetime
 import os
 import pathlib
 import re
+import warnings
 
 from flexiznam.schema.datasets import Dataset
 
@@ -33,6 +34,7 @@ class HarpData(Dataset):
         Returns:
             dict of dataset (flz.schema.harp_data.HarpData)
         """
+        unvalid_chars = re.compile(r'[\',\.@"+=\!#$%^&*<>?/\|}{~:]')
 
         fnames = [f for f in os.listdir(folder) if f.endswith((".csv", ".bin"))]
         bin_files = [f for f in fnames if f.endswith(".bin")]
@@ -55,23 +57,32 @@ class HarpData(Dataset):
                         "file name." % bin_file
                     )
                 continue
-            if any(m.groups()):  # do not match csv if the bin is just "harpmessage"
-                pattern = "(.*)".join(m.groups()) + ".csv"
-                matches = [re.match(pattern, f) for f in csv_files]
-                associated_csv = {
-                    m.groups()[0].strip("_"): f for f, m in zip(csv_files, matches) if m
-                }
-                if matched_files.intersection(associated_csv.values()):
-                    raise IOError("A csv file matched with multiple binary files.")
-                matched_files.update(associated_csv.values())
-            else:
-                associated_csv = {}
+
+            pattern = "(.*)".join(m.groups()) + ".csv"
+            matches = [re.match(pattern, f) for f in csv_files]
+            associated_csv = {
+                m.groups()[0].strip("_"): f for f, m in zip(csv_files, matches) if m
+            }
+            if matched_files.intersection(associated_csv.values()):
+                raise IOError("A csv file matched with multiple binary files.")
+            valid_csv = dict()
+            for match in associated_csv:
+                # special characters in the file name are replaced by underscores
+                if re.search(unvalid_chars, match):
+                    new_name = re.sub(r"[^\w\s]", "_", match)
+                    warnings.warn(
+                        f"Special characters in {match} were replaced by underscores"
+                    )
+                    valid_csv[new_name] = associated_csv[match]
+                else:
+                    valid_csv[match] = associated_csv[match]
+            matched_files.update(valid_csv.values())
 
             bin_path = pathlib.Path(folder) / bin_file
             created = datetime.datetime.fromtimestamp(bin_path.stat().st_mtime)
             extra_attributes = dict(
                 binary_file=bin_file,
-                csv_files=associated_csv,
+                csv_files=valid_csv,
             )
             genealogy = folder_genealogy + (bin_file[:-4],)
             output[bin_file[:-4]] = HarpData(
@@ -101,23 +112,25 @@ class HarpData(Dataset):
         project=None,
         project_id=None,
         origin_id=None,
+        id=None,
         flexilims_session=None,
     ):
         """Create a Harp dataset
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
-                  file datasets)
+                file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
+            id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
@@ -141,6 +154,7 @@ class HarpData(Dataset):
             project=project,
             project_id=project_id,
             origin_id=origin_id,
+            id=id,
             flexilims_session=flexilims_session,
         )
 
@@ -160,11 +174,18 @@ class HarpData(Dataset):
     def csv_files(self, value):
         self.extra_attributes["csv_files"] = str(value)
 
-    def is_valid(self):
-        """Check that video, metadata and timestamps files exist"""
-        if not (pathlib.Path(self.path) / self.binary_file).exists():
-            return False
+    def is_valid(self, return_reason=False):
+        """Check that video, metadata and timestamps files exist
+
+        Args:
+            return_reason (bool): if True, return a string with the reason why the
+                                  dataset is not valid
+        Returns:"""
+        if not (self.path_full / self.binary_file).exists():
+            msg = f"Missing file {self.binary_file}"
+            return msg if return_reason else False
         for _, file_path in self.csv_files.items():
-            if not (pathlib.Path(self.path) / file_path).exists():
-                return False
-        return True
+            if not (self.path_full / file_path).exists():
+                msg = f"Missing file {file_path}"
+                return msg if return_reason else False
+        return "" if return_reason else True

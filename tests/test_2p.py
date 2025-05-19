@@ -3,14 +3,16 @@ Example file to upload a 2P dataset
 
 The example data is found in demo_project
 """
+
 import copy
 
 import pandas as pd
 import yaml
 
-from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
+import flexiznam as fzn
+from flexiznam.camp.sync_data import create_yaml, parse_yaml, upload_yaml
 from flexiznam.utils import (
-    clean_dictionary_recursively,
+    clean_recursively,
     compare_dictionaries_recursively,
 )
 from tests.tests_resources import flexilims_session
@@ -19,8 +21,6 @@ from tests.tests_resources.data_for_testing import (
     PROCESSED_ROOT,
     TEST_PROJECT,
 )
-import flexiznam as fzn
-from flexiznam import camp
 
 MOUSE = "mouse_physio_2p"
 SESSION = "S20211102"
@@ -50,9 +50,7 @@ def test_create_yaml():
         saved = yaml.safe_load(fopen)
     assert saved == automat
     # test that it can be parsed
-    p = parse_yaml(
-        path_to_yaml=saved_skeleton, verbose=False, raw_data_folder=DATA_ROOT
-    )
+    parse_yaml(path_to_yaml=saved_skeleton, verbose=False, raw_data_folder=DATA_ROOT)
 
 
 def test_parse_yaml():
@@ -66,13 +64,12 @@ def test_parse_yaml():
 
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace(".yml", "_parsed.yml")
     # If the parsed has changed and you want to overwrite it, you can do:
-    # fzn.camp.sync_data.write_session_data_as_yaml(parsed, target_file=saved_parsed_yaml,
+    # fzn.camp.sync_data.write_session_data_as_yaml(parsed,
+    # target_file=saved_parsed_yaml,
     #                                               overwrite=True)
-    # parsed contains datasets, we need to make them  into str to compare with saved data
+    # parsed contains datasets, we need to make them into str to compare with saved data
     parsed_str = copy.deepcopy(parsed)
-    clean_dictionary_recursively(
-        parsed_str, keys=["name"], format_dataset=True, tuple_as_list=True
-    )
+    clean_recursively(parsed_str, keys=["name"], format_dataset=True)
 
     with open(saved_parsed_yaml, "r") as fopen:
         saved = yaml.safe_load(fopen)

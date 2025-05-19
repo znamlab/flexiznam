@@ -3,21 +3,21 @@ Example file to upload a barseq dataset
 
 The example data is found in demo_project
 """
+
 import copy
 
 import pandas as pd
 import yaml
 
-from flexiznam.camp.sync_data import upload_yaml, create_yaml, parse_yaml
-from flexiznam.utils import clean_dictionary_recursively
+import flexiznam as fzn
+from flexiznam.camp.sync_data import create_yaml, parse_yaml, upload_yaml
+from flexiznam.utils import clean_recursively
 from tests.tests_resources import flexilims_session
 from tests.tests_resources.data_for_testing import (
     DATA_ROOT,
     PROCESSED_ROOT,
     TEST_PROJECT,
 )
-import flexiznam as fzn
-from flexiznam import camp
 
 MOUSE = "mouse_barseq"
 YAML = "yaml_automatic_skeleton.yml"
@@ -56,13 +56,12 @@ def test_parse_yaml():
 
     saved_parsed_yaml = PROCESSED_ROOT / MOUSE / YAML.replace(".yml", "_parsed.yml")
     # If the parsed has changed and you want to overwrite it, you can do:
-    # fzn.camp.sync_data.write_session_data_as_yaml(parsed, target_file=saved_parsed_yaml,
+    # fzn.camp.sync_data.write_session_data_as_yaml(parsed,
+    # target_file=saved_parsed_yaml,
     #                                               overwrite=True)
-    # parsed contains datasets, we need to make them  into str to compare with saved data
+    # parsed contains datasets, we need to make them into str to compare with saved data
     parsed_str = copy.deepcopy(parsed)
-    clean_dictionary_recursively(
-        parsed_str, keys=["name"], format_dataset=True, tuple_as_list=True
-    )
+    clean_recursively(parsed_str, keys=["name"], format_dataset=True)
 
     with open(saved_parsed_yaml, "r") as fopen:
         saved = yaml.safe_load(fopen)

@@ -1,15 +1,18 @@
 import os.path
-from pathlib import Path
 import sys
+import warnings
+from copy import deepcopy
+from getpass import getpass
+from pathlib import Path
+
 import yaml
 
 import flexiznam
-from flexiznam.errors import ConfigurationError
 from flexiznam.config.default_config import DEFAULT_CONFIG
-from getpass import getpass
+from flexiznam.errors import ConfigurationError
 
 
-def _find_file(file_name, config_folder=None):
+def _find_file(file_name, config_folder=None, create_if_missing=False):
     """Find a file by looking at various places
 
     Only in config_folder (if provided)
@@ -18,40 +21,64 @@ def _find_file(file_name, config_folder=None):
     - then in the ~/.config folder
     - then in the folder contain the file defining this function
     - then in sys.path
+
+    Args:
+        file_name (str): name of the file to find
+        config_folder (str): folder to look for the file
+        create_if_missing (bool): if True, create the file in the config folder if it
+            does not exist. If False, raise an error if the file is not found
     """
     if config_folder is not None:
         in_config_folder = Path(config_folder) / file_name
         if in_config_folder.is_file():
             return in_config_folder
-        raise ConfigurationError("Cannot find %s in %s" % (file_name, config_folder))
-    local = Path.cwd() / file_name
-    if local.is_file():
-        return local
-    config = Path(__file__).parent.absolute() / "config" / file_name
-    home = Path.home() / ".flexiznam"
-    if home.is_dir() and (home / file_name).is_file():
-        return home / file_name
-    if config.is_file():
-        return config
-    for directory in sys.path:
-        fname = Path(directory) / file_name
-        if fname.is_file():
-            return fname
+        missing_file = in_config_folder
+    else:
+        local = Path.cwd() / file_name
+        if local.is_file():
+            return local
+        config = Path(__file__).parent.absolute() / "config" / file_name
+        home = Path.home() / ".flexiznam"
+        if home.is_dir() and (home / file_name).is_file():
+            return home / file_name
+        if config.is_file():
+            return config
+        for directory in sys.path:
+            fname = Path(directory) / file_name
+            if fname.is_file():
+                return fname
+        missing_file = home / file_name
+    if create_if_missing:
+        with open(missing_file, "w") as f:
+            f.write("")
+        return missing_file
     raise ConfigurationError("Cannot find %s" % file_name)
 
 
-def load_param(param_folder=None, config_file="config.yml"):
-    """Read parameter file from config folder"""
+def load_param(param_folder=None, config_file="config.yml", verbose=False):
+    """Read parameter file from config folder
+
+    Args:
+        param_folder (str, optional): folder to look for the file. Defaults to None.
+        config_file (str, optional): name of the file to find. Defaults to "config.yml".
+        verbose (bool, optional): if True, print the path of the file being read.
+            Defaults to False.
+
+    Returns:
+        dict: parameters read from the file
+    """
     if param_folder is None:
         param_file = _find_file(config_file)
     else:
         param_file = Path(param_folder) / config_file
+    if verbose:
+        print(f"Reading parameters from {param_file}")
     with open(param_file, "r") as yml_file:
         prm = yaml.safe_load(yml_file)
     return prm
 
 
-def get_password(username, app, password_file=None):
+def get_password(app, username, password_file=None, allow_input=True):
     """Read the password yaml"""
     if password_file is None:
         try:
@@ -62,13 +89,15 @@ def get_password(username, app, password_file=None):
         pwd = yaml.safe_load(yml_file) or {}
     try:
         if app not in pwd:
-            raise IOError("No password for %s" % app)
+            raise ConfigurationError("No password for %s" % app)
         pwd = pwd[app]
         if username not in pwd:
-            raise IOError("No %s password for user %s" % (app, username))
+            raise ConfigurationError("No %s password for user %s" % (app, username))
         return pwd[username]
-    except IOError:
-        return getpass(prompt=f"Enter {app} password: ")
+    except ConfigurationError:
+        if allow_input:
+            return getpass(prompt=f"Enter {app} password: ")
+        raise ConfigurationError("No password for %s" % app)
 
 
 def add_password(app, username, password, password_file=None):
@@ -128,6 +157,11 @@ def update_config(
         config_folder = Path.home() / ".flexiznam"
 
     full_param_path = Path(config_folder) / param_file
+
+    # get all existing params and add the kwargs
+    prm = load_param(config_file=full_param_path)
+    kwargs = _recursive_update(prm, kwargs, skip_checks=skip_checks)
+
     if add_all_projects:
         flm_sess = flexiznam.get_flexilims_session()
         projects = flm_sess.get_project_info()
@@ -137,12 +171,18 @@ def update_config(
         if "project_ids" in kwargs:
             project_ids.update(kwargs["project_ids"])
         kwargs["project_ids"] = project_ids
+        all_ids = {}
+        for pname, pid in kwargs["project_ids"].items():
+            if pid in all_ids:
+                warnings.warn(f"PIDs {pname} and {all_ids[pid]} have the same ID")
+            all_ids[pid] = pname
 
+    # run create_config with template=None to append new keys
     create_config(
         config_folder=config_folder,
         config_file=param_file,
         overwrite=True,
-        template=full_param_path,
+        template=None,
         skip_checks=skip_checks,
         **kwargs,
     )
@@ -170,7 +210,7 @@ def create_config(
             with open(template, "r") as tpl_file:
                 cfg = yaml.safe_load(tpl_file)
     else:
-        cfg = DEFAULT_CONFIG
+        cfg = deepcopy(DEFAULT_CONFIG)
     cfg = _recursive_update(cfg, kwargs, skip_checks=skip_checks)
 
     if config_folder is None:

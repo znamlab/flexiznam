@@ -1,11 +1,16 @@
 import pathlib
+import re
+import warnings
 from pathlib import Path, PurePosixPath
 
+import numpy as np
 import pandas as pd
+
 import flexiznam as flz
+from flexiznam.errors import DatasetError, FlexilimsError
 from flexiznam.schema import Dataset
-from flexiznam.errors import FlexilimsError
-from flexilims.main import SPECIAL_CHARACTERS
+
+SPECIAL_CHARACTERS = re.compile(r'[\',@"+=\-!#$%^&*<>?/\|}{~:]')
 
 
 def compare_series(
@@ -67,9 +72,9 @@ def compare_series(
 
 
 def compare_dictionaries_recursively(first_dict, second_dict, output=None):
-    """Compare two dictionnaries recursively
+    """Compare two dictionaries recursively
 
-    Will return a dictionnary with only fields that have are different
+    Will return a dictionary with only fields that have are different
 
     Args:
         first_dict (dict): First dictionary
@@ -105,54 +110,102 @@ def compare_dictionaries_recursively(first_dict, second_dict, output=None):
     return output
 
 
-def clean_dictionary_recursively(
-    dictionary, keys=(), path2string=True, format_dataset=False, tuple_as_list=False
+def clean_recursively(
+    element,
+    keys=(),
+    json_compatible=True,
+    format_dataset=False,
 ):
-    """Recursively clean a dictionary inplace
+    """Recursively clean inplace to make json compatible
 
     Args:
-        dictionary: dict (of dict)
+        element (any): Typically a dict of dict to clean, but can be any object that
+            needs to be made json compatible
         keys (list): list of keys to pop from the dictionary
-        path2string (bool): replace :py:class:`pathlib.Path` object by their
-            string representation (default True)
+        json_compatible (bool): make the dictionary json compatible (default True)
         format_dataset (bool): replace :py:class:`flexiznam.schema.Dataset`
             instances by their yaml representation (default False)
-        tuple_as_list (bool): replace tuples by list (default False)
     """
-
     if isinstance(keys, str):
         keys = [keys]
-    for k in keys:
-        dictionary.pop(k, None)
+
+    # handle dictionaries and first recursion
+    if isinstance(element, dict):
+        for k in keys:
+            element.pop(k, None)
+        for k in list(element.keys()):
+            v = element[k]
+            if json_compatible:
+                if SPECIAL_CHARACTERS.search(k) is not None:
+                    new_key = re.sub(SPECIAL_CHARACTERS, "_", k)
+                    print(
+                        f"Warning: key `{k}` contains special characters and is "
+                        + f"invalid JSON. Will use {new_key} instead"
+                    )
+                    element[new_key] = element.pop(k)
+                    k = new_key
+            element[k] = clean_recursively(v, keys, json_compatible, format_dataset)
+        return element
+
+    if json_compatible:
+        # we don't have a dictionary
+        ds_classes = set(Dataset.SUBCLASSES.values())
+        ds_classes.add(Dataset)
+        floats = (float, np.float32, np.float64)
+        ints = (int, np.int32, np.int64)
+        if (
+            (element is None)
+            or isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, bool)
+            or isinstance(element, list)
+            or any([isinstance(element, cls) for cls in ds_classes])
+        ):
+            pass
+        elif isinstance(element, tuple):
+            element = list(element)
+        elif isinstance(element, np.ndarray):
+            element = element.tolist()
+        elif isinstance(element, pathlib.Path):
+            element = str(PurePosixPath(element))
+        elif isinstance(element, floats):
+            if not np.isfinite(element):
+                # nan and inf must be uploaded as string
+                element = str(element)
+            else:
+                element = float(element)
+        elif isinstance(element, ints):
+            element = int(element)
+        elif isinstance(element, pd.Series or pd.DataFrame):
+            raise IOError("Cannot make a pandas object json compatible")
+        else:
+            warnings.warn(
+                f"{element} has unknown type ({type(element)}). Will save as string"
+            )
+            element = str(element)
+
+    if isinstance(element, list):
+        for i, v in enumerate(element):
+            element[i] = clean_recursively(v, keys, json_compatible, format_dataset)
+
     if format_dataset:
         ds_classes = set(Dataset.SUBCLASSES.values())
         ds_classes.add(Dataset)
-    for k, v in dictionary.items():
-        if isinstance(v, dict):
-            clean_dictionary_recursively(
-                v, keys, path2string, format_dataset, tuple_as_list
-            )
-        if path2string and isinstance(v, pathlib.Path):
-            dictionary[k] = str(PurePosixPath(v))
-        if tuple_as_list and isinstance(v, tuple):
-            dictionary[k] = list(v)
-        if format_dataset:
-            if any([isinstance(v, cls) for cls in ds_classes]):
-                ds_dict = v.format(mode="yaml")
-                # we have now a dictionary with a flat structure. Reshape it to match
-                # what acquisition yaml are supposed to look like
-                for field in ["name", "project", "type"]:
-                    ds_dict.pop(field, None)
+        if any([isinstance(element, cls) for cls in ds_classes]):
+            ds_dict = element.format(mode="yaml")
+            # we have now a dictionary with a flat structure. Reshape it to match
+            # what acquisition yaml are supposed to look like
+            for field in ["name", "project", "type"]:
+                ds_dict.pop(field, None)
 
-                # rename extra_attributes to match acquisition yaml.
-                # Making a copy with dict is required to write yaml later on. If I keep
-                # the reference the output file has `*id001` instead of `{}`
-                ds_dict["attributes"] = dict(ds_dict.pop("extra_attributes", {}))
-                ds_dict["path"] = str(PurePosixPath(Path(ds_dict["path"])))
-                clean_dictionary_recursively(
-                    ds_dict, path2string=path2string, tuple_as_list=tuple_as_list
-                )
-                dictionary[k] = ds_dict
+            # rename extra_attributes to match acquisition yaml.
+            # Making a copy with dict is required to write yaml later on. If I keep
+            # the reference the output file has `*id001` instead of `{}`
+            ds_dict["attributes"] = dict(ds_dict.pop("extra_attributes", {}))
+            ds_dict["path"] = str(PurePosixPath(Path(ds_dict["path"])))
+            ds_dict = clean_recursively(ds_dict, keys, json_compatible, format_dataset)
+            element = ds_dict
+    return element
 
 
 def check_flexilims_paths(
@@ -160,8 +213,8 @@ def check_flexilims_paths(
 ):
     """Check that paths defined on flexilims exist
 
-    For datasets, check that the exact path exists, for the rest check if either `raw` or
-    `process` path exist (as mouse, sample etc can be found in both or either folder).
+    For datasets, check that the exact path exists, for the rest check if either `raw`
+    or `process` path exist (as mouse, sample etc can be found in both or either folder)
 
     Args:
         flexilims_session (flm.Session): flexilims session object, must define project
@@ -171,7 +224,7 @@ def check_flexilims_paths(
         error_only (bool): Return only issue (default True). Otherwise list valid paths
 
     Returns:
-        error_df (pd.DataFrame): list of unvalid paths
+        error_df (pd.DataFrame): list of invalid paths
 
     """
 
@@ -237,7 +290,9 @@ def check_flexilims_names(flexilims_session, root_name=None, recursive=True):
     return pd.DataFrame(data=output, columns=["name", "parent_name"])
 
 
-def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None):
+def add_genealogy(
+    flexilims_session, root_name=None, recursive=False, added=None, verbose=True
+):
     """Add genealogy info to properly named sections of database
 
     If the names of all entries are as expected (check_flexilims_names return None),
@@ -250,6 +305,7 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
                          all mice.
         recursive (bool): do recursively on children (default False)
         added (None): holder for recursion. Do not use
+        verbose (bool,optional): show progress. Default True.
     Returns:
         list of entity names for which genealogy was added
     """
@@ -288,12 +344,12 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
             parts.append(parent["name"])
         parts = parts[::-1]
         cut = ""
-        # transform parts in genealogy by cutting begining
+        # transform parts in genealogy by cutting beginning
         for i, part in enumerate(parts):
             parts[i] = part[len(cut) :]
             cut = part + "_"
 
-        if "genealogy" in entity:
+        if "genealogy" in entity and isinstance(entity.genealogy, list):
             if entity.genealogy != parts:
                 raise FlexilimsError(
                     '%s genealogy does not match database: "%s" vs '
@@ -302,6 +358,8 @@ def add_genealogy(flexilims_session, root_name=None, recursive=False, added=None
             else:
                 pass
         else:
+            if verbose:
+                print(f"Updating {entity.name}", flush=True)
             flz.update_entity(
                 entity.type,
                 flexilims_session=flexilims_session,
@@ -348,9 +406,7 @@ def add_missing_paths(flexilims_session, root_name=None):
             name=element["name"],
             flexilims_session=flexilims_session,
         )
-        project = flz.main._lookup_project(
-            prm=flz.PARAMETERS, project_id=entity.project
-        )
+        project = flz.main.lookup_project(prm=flz.PARAMETERS, project_id=entity.project)
         if "genealogy" not in entity:
             raise FlexilimsError(
                 "Attribute genealogy not defined for %s", entity["name"]
@@ -418,15 +474,15 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
             output.append([element.name, element.type, "Folder found", " ".join(ok), 0])
     else:
         try:
-            ds = Dataset.from_flexilims(
-                flexilims_session=flexilims_session, data_series=element
+            ds = Dataset.from_dataseries(
+                flexilims_session=flexilims_session, dataseries=element
             )
             if not ds.path_full.exists():
                 output.append(
                     [
                         element.name,
                         element.type,
-                        "dataset path unvalid",
+                        "dataset path invalid",
                         ds.path_full,
                         1,
                     ]
@@ -440,7 +496,17 @@ def _check_path(output, element, flexilims_session, recursive, error_only):
                 [
                     element.name,
                     element.type,
-                    "Cannot create dataset from " "flexilims",
+                    "Cannot create dataset from flexilims",
+                    str(err),
+                    0,
+                ]
+            )
+        except DatasetError as err:
+            output.append(
+                [
+                    element.name,
+                    element.type,
+                    "Genealogy might not be set",
                     str(err),
                     0,
                 ]

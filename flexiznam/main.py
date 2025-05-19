@@ -1,11 +1,18 @@
+import datetime
 import re
 import warnings
-import pandas as pd
-import flexilims as flm
 from pathlib import Path
+
+import flexilims as flm
+import pandas as pd
+import portalocker
+import yaml
+from flexilims.utils import SPECIAL_CHARACTERS
+
+import flexiznam
 from flexiznam import mcms
 from flexiznam.config import PARAMETERS, get_password
-from flexiznam.errors import NameNotUniqueError, FlexilimsError
+from flexiznam.errors import ConfigurationError, FlexilimsError, NameNotUniqueError
 
 warnings.simplefilter("always", DeprecationWarning)
 
@@ -18,10 +25,75 @@ def _format_project(project_id, prm):
     return project_id
 
 
-def _lookup_project(project_id, prm):
+def get_processed_path(data_path):
+    """Return the path to the processed data.
+
+    Args:
+        data_path (str): Relative path to data
+
+    Returns:
+        pathlib.Path: Path to processed data
+
+    """
+    project = Path(data_path).parts[0]
+    processed_path = get_data_root("processed", project=project)
+    return processed_path / data_path
+
+
+def get_raw_path(data_path):
+    """Return the path to the raw data.
+
+    Args:
+        data_path (str): Relative path to data
+
+    Returns:
+        pathlib.Path: Path to raw data
+
+    """
+    project = Path(data_path).parts[0]
+    raw_path = get_data_root("raw", project=project)
+    return raw_path / data_path
+
+
+def get_data_root(which, project=None, flexilims_session=None):
+    """Get raw or processed path for a project
+
+    Args:
+        which (str): either "raw" or "processed"
+        project (str, optional): name or id of the project. Optional if
+            flexilims_session is provided
+        flexilims_session (:py:class:`flexilims.Flexilims`, optional): a flexilims
+            session with project set. Optional if project is provided.
+    """
+    if which not in ["raw", "processed"]:
+        raise ValueError("which must be either 'raw' or 'processed'")
+
+    if project is None:
+        assert (
+            flexilims_session is not None
+        ), "`flexilims_session` must be provided if `project` is None"
+
+        project = flexilims_session.project_id
+
+    if project not in PARAMETERS["project_ids"]:
+        proj = lookup_project(project, prm=None)
+        assert proj is not None, f"Invalid project {project}"
+        project = proj
+
+    if project in PARAMETERS["project_paths"]:
+        return Path(PARAMETERS["project_paths"][project][which])
+
+    if which == "raw":
+        return Path(PARAMETERS["data_root"]["raw"])
+    return Path(PARAMETERS["data_root"]["processed"])
+
+
+def lookup_project(project_id, prm=None):
     """
     Look up project name by hexadecimal id
     """
+    if prm is None:
+        prm = PARAMETERS
     try:
         proj = next(proj for proj, id in prm["project_ids"].items() if id == project_id)
         return proj
@@ -29,7 +101,14 @@ def _lookup_project(project_id, prm):
         return None
 
 
-def get_flexilims_session(project_id=None, username=None, password=None):
+def get_flexilims_session(
+    project_id=None,
+    username=None,
+    password=None,
+    reuse_token=True,
+    timeout=10,
+    offline_mode=None,
+):
     """Open a new flexilims session by creating a new authentication token.
 
     Args:
@@ -39,19 +118,66 @@ def get_flexilims_session(project_id=None, username=None, password=None):
             read from the config file.
         password (str): (optional) flexilims password. If not provided, it is
             read from the secrets file, or failing that triggers an input prompt.
+        reuse_token (bool): (optional) if True, try to reuse an existing token
+        timeout (int): (optional) timeout in seconds for the portalocker lock. Default
+                to 10.
+        offline_mode (bool): (optional) if True, will use an offline session. In this
+            case, the `offline_yaml` parameter must be set in the config file. If
+            not provided, will look for the `offline_mode` parameter in the config
+            file. Default to None.
+
 
     Returns:
         :py:class:`flexilims.Flexilims`: Flexilims session object.
     """
+
     if project_id is not None:
         project_id = _format_project(project_id, PARAMETERS)
     else:
         warnings.warn("Starting flexilims session without setting project_id.")
+
+    if offline_mode is None:
+        offline_mode = PARAMETERS.get("offline_mode", False)
+
+    if offline_mode:
+        yaml_file = PARAMETERS.get("offline_yaml", None)
+        if yaml_file is None:
+            raise ConfigurationError("offline_mode is set but offline_yaml is not")
+        yaml_file = Path(yaml_file)
+        if not yaml_file.exists():
+            yaml_file = get_data_root("processed", project=project_id) / yaml_file
+        if not yaml_file.exists():
+            raise ConfigurationError(f"offline_yaml file {yaml_file} not found")
+        flexilims_session = flm.OfflineFlexilims(yaml_file, project_id=project_id)
+        return flexilims_session
+
     if username is None:
         username = PARAMETERS["flexilims_username"]
     if password is None:
-        password = get_password(username, "flexilims")
-    session = flm.Flexilims(username, password, project_id=project_id)
+        password = get_password("flexilims", username)
+
+    if reuse_token:
+        today = datetime.datetime.now().strftime("%Y-%m-%d")
+        tocken_file = flexiznam.config.config_tools._find_file(
+            "flexilims_token.yml", create_if_missing=True
+        )
+        with portalocker.Lock(tocken_file, "r+", timeout=timeout) as file_handle:
+            tokinfo = yaml.safe_load(file_handle) or {}
+            token = tokinfo.get("token", None)
+            date = tokinfo.get("date", None)
+            if date != today:
+                token = None
+            else:
+                token = dict(Authorization=f"Bearer {token}")
+            session = flm.Flexilims(
+                username, password, project_id=project_id, token=token
+            )
+            if token is None:
+                # we need to update the token
+                token = session.session.headers["Authorization"].split(" ")[-1]
+                yaml.dump(dict(token=token, date=today), file_handle)
+    else:
+        session = flm.Flexilims(username, password, project_id=project_id, token=None)
     return session
 
 
@@ -66,6 +192,7 @@ def add_mouse(
     mcms_password=None,
     flexilims_username=None,
     flexilims_password=None,
+    conflicts="abort",
 ):
     """Check if a mouse is already in the database and add it if it isn't
 
@@ -89,6 +216,8 @@ def add_mouse(
                                   flexilims session is not provided
         flexilims_password (str): [optional] password for flexilims, used only if
                                   flexilims session is not provided
+        conflicts (str): `abort`, `skip`, `update` or `overwrite` (see update_entity for
+                        detailed description)
 
     Returns (dict):
         flexilims reply
@@ -102,8 +231,14 @@ def add_mouse(
 
     mice_df = get_entities(flexilims_session=flexilims_session, datatype="mouse")
     if mouse_name in mice_df.index:
-        print("Mouse already online")
-        return mice_df.loc[mouse_name]
+        if conflicts.lower() == "skip":
+            print("Mouse already online")
+            return mice_df.loc[mouse_name]
+        elif conflicts.lower() == "abort":
+            raise FlexilimsError("Mouse already online")
+        is_online = True
+    else:
+        is_online = False
 
     if mouse_info is None:
         mouse_info = {}
@@ -115,72 +250,105 @@ def add_mouse(
             mcms_username = PARAMETERS["mcms_username"]
         if mcms_animal_name is None:
             mcms_animal_name = mouse_name
-        mcms_info = dict(
-            mcms.get_mouse_df(
-                mouse_name=mcms_animal_name,
-                username=mcms_username,
-                password=mcms_password,
-            )
+        mcms_info = mcms.get_mouse_info(
+            mouse_name=mcms_animal_name,
+            username=mcms_username,
+            password=mcms_password,
         )
-        # format properly results
-        for k, v in mcms_info.items():
-            if type(v) != str:
-                mcms_info[k] = float(v)
-            else:
-                mcms_info[k] = v.strip()
-
+        # flatten alleles and colony
+        alleles = mcms_info.pop("alleles")
+        for gene in alleles:
+            gene_name = gene["allele"]["shortAlleleSymbol"].replace(" ", "_")
+            gene_name = re.sub(
+                SPECIAL_CHARACTERS, "_", gene["allele"]["shortAlleleSymbol"]
+            )
+            mcms_info[gene_name] = gene["genotype"]["name"]
+        colony = mcms_info.pop("colony")
+        mcms_info["colony_prefix"] = colony["colonyPrefix"]
+        if not mcms_info:
+            raise IOError(f"Could not get info for mouse {mouse_name} from MCMS")
+        # format birthdate
+        for date_type in ["birth_date", "death_date"]:
+            d = mcms_info[date_type]
+            if d is not None:
+                d = datetime.datetime.fromisoformat(d)
+                # birthdate is at midnight or 23 depending on the time zone
+                if d.hour <= 12:
+                    date = d.strftime("%Y-%m-%d")
+                else:
+                    date = (d + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            mcms_info[date_type] = date
         # update mouse_info with mcms_info but prioritise mouse_info for conflicts
         mouse_info = dict(mcms_info, **mouse_info)
 
     # add the genealogy info, which is just [mouse_name]
     mouse_info["genealogy"] = [mouse_name]
-    resp = flexilims_session.post(
-        datatype="mouse",
-        name=mouse_name,
-        attributes=mouse_info,
-        strict_validation=False,
-    )
+    project_name = lookup_project(flexilims_session.project_id, PARAMETERS)
+    mouse_info["path"] = str(Path(project_name) / mouse_name)
+    if is_online:
+        resp = update_entity(
+            datatype="mouse",
+            name=mouse_name,
+            mode=conflicts,
+            attributes=mouse_info,
+            flexilims_session=flexilims_session,
+        )
+    else:
+        resp = flexilims_session.post(
+            datatype="mouse",
+            name=mouse_name,
+            attributes=mouse_info,
+            strict_validation=False,
+        )
     return resp
 
 
 def add_experimental_session(
-    parent_name,
     date,
+    flexilims_session,
+    parent_name=None,
+    parent_id=None,
     attributes={},
     session_name=None,
     other_relations=None,
-    flexilims_session=None,
-    project_id=None,
     conflicts="abort",
 ):
     """Add a new session as a child entity of a mouse
 
     Args:
-        parent_name (str): name of the parent, usually a mouse. Must exist on flexilims
         date (str): date of the session. If `session_name` is not provided, will be
                     used as name
-        attributes (dict): dictionary of additional attributes (on top of date)
-        session_name (str or None): name of the session, usually in the shape `S20210420`.
-        conflicts (str): What to do if a session with that name already exists? Can be
-                        `skip`, `abort`, `update` or `overwrite` (see update_entity for
-                        detailed description)
-        other_relations: ID(s) of custom entities related to the session
-        flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session
-        project_id (str): name of the project or hexadecimal project id (needed if
-                          session is not provided)
+        flexilims_session (flexilims.Flexilims): flexilims session. Must contain project
+            information.
+        parent_name (str, optional): name of the parent, usually a mouse. Must exist on
+            flexilims. Ignored and optional if parent_id is provided.
+        parent_id (str, optional): hexadecimal id of the parent, usually a mouse. Must
+            exist on flexilims. If provided, parent_name is ignored.
+        attributes (dict, optional): dictionary of additional attributes
+        session_name (str, optional): name of the session, usually in the shape
+            `S20210420`.
+        conflicts (str, optional): What to do if a session with that name already
+            exists? Can be `skip`, `abort`, `update` or `overwrite` (see update_entity
+            for detailed description)
+        other_relations (list, optional): ID(s) of custom entities related to the
+            session
+
 
     Returns:
         flexilims reply
 
     """
-    if flexilims_session is None:
-        flexilims_session = get_flexilims_session(project_id)
 
     if conflicts.lower() not in ("skip", "abort", "overwrite", "update"):
         raise AttributeError("conflicts must be `skip` or `abort`")
 
-    parent_df = get_entity(name=parent_name, flexilims_session=flexilims_session)
-    parent_id = parent_df["id"]
+    if parent_id is None:
+        assert parent_name is not None, "Must provide either parent_name or parent_id"
+        parent_df = get_entity(name=parent_name, flexilims_session=flexilims_session)
+        parent_id = parent_df["id"]
+    else:
+        parent_df = get_entity(id=parent_id, flexilims_session=flexilims_session)
+
     if session_name is None:
         parsed_date = re.fullmatch(r"(\d\d\d\d)-(\d\d)-(\d\d)", date)
         if parsed_date:
@@ -264,15 +432,19 @@ def add_recording(
 
     Args:
         session_id (str): hexadecimal ID of the session. Must exist on flexilims
-        recording_type (str): one of [two_photon, widefield, intrinsic, ephys, behaviour]
+        recording_type (str): one of [two_photon, widefield, intrinsic, ephys,
+            behaviour]
         protocol (str): experimental protocol (`retinotopy` for instance)
-        attributes (dict):  dictionary of additional attributes (on top of protocol and recording_type)
-        recording_name (str or None): name of the recording, usually in the shape `R152356`.
+        attributes (dict):  dictionary of additional attributes (on top of protocol and
+            recording_type)
+        recording_name (str or None): name of the recording, usually in the shape
+            `R152356`.
         conflicts (str): `skip`, `abort`, `update` or `overwrite` (see update_entity for
-                        detailed description)
+            detailed description)
         other_relations: ID(s) of custom entities related to the session
         flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session
-        project_id (str): name of the project or hexadecimal project id (needed if session is not provided)
+        project_id (str): name of the project or hexadecimal project id (needed if
+            session is not provided)
 
     Returns:
         flexilims reply
@@ -287,17 +459,16 @@ def add_recording(
             "conflicts must be `skip`, `abort`, `overwrite` or `update`"
         )
 
-    experimental_session = get_entity(
-        datatype="session", flexilims_session=flexilims_session, id=session_id
-    )
+    parent_series = get_entity(flexilims_session=flexilims_session, id=session_id)
     recording_info = {"recording_type": recording_type, "protocol": protocol}
+
     if attributes is None:
         attributes = {}
     if "path" not in attributes:
         attributes["path"] = str(
             Path(
                 get_path(
-                    experimental_session["path"],
+                    parent_series["path"],
                     datatype="session",
                     flexilims_session=flexilims_session,
                 )
@@ -313,20 +484,25 @@ def add_recording(
     recording_info.update(attributes)
 
     if recording_name is None:
-        recording_name = experimental_session["name"] + "_" + protocol + "_0"
+        recording_name = parent_series["name"] + "_" + protocol + "_0"
+
+    if "genealogy" not in attributes:
+        attributes["genealogy"] = list(parent_series["genealogy"]) + [recording_name]
+    rec_full_name = "_".join(attributes["genealogy"])
+
     online_recording = get_entity(
-        datatype="recording", name=recording_name, flexilims_session=flexilims_session
+        datatype="recording", name=rec_full_name, flexilims_session=flexilims_session
     )
     if online_recording is not None:
         if conflicts.lower() == "skip":
-            print("A recording named %s already exists" % (recording_name))
+            print("A recording named %s already exists" % (rec_full_name))
             return online_recording
         elif conflicts.lower() == "abort":
-            raise FlexilimsError("A recording named %s already exists" % recording_name)
+            raise FlexilimsError("A recording named %s already exists" % rec_full_name)
         else:
             resp = update_entity(
                 datatype="recording",
-                name=recording_name,
+                name=rec_full_name,
                 id=online_recording["id"],
                 origin_id=session_id,
                 mode=conflicts,
@@ -338,7 +514,7 @@ def add_recording(
 
     resp = flexilims_session.post(
         datatype="recording",
-        name=recording_name,
+        name=rec_full_name,
         attributes=recording_info,
         origin_id=session_id,
         other_relations=other_relations,
@@ -495,7 +671,6 @@ def add_dataset(
     dataset_type,
     created,
     path,
-    genealogy,
     is_raw="yes",
     project_id=None,
     flexilims_session=None,
@@ -509,18 +684,17 @@ def add_dataset(
     Args:
         parent_id (str): hexadecimal ID of the parent (session or recording)
         dataset_type (str): dataset_type, must be a type define in the config file
-        created (str): date of creation as text, usually in this format: '2021-05-24 14:56:41'
+        created (str): date of creation as text, usually in this format:
+            '2021-05-24 14:56:41'
         path (str): path to the data relative to the project folder
-        genealogy (tuple): parents of this dataset from the project (excluded) down to
-                           the dataset name itself (included)
         is_raw (str): `yes` or `no`, used to find the root directory
         project_id (str): hexadecimal ID or name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): authentication
             session for flexilims
         dataset_name (str): name of the dataset, will be autogenerated if not provided
         attributes (dict): optional attributes
-        strict_validation (bool): default False, if True, only attributes in lab settings are
-            allowed
+        strict_validation (bool): default False, if True, only attributes in lab
+            settings are allowed
         conflicts (str): `abort`, `skip`, `append`, `overwrite`, `update`, what to do
                          if a dataset with this name already exists? `abort` to crash,
                          `skip` to ignore and return the online version, `append` to
@@ -532,30 +706,18 @@ def add_dataset(
         the flexilims response
 
     """
+    if parent_id is None:
+        raise AttributeError("`parent_id` must be provided to add dataset.")
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     valid_conflicts = ("abort", "skip", "append", "overwrite", "update")
     if conflicts.lower() not in valid_conflicts:
         raise AttributeError("`conflicts` must be in [%s]" % ", ".join(valid_conflicts))
 
+    parent = get_entity(flexilims_session=flexilims_session, id=parent_id)
+
     if dataset_name is None:
-        parent_name = pd.concat(
-            [
-                get_entities(
-                    flexilims_session=flexilims_session,
-                    datatype="recording",
-                    id=parent_id,
-                ),
-                get_entities(
-                    flexilims_session=flexilims_session,
-                    datatype="session",
-                    id=parent_id,
-                ),
-                get_entities(
-                    flexilims_session=flexilims_session, datatype="sample", id=parent_id
-                ),
-            ]
-        )["name"][0]
+        parent_name = parent["name"]
         dataset_name = parent_name + "_" + dataset_type + "_0"
 
     dataset_info = {
@@ -563,7 +725,7 @@ def add_dataset(
         "created": created,
         "path": path,
         "is_raw": is_raw,
-        "genealogy": genealogy,
+        "genealogy": list(parent["genealogy"]),
     }
     reserved_attributes = ["dataset_type", "created", "path", "is_raw", "genealogy"]
     if attributes is not None:
@@ -575,32 +737,37 @@ def add_dataset(
         dataset_name = generate_name(
             "dataset", dataset_name, flexilims_session=flexilims_session
         )
+        dataset_info["genealogy"].append(dataset_name)
+        dataset_full_name = "_".join(dataset_info["genealogy"])
     else:
+        dataset_info["genealogy"].append(dataset_name)
+        dataset_full_name = "_".join(dataset_info["genealogy"])
         online_version = get_entity(
-            "dataset", name=dataset_name, flexilims_session=flexilims_session
+            "dataset", name=dataset_full_name, flexilims_session=flexilims_session
         )
         if online_version is not None:
             if conflicts.lower() == "abort":
-                raise FlexilimsError("A dataset named %s already exists" % dataset_name)
+                raise FlexilimsError(
+                    "A dataset named %s already exists" % dataset_full_name
+                )
             elif conflicts.lower() == "skip":
-                print("A dataset named %s already exists" % dataset_name)
+                print("A dataset named %s already exists" % dataset_full_name)
                 return online_version
             else:
                 resp = update_entity(
                     datatype="dataset",
-                    name=dataset_name,
+                    name=dataset_full_name,
                     id=online_version["id"],
                     origin_id=parent_id,
                     mode=conflicts,
                     attributes=dataset_info,
-                    other_relations=None,
                     flexilims_session=flexilims_session,
                 )
                 return resp
 
     resp = flexilims_session.post(
         datatype="dataset",
-        name=dataset_name,
+        name=dataset_full_name,
         origin_id=parent_id,
         attributes=dataset_info,
         strict_validation=strict_validation,
@@ -668,7 +835,11 @@ def update_entity(
         raise AttributeError("`mode` must be `overwrite` or `update`")
     if id is None:
         id = entity["id"]
-
+    for attr in full_attributes:
+        if attr in entity:
+            raise FlexilimsError(
+                "Attribute `%s` is a flexilims reserved keyword" % attr
+            )
     rep = flexilims_session.update_one(
         id=id,
         datatype=datatype,
@@ -681,7 +852,7 @@ def update_entity(
 
 
 def get_entities(
-    datatype="mouse",
+    datatype,
     query_key=None,
     query_value=None,
     project_id=None,
@@ -718,7 +889,7 @@ def get_entities(
         :py:class:`pandas.DataFrame`: containing all matching entities
 
     """
-    assert (project_id is not None) or (flexilims_session is not None)
+    # assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     results = flexilims_session.get(
@@ -756,6 +927,7 @@ def get_entity(
     If multiple entities on the database match the query, raise a
     :py:class:`flexiznam.errors.NameNotUniqueError`, if nothing matches returns `None`.
 
+    For best performance, provide the `id` of the entity and/or the `datatype`.
     Args:
         datatype (str): type of Flexylims entity to fetch, e.g. 'mouse', 'session',
             'recording', or 'dataset'. If None, will iterate on all datatype until the
@@ -780,7 +952,7 @@ def get_entity(
 
     """
 
-    if datatype is None:
+    if (datatype is None) and (name is None):
         # datatype is not specify, try everything
         args = [
             datatype,
@@ -861,6 +1033,8 @@ def get_id(name, datatype=None, project_id=None, flexilims_session=None):
     entity = get_entity(
         datatype=datatype, flexilims_session=flexilims_session, name=name
     )
+    if entity is None:
+        raise FlexilimsError("Cannot find entity named `%s`" % name)
     return entity["id"]
 
 
@@ -905,98 +1079,230 @@ def get_experimental_sessions(project_id=None, flexilims_session=None, mouse=Non
 
 
 def get_children(
-    parent_id, children_datatype=None, project_id=None, flexilims_session=None
+    parent_id=None,
+    parent_name=None,
+    children_datatype=None,
+    project_id=None,
+    flexilims_session=None,
+    filter=None,
 ):
     """
     Get all entries belonging to a particular parent entity
 
     Args:
         parent_id (str): hexadecimal id of the parent entity
+        parent_name (str): name of the parent entity.
         children_datatype (str or None): type of child entities to fetch (return all
                                          types if None)
         project_id (str): text name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        filter (dict, None): filter to apply to the extra_attributes of the children
 
     Returns:
-        DataFrame: containing all the relevant child entitites
+        DataFrame: containing all the relevant child entities
 
     """
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
-    results = format_results(flexilims_session.get_children(parent_id))
+    if parent_id is None:
+        assert parent_name is not None, "Must provide either parent_id or parent_name"
+        parent_id = get_id(parent_name, flexilims_session=flexilims_session)
+    results = format_results(
+        flexilims_session.get_children(parent_id), return_list=True
+    )
     if not len(results):
-        return results
+        return pd.DataFrame(results)
     if children_datatype is not None:
-        results = results.loc[results.type == children_datatype, :]
-    results.set_index("name", drop=False, inplace=True)
+        results = [r for r in results if r["type"] == children_datatype]
+    if filter is not None:
+        for key, value in filter.items():
+            results = [r for r in results if r.get(key, None) == value]
+
+    results = pd.DataFrame(results)
+    if len(results):
+        results.set_index("name", drop=False, inplace=True)
     return results
 
 
-def get_datasets(
-    origin_id,
-    recording_type=None,
+def get_datasets_recursively(
+    origin_id=None,
+    origin_name=None,
+    origin_series=None,
     dataset_type=None,
+    filter_datasets=None,
+    exclude_datasets=None,
+    parent_type=None,
+    filter_parents=None,
+    return_paths=False,
     project_id=None,
     flexilims_session=None,
+    _output=None,
 ):
-    """
-    Recurse into recordings and get paths to child datasets of a given type.
+    """Get datasets recursively from a parent entity
 
     For example, this is useful if you want to retrieve paths to all *scanimage*
     datasets associated with a given session.
 
     Args:
-        origin_id (str): hexadecimal ID of the origin session.
-        recording_type (str): type of the recording to filter by. If `None`,
-            will return datasets for all recordings.
+        origin_id (str): hexadecimal ID of the origin session. Not required if
+            origin_name is provided.
+        origin_name (str): text name of the origin session. Not required if origin_id
+            is provided.
+        origin_series (pandas.Series): series of the origin session. Not required if
+            origin_id or origin_name is provided.
+        dataset_type (str): type of the dataseet to filter by. If `None`,
+            will return all datasets.
+        filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        exclude_datasets (dict): dictionary of key-value pairs to exclude datasets by.
+        parent_type (str): type of the parent entity. If `None`, will return all
+        filter_parents (dict): dictionary of key-value pairs to filter parents by.
+        return_paths (bool): if True, return a list of paths
+        project_id (str): text name of the project. Not required if
+            `flexilims_session` is provided.
+        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        _output (list): internal argument used for recursion.
+
+    Returns:
+        dict: Dictionary with direct parent id as keys and lists of associated
+            datasets, or dataset paths as values
+    """
+    if origin_series is None:
+        if origin_id is None:
+            origin_id = get_id(origin_name, flexilims_session=flexilims_session)
+        origin_series = get_entity(id=origin_id, flexilims_session=flexilims_session)
+    else:
+        origin_id = origin_series["id"]
+    origin_is_valid = True
+
+    # initialize output if first call
+    if _output is None:
+        _output = {}
+
+    # Before adding the datasets of this level, check if the parent is valid
+    if (parent_type is not None) and (origin_series["type"] != parent_type):
+        origin_is_valid = False
+    if filter_parents is not None:
+        for key, value in filter_parents.items():
+            if origin_series.get(key, None) != value:
+                origin_is_valid = False
+
+    if origin_is_valid:
+        ds = get_datasets(
+            origin_id=origin_id,
+            dataset_type=dataset_type,
+            project_id=project_id,
+            flexilims_session=flexilims_session,
+            return_paths=return_paths,
+            filter_datasets=filter_datasets,
+            exclude_datasets=exclude_datasets,
+        )
+        # add only if there are datasets
+        if len(ds):
+            _output[origin_id] = ds
+
+    # now recurse on children
+    children = get_children(
+        parent_id=origin_id,
+        parent_name=origin_name,
+        flexilims_session=flexilims_session,
+    )
+    for _, child in children.iterrows():
+        if child.type == "dataset":
+            continue
+        get_datasets_recursively(
+            origin_series=child,
+            dataset_type=dataset_type,
+            project_id=project_id,
+            flexilims_session=flexilims_session,
+            return_paths=return_paths,
+            filter_datasets=filter_datasets,
+            filter_parents=filter_parents,
+            _output=_output,
+        )
+    return _output
+
+
+def get_datasets(
+    origin_id=None,
+    origin_name=None,
+    dataset_type=None,
+    project_id=None,
+    flexilims_session=None,
+    filter_datasets=None,
+    exclude_datasets=None,
+    allow_multiple=True,
+    return_paths=False,
+    return_dataseries=False,
+):
+    """
+    Args:
+        origin_id (str): hexadecimal ID of the origin session. Not required if
+            origin_name is provided.
+        origin_name (str): text name of the origin session. Not required if origin_id
+            is provided.
         dataset_type (str): type of the dataseet to filter by. If `None`,
             will return all datasets.
         project_id (str): text name of the project. Not required if
             `flexilims_session` is provided.
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        filter_datasets (dict): dictionary of key-value pairs to filter datasets by.
+        exclude_datasets (dict): dictionary of key-value pairs to exclude datasets by.
+            This acts as inverse filter.
+        allow_multiple (bool): if True, allow multiple datasets to be returned,
+            otherwise ensure that only one dataset exists online and return it.
+        return_paths (bool): if True, return a list of paths
+        return_dataseries (bool): if True, a dataframe or a dataseries
 
-    Returns:
-        dict: Dictionary with recording names as keys containing lists of associated dataset paths.
+
 
     """
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
     else:
-        project_id = _lookup_project(flexilims_session.project_id, PARAMETERS)
-    recordings = get_entities(
-        datatype="recording",
-        origin_id=origin_id,
-        query_key="recording_type",
-        query_value=recording_type,
+        project_id = lookup_project(flexilims_session.project_id, PARAMETERS)
+
+    if origin_id is None:
+        assert origin_name is not None, "Must provide either origin_id or origin_name"
+    if filter_datasets is None:
+        filter_datasets = {}
+    if dataset_type is not None:
+        filter_datasets.update({"dataset_type": dataset_type})
+
+    datasets = get_children(
+        parent_id=origin_id,
+        parent_name=origin_name,
+        children_datatype="dataset",
         flexilims_session=flexilims_session,
+        filter=filter_datasets,
     )
-    datapath_dict = {}
-    if len(recordings) < 1:
-        return datapath_dict
-    for recording_id in recordings["id"]:
-        datasets = get_entities(
-            datatype="dataset",
-            origin_id=recording_id,
-            query_key="dataset_type",
-            query_value=dataset_type,
-            flexilims_session=flexilims_session,
-        )
-        datapaths = []
-        for (dataset_path, is_raw) in zip(datasets["path"], datasets["is_raw"]):
-            prefix = (
-                PARAMETERS["data_root"]["raw"]
-                if is_raw == "yes"
-                else PARAMETERS["data_root"]["processed"]
+
+    if exclude_datasets is not None:
+        keep_dataset = pd.Series(True, index=datasets.index)
+        for key, value in exclude_datasets.items():
+            if key not in datasets.columns:
+                continue
+            keep_dataset &= datasets[key] != value
+        datasets = datasets[keep_dataset]
+
+    if not return_dataseries:
+        datasets = [
+            flexiznam.Dataset.from_dataseries(
+                dataseries=ds, flexilims_session=flexilims_session
             )
-            this_path = Path(prefix) / dataset_path
-            if this_path.exists():
-                datapaths.append(str(this_path))
-            else:
-                raise IOError("Dataset {} not found".format(this_path))
-            datapath_dict[recording_id] = datapaths
-    return datapath_dict
+            for _, ds in datasets.iterrows()
+        ]
+        if return_paths:
+            datasets = [ds.path_full for ds in datasets]
+
+    if not allow_multiple:
+        assert len(datasets) <= 1, f"Found {len(datasets)} datasets. Expected 1."
+        if len(datasets) == 1:
+            datasets = datasets[0] if not return_dataseries else datasets.iloc[0]
+        else:
+            datasets = None
+    return datasets
 
 
 def generate_name(datatype, name, flexilims_session=None, project_id=None):
@@ -1030,16 +1336,17 @@ def generate_name(datatype, name, flexilims_session=None, project_id=None):
     return name
 
 
-def format_results(results):
+def format_results(results, return_list=False):
     """Make request output a nice DataFrame
 
     This will crash if any attribute is also present in the flexilims reply,
     i.e. if an attribute is named:
-    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated',
+    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'dateUpdated',
     'origin_id', 'objects', 'customEntities', or 'project'
 
     Args:
         results (:obj:`list` of :obj:`dict`): Flexilims reply
+        return_list (bool): if True, return a list of dicts instead of a DataFrame
 
     Returns:
         :py:class:`pandas.DataFrame`: Reply formatted as a DataFrame
@@ -1048,10 +1355,40 @@ def format_results(results):
     for result in results:
         for attr_name, attr_value in result["attributes"].items():
             if attr_name in result:
-                raise FlexilimsError(
-                    "An entity should not have %s as attribute" % attr_name
-                )
-            result[attr_name] = attr_value
+                warnings.warn("An entity should not have %s as attribute" % attr_name)
+            else:
+                result[attr_name] = attr_value
         result.pop("attributes")
-    df = pd.DataFrame(results)
-    return df
+    if return_list:
+        return results
+    return pd.DataFrame(results)
+
+
+def delete_recursively(source_id, flexilims_session, do_it=False):
+    """Delete an entity and all its children recursively
+
+    Args:
+        source_id (str): hexadecimal ID of the entity to delete
+        flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
+        do_it (bool): if True, will actually delete the entities
+
+    Returns:
+        list: hexadecimal IDs of the entities to delete
+
+    """
+    to_delete = [source_id]
+
+    def _get_children(parent_id):
+        children = get_children(
+            parent_id=parent_id, flexilims_session=flexilims_session
+        )
+        for _, child in children.iterrows():
+            to_delete.append(child["id"])
+            if child["type"] != "dataset":
+                _get_children(child["id"])
+
+    _get_children(source_id)
+    if do_it:
+        for child_id in to_delete:
+            flexilims_session.delete(child_id)
+    return to_delete

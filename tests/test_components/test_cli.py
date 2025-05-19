@@ -1,7 +1,8 @@
-import pytest
 import pathlib
+
 import yaml
 from click.testing import CliRunner
+
 from flexiznam import cli
 from flexiznam.config import config_tools
 from tests.tests_resources.data_for_testing import PROCESSED_ROOT, TEST_PROJECT
@@ -48,7 +49,7 @@ def test_add_password(tmp_path):
             "--app",
             "test_app",
             "--username",
-            "noone",
+            "no_one",
             "--password",
             "1234",
         ],
@@ -56,7 +57,7 @@ def test_add_password(tmp_path):
     assert result.exit_code == 0
     assert result.output.startswith("Password added in")
     p = config_tools.get_password(
-        username="noone", app="test_app", password_file=pwd_file
+        username="no_one", app="test_app", password_file=pwd_file
     )
     assert p == "1234"
 

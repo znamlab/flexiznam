@@ -1,13 +1,14 @@
 import pathlib
-from pathlib import Path
-import re
-import numpy as np
+from datetime import datetime
+from pathlib import Path, PurePosixPath
+from typing import Dict
+
 import pandas as pd
+
 import flexiznam as flz
 from flexiznam import utils
-from flexiznam.errors import FlexilimsError, DatasetError
 from flexiznam.config import PARAMETERS
-from datetime import datetime
+from flexiznam.errors import DatasetError, FlexilimsError
 
 
 class Dataset(object):
@@ -19,7 +20,7 @@ class Dataset(object):
     schema.__init__.py
     """
 
-    SUBCLASSES = dict()
+    SUBCLASSES: Dict[str, object] = dict()
 
     @classmethod
     def from_folder(cls, folder, verbose=False, flexilims_session=None, project=None):
@@ -55,42 +56,58 @@ class Dataset(object):
     def from_flexilims(
         project=None,
         name=None,
-        data_series=None,
+        id=None,
         flexilims_session=None,
-        ignore_name_error=False,
     ):
-        """Loads a dataset from flexilims.
+        """Loads a dataset from flexilims
 
         If the dataset_type attribute of the flexilims entry defined in
         Dataset.SUBCLASSES,this subclass will be used. Otherwise a generic Dataset is
         returned
 
         Args:
-            project: Name of the project or hexadecimal project_id
-            name: Unique name of the dataset on flexilims
-            data_series: default to None. pd.Series as returned by flz.get_entities.
-                         If provided, supersedes project and name
-            flexilims_session: authentication session to access flexilims
-            ignore_name_error (bool): If False (default) will raise an error if the
-                                      dataset name and genealogy cannot be set.
+            project (str, optional): Name of the project or hexadecimal project_id. If
+                not provided, can be read from flexilims_session
+            name (str, optional): Unique name of the dataset on flexilims. Ignored if
+                `dataseries` is provided
+            id (str, optional): Hexadecimal id of the dataset on flexilims. Ignored if
+                `dataseries` is provided
+            flexilims_session (flexilims.Session, optional): authentication session to
+                access flexilims.
         """
-        if data_series is not None:
-            if (project is not None) or (name is not None):
-                raise AttributeError("Specify either data_series OR project + name")
-        else:
-            data_series = flz.get_entity(
-                project_id=project,
-                datatype="dataset",
-                name=name,
-                flexilims_session=flexilims_session,
-            )
-            if data_series is None:
-                raise FlexilimsError(
-                    "No dataset named {} in project {}".format(name, project)
-                )
-        dataset_type = data_series.dataset_type
+        dataseries = flz.get_entity(
+            project_id=project,
+            datatype="dataset",
+            name=name,
+            id=id,
+            flexilims_session=flexilims_session,
+        )
 
-        kwargs = Dataset._format_series_to_kwargs(data_series)
+        if dataseries is None:
+            if project is None:
+                project = flexilims_session.project_id
+            raise FlexilimsError(
+                "No dataset named {} in project {}".format(name, project)
+            )
+        ds = Dataset.from_dataseries(dataseries, flexilims_session=flexilims_session)
+        return ds
+
+    @staticmethod
+    def from_dataseries(
+        dataseries,
+        flexilims_session=None,
+    ):
+        """Create dataset from a flexilims dataseries
+
+        This function does not call flexilims, but uses the dataseries object directly.
+        Args:
+            dataseries (flexilims.DataSeries): flexilims dataseries object
+            flexilims_session (flexilims.Session, optional): authentication session to
+                access flexilims. Will be added to dataset object.
+        """
+        dataset_type = dataseries.dataset_type
+
+        kwargs = Dataset._format_series_to_kwargs(dataseries)
         name = kwargs.pop("name")
         kwargs["flexilims_session"] = flexilims_session
         if dataset_type in Dataset.SUBCLASSES:
@@ -117,33 +134,44 @@ class Dataset(object):
         base_name=None,
         conflicts=None,
         flexilims_session=None,
+        extra_attributes=None,
+        ignore_attributes=(),
+        verbose=False,
     ):
         """Creates a dataset of a given type as a child of a parent entity
+
+        This function will create a dataset with a unique name based on the origin name
+        and the dataset type. If a dataset of this type already exists, the behaviour is
+        defined by the `conflicts` argument. If `extra_attributes` is provided, only
+        consider datasets that have the exact same extra_attributes when resolving
+        conflicts.
+
 
         Args:
             project (str): Name of the project or hexadecimal project_id
             origin_type (str): sample type of the origin
-            origin_id (str): hexadecimal ID of the origin. This or origin_name must be provided
+            origin_id (str): hexadecimal ID of the origin. This or origin_name must be
+                provided
             origin_name (str): name of the origin. This or origin_id must be provided
-            dataset_type (str): type of dataset to create. Must be defined in the config file
-            base_name (str): How is this dataset name? Use dataset_type if root_name is
+            dataset_type (str): type of dataset to create. Must be defined in the config
+                file
+            base_name (str): How is this dataset name? Use dataset_type if base_name is
                              None (default)
-            conflicts (str): What to do if a dataset of this type already exists
-                as a child of the parent entity?
-
-                `append`
-                    Create a new dataset with a new name and path
-                `abort` or None
-                    Through a :py:class:`flexiznam.errors.NameNotUniqueError` and
-                    exit
-                `skip` or `overwrite`
-                    Return a Dataset corresponding to the existing entry if there
-                    is exactly one existing entry, otherwise through a
-                    :py:class:`flexiznam.errors.NameNotUniqueError`
-            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session to connect to flexilims
+            conflicts (str): How to resolve conflicts? One of `abort`, `skip`, `append`,
+                `overwrite`. Default is `abort`
+            flexilims_session (:py:class:`flexilims.Flexilims`): authentication session
+                to connect to flexilims
+            extra_attributes (dict): additional arguments. If provided, change the
+                `conflicts` behaviour to consider only datasets that have the exact
+                same extra_attributes.
+            ignore_attributes (list): list of arguments to ignore when comparing
+                datasets for conflicts resolution. Used only if `extra_attributes` is
+                provided.
+            verbose (bool): print debug information
 
         Returns:
-            :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT updating flexilims)
+            :py:class:`flexiznam.schema.datasets.Dataset`: a dataset object (WITHOUT
+            updating flexilims)
 
         """
         if base_name is None:
@@ -169,10 +197,36 @@ class Dataset(object):
         )
         if len(processed):
             processed = processed[
-                [g[-1].startswith(base_name) for g in processed.genealogy]
+                [g[-1].startswith(base_name + "_") for g in processed.genealogy]
             ]
+
+        # If extra_attributes is provided, only consider datasets that have the exact
+        # same extra_attributes
+        if extra_attributes is not None:
+            valid_processed = []
+            to_compare = utils.clean_recursively(
+                extra_attributes.copy(), keys=ignore_attributes
+            )
+            for _, proc in processed.iterrows():
+                online = Dataset._format_series_to_kwargs(proc)["extra_attributes"]
+                online = utils.clean_recursively(online, keys=ignore_attributes)
+                differences = utils.compare_dictionaries_recursively(to_compare, online)
+                if not differences:
+                    valid_processed.append(proc)
+        else:
+            valid_processed = [series for _, series in processed.iterrows()]
+
         already_processed = len(processed) > 0
-        if (not already_processed) or (conflicts == "append"):
+
+        def _create_new_ds(
+            origin,
+            base_name,
+            project,
+            flexilims_session,
+            dataset_type,
+            extra_attributes,
+        ):
+            """Inner function to create a new dataset object"""
             dataset_root = "%s_%s" % (origin["name"], base_name)
             dataset_name = flz.generate_name(
                 "dataset",
@@ -183,16 +237,6 @@ class Dataset(object):
             short_name = dataset_name[len(origin["name"]) + 1 :]
             genealogy = tuple(origin.genealogy) + (short_name,)
             dataset_path = str(Path(origin["path"]) / short_name)
-            ds = Dataset(
-                path=dataset_path,
-                is_raw="no",
-                dataset_type=dataset_type,
-                genealogy=genealogy,
-                created=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                project=project,
-                origin_id=origin["id"],
-                flexilims_session=flexilims_session,
-            )
             return Dataset(
                 path=dataset_path,
                 is_raw="no",
@@ -202,22 +246,88 @@ class Dataset(object):
                 project=project,
                 origin_id=origin["id"],
                 flexilims_session=flexilims_session,
+                extra_attributes=extra_attributes,
             )
-        else:
-            if (conflicts is None) or (conflicts == "abort"):
-                raise flz.errors.NameNotUniqueError(
-                    "Dataset {} already processed".format(processed.loc[:, "name"])
+
+        # CONFLICTS RESOLUTION
+        # There are no datasets, create one
+        if not already_processed:
+            if verbose:
+                msg = "No datasets of type %s" % dataset_type
+                if base_name != dataset_type:
+                    msg += " with base name %s" % base_name
+                print(msg + " found. Creating new dataset")
+            return _create_new_ds(
+                origin,
+                base_name,
+                project,
+                flexilims_session,
+                dataset_type,
+                extra_attributes,
+            )
+        # There are some datasets of this type already online and we abort
+        if (conflicts is None) or (conflicts == "abort"):
+            raise flz.errors.DatasetError(
+                f"Dataset(s) of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        # Three cases left: skip, append, overwrite
+        if conflicts == "overwrite":
+            # If overwrite, ensure there is only one dataset of this type as we
+            # won't be able to guess which one should be replaced
+            if len(valid_processed) == 1:
+                if verbose:
+                    print("Overwriting dataset %s" % valid_processed[0].name)
+                dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
+                if extra_attributes is not None:
+                    dataset.extra_attributes = extra_attributes
+                return dataset
+            if len(processed) == 1:
+                if verbose:
+                    print("Overwriting dataset %s" % processed.iloc[0].name)
+                dataset = Dataset.from_dataseries(dataseries=processed.iloc[0])
+                if extra_attributes is not None:
+                    dataset.extra_attributes = extra_attributes
+                dataset.extra_attributes = extra_attributes
+                return dataset
+            raise flz.errors.NameNotUniqueError(
+                f"Multiple datasets of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        if conflicts == "skip":
+            # If skip and we have an exact match, return it
+            if len(valid_processed) == 1:
+                if verbose:
+                    print("Skip. Returning dataset %s" % valid_processed[0].name)
+                return Dataset.from_dataseries(dataseries=valid_processed[0])
+            # If there is no match, create a new dataset
+            if len(valid_processed) == 0:
+                if verbose:
+                    print("No matching dataset found. Creating new dataset")
+                return _create_new_ds(
+                    origin,
+                    base_name,
+                    project,
+                    flexilims_session,
+                    dataset_type,
+                    extra_attributes,
                 )
-            elif conflicts == "skip" or conflicts == "overwrite":
-                if len(processed) == 1:
-                    return Dataset.from_flexilims(data_series=processed.iloc[0])
-                else:
-                    raise flz.errors.NameNotUniqueError(
-                        "{} {} datasets with name starting by {} exists for {}, "
-                        "which one to return?".format(
-                            len(processed), dataset_type, base_name, origin["name"]
-                        )
-                    )
+            raise flz.errors.NameNotUniqueError(
+                f"Multiple datasets of type {dataset_type} already exist(s):"
+                + f" {processed.loc[:, 'name']}"
+            )
+        if conflicts == "append":
+            # Create a new dataset
+            if verbose:
+                print("Appending dataset")
+            return _create_new_ds(
+                origin,
+                base_name,
+                project,
+                flexilims_session,
+                dataset_type,
+                extra_attributes,
+            )
 
     @staticmethod
     def _format_series_to_kwargs(flm_series):
@@ -229,6 +339,7 @@ class Dataset(object):
             "incrementalId",
             "createdBy",
             "dateCreated",
+            "dateUpdated",
             "origin_id",
             "objects",
             "customEntities",
@@ -248,6 +359,7 @@ class Dataset(object):
             extra_attributes=attr,
             project_id=flm_series.project,
             name=flm_series.name,
+            id=flm_series.id,
         )
         return kwargs
 
@@ -262,6 +374,7 @@ class Dataset(object):
         project=None,
         project_id=None,
         origin_id=None,
+        id=None,
         flexilims_session=None,
     ):
         """Construct a dataset manually. Is usually called through static methods
@@ -269,45 +382,25 @@ class Dataset(object):
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
-                  file datasets)
+                file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
             dataset_type: type of the dataset, must be in PARAMETERS['dataset_types']
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
+            id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
         """
-        if extra_attributes is None:
-            extra_attributes = {}
-        else:
-            extra_attributes = dict(extra_attributes)
-            double_args = [
-                kw
-                for kw in ("path", "is_raw", "dataset_type", "genealogy", "created")
-                if kw in extra_attributes
-            ]
-            if len(double_args):
-                raise DatasetError(
-                    "Mandatory attribute(s) present in "
-                    "extra_attributes: %s" % (double_args)
-                )
 
         self._project = None
         self._project_id = None
         self._flexilims_session = None
-        self.extra_attributes = extra_attributes
-        self.genealogy = genealogy
-        self.path = Path(path)
-        self.is_raw = is_raw
-        self.dataset_type = str(dataset_type)
-        self.created = created
-        self.origin_id = origin_id
         self.flexilims_session = flexilims_session
         if project is not None:
             self.project = project
@@ -317,13 +410,25 @@ class Dataset(object):
         elif project_id is not None:
             self.project_id = project_id
 
-    def is_valid(self):
-        """
-        Dummy method definition. Should be reimplemented in children classes
+        self._extra_attributes = extra_attributes
+        self.genealogy = genealogy
+        self.path = Path(path)
+        self.dataset_type = str(dataset_type)
+        self.created = created
+        self.origin_id = origin_id
+        self.id = id
+        self.is_raw = is_raw
 
+    def is_valid(self, return_reason=False):
+        """Check if the file path is valid for this dataset
+
+        Should be reimplemented in children classes.
         Should return True if the dataset is found a valid, false otherwise
         """
-        raise NotImplementedError("`is_valid` is not defined for generic datasets")
+        if not self.path_full.exists():
+            msg = f"Path {self.path_full} does not exist"
+            return msg if return_reason else False
+        return "" if return_reason else True
 
     def associated_files(self, folder=None):
         """Give a list of all files associated with this dataset
@@ -345,14 +450,19 @@ class Dataset(object):
         """
         if self.project_id is None:
             raise IOError("You must specify the project to get flexilims status")
-        if self.full_name is None:
-            raise IOError("You must specify the dataset name to get flexilims status")
+        if (self.id is None) and (self.full_name is None):
+            raise IOError(
+                "You must specify the dataset name or id to get flexilims status"
+            )
         series = flz.get_entity(
             datatype="dataset",
             project_id=self.project_id,
             name=self.full_name,
+            id=self.id,
             flexilims_session=self.flexilims_session,
         )
+        if (series is not None) and (self.id is None):
+            self.id = series.id
         return series
 
     def update_flexilims(self, mode="safe"):
@@ -373,15 +483,6 @@ class Dataset(object):
 
         status = self.flexilims_status()
         attributes = self.extra_attributes.copy()
-        # the following lines are necessary because pandas converts python types to numpy
-        # types, which JSON does not understand and because JSON doesn't like tuples
-        for attribute in attributes:
-            if isinstance(attributes[attribute], np.integer):
-                attributes[attribute] = int(attributes[attribute])
-            if isinstance(attributes[attribute], np.bool_):
-                attributes[attribute] = bool(attributes[attribute])
-            if isinstance(attributes[attribute], tuple):
-                attributes[attribute] = list(attribute)
 
         if status == "different":
             if mode == "safe":
@@ -400,9 +501,10 @@ class Dataset(object):
                 if self.origin_id is None:
                     if self.get_flexilims_entry().get("origin_id", None) is not None:
                         raise FlexilimsError("Cannot set origin_id to null")
-
+                utils.clean_recursively(attributes)
                 resp = flz.update_entity(
                     datatype="dataset",
+                    id=self.id,
                     name=self.full_name,
                     origin_id=self.origin_id,
                     mode=mode,
@@ -417,16 +519,15 @@ class Dataset(object):
             print("Already up to date, nothing to do")
             return
         # we are in 'not online' case
-        utils.clean_dictionary_recursively(attributes)
+        utils.clean_recursively(attributes)
         resp = flz.add_dataset(
             parent_id=self.origin_id,
             dataset_type=self.dataset_type,
             created=self.created,
-            path=str(self.path),
-            genealogy=self.genealogy,
+            path=str(PurePosixPath(self.path)),
             is_raw="yes" if self.is_raw else "no",
             project_id=self.project_id,
-            dataset_name=self.full_name,
+            dataset_name=self.dataset_name,
             attributes=attributes,
             flexilims_session=self.flexilims_session,
             conflicts="abort",
@@ -436,6 +537,7 @@ class Dataset(object):
         assert online_name == self.full_name
         root_name = "_".join(self.genealogy)
         assert online_name.startswith(root_name)
+        self.id = resp["id"]
         return resp
 
     def flexilims_status(self):
@@ -444,7 +546,7 @@ class Dataset(object):
         Status can be 'up-to-date', 'different' or 'not online'
 
         This function does not check flexilims these only value:
-        'createdBy', 'objects', 'dateCreated', 'customEntities',
+        'createdBy', 'objects', 'dateCreated', 'dateUpdated', 'customEntities',
         'incrementalId', 'id', 'origin_id'
         """
         series = self.get_flexilims_entry()
@@ -474,6 +576,7 @@ class Dataset(object):
                 "createdBy",
                 "objects",
                 "dateCreated",
+                "dateUpdated",
                 "customEntities",
                 "incrementalId",
                 "id",
@@ -514,13 +617,13 @@ class Dataset(object):
         get_entities output) or a 'yaml' type as that used by flexiznam.camp
 
         The flexilims series will not include elements that are not used by the Dataset
-        class such as created_by
+        class such as created_by and will make sure that the output is JSON serializable
 
         Args:
             mode: 'flexilims' or 'yaml'
         """
         data = dict(
-            path=str(self.path),
+            path=str(PurePosixPath(self.path)),
             created=self.created,
             dataset_type=self.dataset_type,
             is_raw="yes" if self.is_raw else "no",
@@ -535,20 +638,24 @@ class Dataset(object):
             data.update(self.extra_attributes)
             series = pd.Series(data, name=self.full_name)
             return series
-        elif mode.lower() == "yaml":
+        elif mode.lower() in ["yaml", "json", "yml"]:
             data["extra_attributes"] = self.extra_attributes
+            flz.utils.clean_recursively(data)
             return data
         else:
             raise IOError('Unknown mode "%s". Must be `flexilims` or `yaml`' % mode)
 
     @property
     def project_id(self):
-        """Hexadecimal ID of the parent project. Must be defined in config project list"""
+        """Hexadecimal ID of the parent project.
+
+        Must be defined in config project list
+        """
         return self._project_id
 
     @project_id.setter
     def project_id(self, value):
-        project = flz.main._lookup_project(value, flz.PARAMETERS)
+        project = flz.main.lookup_project(value, flz.PARAMETERS)
         if project is None:
             raise IOError("Unknown project ID. Please update config file")
         if self.flexilims_session is not None:
@@ -586,13 +693,44 @@ class Dataset(object):
         self._flexilims_session = value
         if value is None:
             return
-        if hasattr(value, "project_id"):
+        if hasattr(value, "project_id") and (value.project_id is not None):
             if self.project_id is None:
                 self.project_id = value.project_id
             elif self.project_id != value.project_id:
                 raise DatasetError(
                     "Cannot use a flexilims_session from a different " "project"
                 )
+
+    @property
+    def extra_attributes(self):
+        """Extra attributes of the dataset
+
+        This is a dictionary that can contain any extra information about the dataset.
+        It cannot contain flexilims reserved keywords such as 'createdBy', 'objects',
+        'dateCreated', 'dateUpdated', 'customEntities', 'incrementalId', 'id',
+        'origin_id', 'path', 'is_raw', 'dataset_type', 'genealogy', 'project'
+        """
+        if self._extra_attributes is None:
+            self._extra_attributes = dict()
+        return self._extra_attributes
+
+    @extra_attributes.setter
+    def extra_attributes(self, value):
+        if value is None:
+            self._extra_attributes = dict()
+            return
+        extra_attributes = dict(value)
+        double_args = [
+            kw
+            for kw in ("path", "is_raw", "dataset_type", "genealogy", "created")
+            if kw in extra_attributes
+        ]
+        if len(double_args):
+            raise DatasetError(
+                "Mandatory attribute(s) present in "
+                "extra_attributes: %s" % (double_args)
+            )
+        self._extra_attributes = value
 
     @property
     def full_name(self):
@@ -620,12 +758,6 @@ class Dataset(object):
         else:
             return None
 
-    @full_name.setter
-    def full_name(self, value):
-        raise DatasetError(
-            "Full name cannot be set directly. Set self.genealogy instead"
-        )
-
     @property
     def dataset_type(self):
         """Type of the dataset. Must be in PARAMETERS['dataset_types']"""
@@ -633,11 +765,12 @@ class Dataset(object):
 
     @dataset_type.setter
     def dataset_type(self, value):
-        if value.lower() not in PARAMETERS["dataset_types"]:
-            raise IOError(
-                'dataset_type "%s" not valid. Valid types are: '
-                "%s" % (value, PARAMETERS["dataset_types"])
-            )
+        if PARAMETERS["enforce_dataset_types"]:
+            if value.lower() not in PARAMETERS["dataset_types"]:
+                raise DatasetError(
+                    'dataset_type "%s" not valid. Valid types are: '
+                    "%s" % (value, PARAMETERS["dataset_types"])
+                )
         self._dataset_type = value.lower()
 
     @property
@@ -670,6 +803,8 @@ class Dataset(object):
         crash if it doesn't work"""
         if value is None:
             paths = PARAMETERS["data_root"]
+            if self.project in PARAMETERS["project_paths"]:
+                paths = PARAMETERS["project_paths"][self.project]
             if Path(paths["raw"]) in self.path.parents:
                 value = "yes"
             elif Path(paths["processed"]) in self.path.parents:
@@ -690,12 +825,11 @@ class Dataset(object):
     @property
     def path_root(self):
         """Get CAMP root path that should apply to this dataset"""
-        if self.is_raw:
-            return Path(flz.config.PARAMETERS["data_root"]["raw"])
-        elif self.is_raw is None:
+        if self.is_raw is None:
             raise AttributeError("`is_raw` must be set to find path.")
-        else:
-            return Path(flz.config.PARAMETERS["data_root"]["processed"])
+        return flz.get_data_root(
+            which="raw" if self.is_raw else "processed", project=self.project
+        )
 
     @property
     def path_full(self):

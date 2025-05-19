@@ -8,7 +8,7 @@ from flexiznam.schema.datasets import Dataset
 class CameraData(Dataset):
     DATASET_TYPE = "camera"
     VIDEO_EXTENSIONS = {".mp4", ".bin", ".avi"}
-    VALID_EXTENSIONS = {".txt", ".csv"}.union(VIDEO_EXTENSIONS)
+    VALID_EXTENSIONS = {".txt", ".csv", ".yml"}.union(VIDEO_EXTENSIONS)
 
     @staticmethod
     def from_folder(
@@ -25,16 +25,16 @@ class CameraData(Dataset):
 
         Args:
             folder (str): path to the folder
-            camera_name (str): name of the camera, all file names must start by this name
+            camera_name (str): name of the camera, all file names must start by this
+                name
             folder_genealogy (tuple): genealogy of the folder, if None assume that
-                                      the genealogy is just (folder,), i.e. no parents
+                the genealogy is just (folder,), i.e. no parents
             is_raw (bool): does this folder contain raw data?
             verbose (bool=True): print info about what is found
             flexilims_session (flm.Session): session to interact with flexilims
             project (str): project ID or name
             enforce_validity (bool): True by default. Refuse to create camera dataset
-                                     if they don't have a video, metadata and timestamp
-                                     file
+                if they don't have a video, metadata and timestamp file
 
         Returns:
             dict of datasets (fzm.schema.camera_data.CameraData)
@@ -50,7 +50,11 @@ class CameraData(Dataset):
             for f in os.listdir(folder)
             if f.endswith(tuple(CameraData.VALID_EXTENSIONS))
         ]
-        metadata_files = [f for f in fnames if f.endswith("_metadata.txt")]
+        metadata_files = [
+            f
+            for f in fnames
+            if f.endswith("_metadata.txt") or f.endswith("_metadata.yml")
+        ]
         if (not metadata_files) and enforce_validity:
             raise IOError("Cannot find metadata")
         timestamp_files = [f for f in fnames if f.endswith("_timestamps.csv")]
@@ -62,7 +66,7 @@ class CameraData(Dataset):
         if (not valid_names) and enforce_validity:
             raise IOError("Metadata do not correspond to timestamps")
         if verbose:
-            print()
+            print(f"Valid names: {valid_names}")
         video_files = [
             f for f in fnames if f.endswith(tuple(CameraData.VIDEO_EXTENSIONS))
         ]
@@ -108,13 +112,18 @@ class CameraData(Dataset):
                 raise IOError(
                     "Error finding timestamp files. I should have it but I " "don" "t"
                 )
-            metadata_file = "%s_metadata.txt" % camera_name
-            if metadata_file in metadata_files:
-                extra_attributes["metadata_file"] = metadata_file
+            import re
+
+            metadata_file = [
+                f
+                for f in metadata_files
+                if re.match(rf"{camera_name}_metadata.[yml]?[txt]?", f)
+            ]
+
+            if len(metadata_file) == 1:
+                extra_attributes["metadata_file"] = metadata_file[0]
             elif enforce_validity:
-                raise IOError(
-                    "Error finding metadata files. I should have it but I " "don" "t"
-                )
+                raise IOError(f"Found {len(metadata_file)} metadata files, not 1.")
 
             output[camera_name] = CameraData(
                 path=folder,
@@ -137,6 +146,7 @@ class CameraData(Dataset):
         project=None,
         project_id=None,
         origin_id=None,
+        id=None,
         flexilims_session=None,
     ):
         """Create a camera dataset
@@ -145,25 +155,26 @@ class CameraData(Dataset):
             path: folder containing the dataset or path to file (valid only for single
                   file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
-            genealogy (tuple): parents of this dataset from the project (excluded) down to
-                               the dataset name itself (included)
+            genealogy (tuple): parents of this dataset from the project (excluded) down
+                to the dataset name itself (included)
             extra_attributes: dict, optional attributes.
             created: Creation date, in "YYYY-MM-DD HH:mm:SS"
             project: name of the project. Must be in config, can be guessed from
-                     project_id
+                project_id
             project_id: hexadecimal code for the project. Must be in config, can be
-                        guessed from project
+                guessed from project
             origin_id: hexadecimal code for the origin on flexilims.
+            id: hexadecimal code for the dataset on flexilims.
             flexilims_session: authentication session to connect to flexilims
 
 
         Expected extra_attributes:
             video_file: file name of the video file, usually
-                        camera_name_data.bin/.avi/.mp4
+                camera_name_data.bin/.avi/.mp4
             timestamp_file (optional): file name of the timestamp file, usually
-                            camera_name_timestamps.csv
+                camera_name_timestamps.csv
             metadata_file (optional): file name of the metadata file, usually
-                           camera_name_metadata.txt
+                camera_name_metadata.txt
         """
         if "video_file" not in extra_attributes:
             raise IOError(
@@ -180,6 +191,7 @@ class CameraData(Dataset):
             project=project,
             project_id=project_id,
             origin_id=origin_id,
+            id=id,
             flexilims_session=flexilims_session,
         )
 
@@ -207,12 +219,14 @@ class CameraData(Dataset):
     def video_file(self, value):
         self.extra_attributes["video_file"] = str(value)
 
-    def is_valid(self):
+    def is_valid(self, return_reason=False):
         """Check that video, metadata and timestamps files exist"""
-        if not (pathlib.Path(self.path) / self.timestamp_file).exists():
-            return False
-        if not (pathlib.Path(self.path) / self.metadata_file).exists():
-            return False
-        if not (pathlib.Path(self.path) / self.video_file).exists():
-            return False
-        return True
+        for attr in ["video_file", "timestamp_file", "metadata_file"]:
+            if attr not in self.extra_attributes:
+                msg = f"Missing attribute {attr}"
+                return msg if return_reason else False
+            fname = getattr(self, attr)
+            if not (self.path_full / fname).exists():
+                msg = f"Invalid {attr}. {self.path_full / fname} does not exist"
+                return msg if return_reason else False
+        return "" if return_reason else True

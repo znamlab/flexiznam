@@ -7,6 +7,50 @@ def cli():
 
 
 @cli.command()
+@click.argument("root_folder", type=click.Path(exists=True), default=".")
+def gui(root_folder):
+    """Start the GUI"""
+    from flexiznam.gui import flexigui
+
+    app = flexigui.FlexiGui()
+    app.root_folder.set(root_folder)
+    app.mainloop()
+
+
+@cli.command()
+@click.option("-p", "--project_id", prompt="Enter the project ID", help="Project ID.")
+@click.option(
+    "-n",
+    "--name",
+    prompt="Enter the name of the entity you want to edit",
+    help="Name of the entity to edit as on flexilims.",
+)
+@click.option(
+    "--recursive/--no-recursive",
+    "-r",
+    default=False,
+    help="Process children recursively.",
+    show_default=True,
+)
+@click.option(
+    "--verbose/--no-verbose",
+    default=True,
+    help="Show progress info.",
+    show_default=True,
+)
+def add_genealogy(project_id, name, recursive, verbose):
+    """Add genealogy to a flexilims entity"""
+    from flexiznam import get_flexilims_session
+
+    flm_sess = get_flexilims_session(project_id=project_id)
+    from flexiznam.utils import add_genealogy
+
+    add_genealogy(
+        root_name=name, recursive=recursive, flexilims_session=flm_sess, verbose=verbose
+    )
+
+
+@cli.command()
 @click.option("-p", "--project_id", prompt="Enter the project ID", help="Project ID.")
 @click.option(
     "-m",
@@ -28,9 +72,9 @@ def add_mouse(
     flexilims_username=None,
     mcms_username=None,
 ):
+    """Add a single mouse to a project."""
     from flexiznam import main
 
-    """Add a single mouse to a project."""
     click.echo("Trying to add %s in %s" % (mouse_name, project_id))
     main.add_mouse(
         mouse_name=mouse_name,
@@ -59,23 +103,27 @@ def add_mouse(
 )
 def config(template=None, config_folder=None, update=False, add_projects=True):
     """Create a configuration file if none exists."""
-    from flexiznam.config import config_tools
-    from flexiznam import errors
     import yaml
+
+    from flexiznam import errors
+    from flexiznam.config import config_tools
 
     try:
         fname = config_tools._find_file("config.yml", config_folder=config_folder)
         click.echo("Configuration file currently used is:\n%s" % fname)
         if update:
             click.echo("Updating file")
-            if template is not None:
-                click.ClickException("Template cannot be used in `--update` mode.")
             prm = config_tools.load_param(param_folder=config_folder)
+            # use create config to add new fields
+            config_tools.create_config(
+                overwrite=True, template=template, config_folder=config_folder, **prm
+            )
+            # use update config to add new projects
             config_tools.update_config(
                 param_file="config.yml",
                 config_folder=config_folder,
                 add_all_projects=add_projects,
-                **prm
+                **prm,
             )
     except errors.ConfigurationError:
         click.echo("No configuration file. Creating one.")
@@ -133,7 +181,9 @@ def add_password(app, username, password, password_file):
 @click.option(
     "-p", "--project", default="NOT SPECIFIED", help="Project name on flexilims."
 )
-@click.option("-m", "--mouse", default="NOT SPECIFIED", help="Mouse name on flexilims.")
+@click.option(
+    "-o", "--origin", default="NOT SPECIFIED", help="Origin name on flexilims."
+)
 @click.option(
     "--overwrite/--no-overwrite",
     default=False,
@@ -144,41 +194,20 @@ def add_password(app, username, password, password_file):
     default=False,
     help="After creating the yaml skeleton, should I also parse it?",
 )
-@click.option(
-    "-r",
-    "--raw_data_folder",
-    default=None,
-    help="Path to the root folder containing raw data. Only used with " "`--process`",
-)
-def create_yaml(
-    source_dir, target_yaml, project, mouse, overwrite, process, raw_data_folder
-):
+def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
     """Create a yaml file by looking recursively in `root_dir`"""
     from flexiznam import camp
-    import pathlib
 
-    target_yaml = pathlib.Path(target_yaml)
-    if (not overwrite) and target_yaml.exists():
-        s = input("File %s already exists. Overwrite (yes/[no])? " % target_yaml)
-        if s == "yes":
-            overwrite = True
-        else:
-            raise (
-                FileExistsError(
-                    "File %s already exists and overwrite is not allowed" % target_yaml
-                )
-            )
-    source_dir = pathlib.Path(source_dir)
-    if not source_dir.is_dir():
-        raise FileNotFoundError("source_dir %s is not a directory" % source_dir)
-    yml_content = camp.sync_data.create_yaml(
+    camp.sync_data.create_yaml(
         root_folder=source_dir,
-        outfile=target_yaml,
+        output_file=target_yaml,
+        origin_name=origin,
         project=project,
-        mouse=mouse,
         overwrite=overwrite,
     )
     click.echo("Created yml skeleton in %s" % target_yaml)
+    if process:
+        raise NotImplementedError("Process yaml at creation is not implemented yet")
 
 
 @cli.command()
@@ -188,7 +217,7 @@ def create_yaml(
     required=True,
     help="Manually generated yaml to seed automatic method.",
 )
-@click.option("-t", "--target_yaml", default=None, help="Path to outpout YAML file.")
+@click.option("-t", "--target_yaml", default=None, help="Path to output YAML file.")
 @click.option(
     "-r",
     "--raw_data_folder",
@@ -202,8 +231,9 @@ def create_yaml(
 )
 def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder=None):
     """Parse source_yaml and autogenerate a full yaml containing all datasets"""
-    from flexiznam import camp
     import pathlib
+
+    from flexiznam import camp
 
     source_yaml = pathlib.Path(source_yaml)
     if target_yaml is None:
@@ -262,8 +292,9 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder
 )
 def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
     """Create entries on flexilims corresponding to yaml"""
-    from flexiznam import camp, errors
     import pathlib
+
+    from flexiznam import camp, errors
 
     source_yaml = pathlib.Path(source_yaml)
     try:
@@ -279,17 +310,20 @@ def yaml_to_flexilims(source_yaml, raw_data_folder=None, conflicts=None):
 @click.option("-t", "--target_file", default=None, help="Path to write csv output.")
 @click.option("-r", "--root_name", default=None, help="Root entity to start the check.")
 @click.option("--flexilims_username", default=None, help="Your username on flexilims.")
-def check_flexilims_issues(project_id, target_file, root_name, flexilims_username):
+@click.option("--add-path/--no-add-path", default=False, help="Add missing paths.")
+def check_flexilims_issues(
+    project_id, target_file, root_name, flexilims_username, add_path
+):
     """Check that database is properly formatted
 
     This will check recursively all mice if `root_name` is not provided. Elements that
     are not descendent of mice will NOT be check if root_name is not selected
     appropriately.
     """
-    from flexiznam.main import get_flexilims_session
-    from flexiznam import utils
-    import pathlib
     import pandas as pd
+
+    from flexiznam import utils
+    from flexiznam.main import get_flexilims_session
 
     flexilims_session = get_flexilims_session(
         project_id=project_id, username=flexilims_username
@@ -313,3 +347,6 @@ def check_flexilims_issues(project_id, target_file, root_name, flexilims_usernam
     else:
         df = pdf
     df.to_csv(target_file)
+    if add_path:
+        print("Adding missing paths")
+        utils.add_missing_paths(flexilims_session, root_name=root_name)

@@ -1,35 +1,17 @@
 import datetime
-import os
 import pathlib
+import re
 import warnings
 
-from flexiznam.config import PARAMETERS
 from flexiznam.schema.datasets import Dataset
-from flexiznam.schema.scanimage_data import parse_si_filename
 
 
-class MicroscopyData(Dataset):
-    """Subclass to handle detection of ex vivo microscopy images
+class VisStimData(Dataset):
+    DATASET_TYPE = "visstim"
 
-    It should deal with all images except scanimage datasets (which are handled by
-    scanimage_data.ScanimageData)
-
-    Extensions added to VALID_EXTENSIONS are considered as single file datasets
-    """
-
-    DATASET_TYPE = "microscopy"
-    try:
-        VALID_EXTENSIONS = PARAMETERS["microscopy_extensions"]
-    except KeyError:
-        VALID_EXTENSIONS = {".czi", ".png", ".gif", ".tif", ".tiff"}
-        warnings.warn(
-            "Could not find `microscopy_extensions` in config. Please update "
-            "config file",
-            stacklevel=2,
-        )
-
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
         folder_genealogy=None,
         is_raw=None,
@@ -37,7 +19,10 @@ class MicroscopyData(Dataset):
         flexilims_session=None,
         project=None,
     ):
-        """Create Microscopy datasets by loading info from folder
+        """Create a visual stimulation dataset by loading info from folder
+
+        A visual stimulation dataset is a folder containing at least a `FrameLog.csv`
+        file and any number of other associated csvs.
 
         Args:
             folder (str): path to the folder
@@ -49,48 +34,47 @@ class MicroscopyData(Dataset):
             project (str): project ID or name
 
         Returns:
-            dict of dataset (flz.schema.microscopy_data.MicroscopyData)
+            dict of dataset (flz.schema.harp_data.HarpData)
         """
-        folder = pathlib.Path(folder)
-        if not folder.is_dir():
-            raise IOError("%s is not a folder" % folder)
-        fnames = [
-            f
-            for f in os.listdir(folder)
-            if f.lower().endswith(tuple(MicroscopyData.VALID_EXTENSIONS))
-        ]
+        unvalid_chars = re.compile(r'[\',\.@"+=\!#$%^&*<>?/\|}{~:]')
+        csv_files = list(pathlib.Path(folder).glob("*.csv"))
+
+        fnames = [f.name for f in csv_files]
+        if "framelog.csv" not in [f.lower() for f in fnames]:
+            raise IOError("Cannot find FrameLog.csv file")
+
+        log_file = [f for f in csv_files if f.name.lower() == "framelog.csv"][0]
+        if verbose:
+            print(f"Found FrameLog.csv file: {log_file}")
 
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)
         elif isinstance(folder_genealogy, list):
             folder_genealogy = tuple(folder_genealogy)
-
-        # filter out SI tifs
-        si_fnames = []
-        for f in fnames:
-            if not (f.lower().endswith("tif") or f.lower().endswith("tiff")):
-                continue
-            if parse_si_filename(folder / f) is None:
-                continue
+        output = {}
+        matched_csv_files = {f.stem: f.name for f in csv_files}
+        valid_csv = dict()
+        for fname, value in matched_csv_files.items():
+            if unvalid_chars.search(fname):
+                new_fname = re.sub(unvalid_chars, "_", fname)
+                warnings.warn(f"Invalid characters in {fname}. Renaming to {new_fname}")
+                valid_csv[new_fname] = value
             else:
-                si_fnames.append(f)
-        [fnames.remove(f) for f in si_fnames]
-        if verbose:
-            print("Ignored %d SI tif" % len(si_fnames))
+                valid_csv[fname] = value
+        if not valid_csv:
+            raise IOError("No valid CSV files found in the folder.")
 
-        output = dict()
-        for fname in fnames:
-            dataset_path = pathlib.Path(folder) / fname
-            genealogy = folder_genealogy + (fname,)
-            created = datetime.datetime.fromtimestamp(dataset_path.stat().st_mtime)
-            output[fname] = MicroscopyData(
-                genealogy=genealogy,
-                is_raw=is_raw,
-                path=dataset_path,
-                created=created.strftime("%Y-%m-%d %H:%M:%S"),
-                flexilims_session=flexilims_session,
-                project=project,
-            )
+        genealogy = folder_genealogy + ("visstim",)
+        created = datetime.datetime.fromtimestamp(log_file.stat().st_mtime)
+        output["visstim"] = VisStimData(
+            genealogy=genealogy,
+            is_raw=is_raw,
+            path=folder,
+            extra_attributes=dict(csv_files=valid_csv),
+            created=created.strftime("%Y-%m-%d %H:%M:%S"),
+            flexilims_session=flexilims_session,
+            project=project,
+        )
         return output
 
     def __init__(
@@ -106,11 +90,11 @@ class MicroscopyData(Dataset):
         id=None,
         flexilims_session=None,
     ):
-        """Create a Microscopy dataset
+        """Create a VisStim dataset
 
         Args:
             path: folder containing the dataset or path to file (valid only for single
-                file datasets)
+                  file datasets)
             is_raw: bool, used to sort in raw and processed subfolders
             genealogy (tuple): parents of this dataset from the project (excluded) down
                 to the dataset name itself (included)
@@ -125,13 +109,15 @@ class MicroscopyData(Dataset):
             flexilims_session: authentication session to connect to flexilims
 
         Expected extra_attributes:
-            None
+            csv_files (optional): Dictionary of csv files associated to the binary file.
+                Keys are identifier, values are the full file name
         """
+
         super().__init__(
             genealogy=genealogy,
             path=path,
             is_raw=is_raw,
-            dataset_type=MicroscopyData.DATASET_TYPE,
+            dataset_type=VisStimData.DATASET_TYPE,
             extra_attributes=extra_attributes,
             created=created,
             project=project,
@@ -141,14 +127,23 @@ class MicroscopyData(Dataset):
             flexilims_session=flexilims_session,
         )
 
+    @property
+    def csv_files(self):
+        return self.extra_attributes.get("csv_files", None)
+
+    @csv_files.setter
+    def csv_files(self, value):
+        self.extra_attributes["csv_files"] = str(value)
+
     def is_valid(self, return_reason=False):
-        """Check that file exist
+        """Check that all csv files exist
 
         Args:
             return_reason (bool): if True, return a string with the reason why the
                                   dataset is not valid
         Returns:"""
-        if not self.path_full.exists():
-            msg = f"{self.path_full} does not exist"
-            return msg if return_reason else False
+        for _, file_path in self.csv_files.items():
+            if not (self.path_full / file_path).exists():
+                msg = f"Missing file {file_path}"
+                return msg if return_reason else False
         return "" if return_reason else True

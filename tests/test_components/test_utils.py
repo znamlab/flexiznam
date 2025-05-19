@@ -1,8 +1,12 @@
 import os
-import pytest
 import tempfile
-from flexiznam.config import config_tools, DEFAULT_CONFIG
+from pathlib import Path
+
+import numpy as np
+import pytest
+
 from flexiznam import utils
+from flexiznam.config import DEFAULT_CONFIG, config_tools
 
 
 def test_create_config():
@@ -29,6 +33,8 @@ def test_update_config():
         config_tools.create_config(
             overwrite=True, config_folder=tmp, favorite_colour="dark"
         )
+        prm = config_tools.load_param(tmp)
+        assert len(prm["project_ids"]) == len(DEFAULT_CONFIG["project_ids"])
         config_tools.update_config(
             param_file="config.yml",
             config_folder=tmp,
@@ -43,12 +49,16 @@ def test_update_config():
         assert prm["project_ids"]["new_project"] == "test_id"
         assert prm["project_ids"]["test"] == DEFAULT_CONFIG["project_ids"]["test"]
         n_projs = len(prm["project_ids"])
+        assert n_projs == (len(DEFAULT_CONFIG["project_ids"]) + 1)
         prm = config_tools.load_param()
         assert "favorite_colour" not in prm
         config_tools.update_config(
             param_file="config.yml", config_folder=tmp, add_all_projects=True
         )
         prm = config_tools.load_param(tmp)
+        if n_projs != 5:
+            print(n_projs)
+        print(prm["project_ids"])
         assert len(prm["project_ids"]) > n_projs
         assert "new_project" in prm["project_ids"]
         config_tools.update_config(
@@ -73,7 +83,7 @@ def test_passwd_creation():
             "my_otherapp", "username", "password", password_file=tmp.name
         )
 
-        pwd = config_tools.get_password("username1", "my_app", tmp.name)
+        pwd = config_tools.get_password("my_app", "username1", tmp.name)
         assert pwd == "password1"
 
 
@@ -109,6 +119,29 @@ def test_add_genealogy(flm_sess):
     assert added == []
 
 
+def test_clean_recursively():
+    out = utils.clean_recursively(
+        {
+            "a": (1, 2),
+            "b": np.array([1, 2]),
+            "c": [1, (1, 2)],
+            "d": Path("/this/is/a/path"),
+        }
+    )
+    assert out["a"] == [1, 2]
+    assert out["b"] == [1, 2]
+    assert out["c"] == [1, [1, 2]]
+    assert out["d"] == "/this/is/a/path"
+
+    out = utils.clean_recursively(dict(nested=[dict(a=[np.inf])]))
+    assert out["nested"][0]["a"][0] == "inf"
+
+    out = {"Invalid?Name": "Valid-Value:", "ValidName": {"I+nvalid*Key": "Valid-Value"}}
+    utils.clean_recursively(out)
+    assert "Invalid_Name" in out
+    assert "I_nvalid_Key" in out["ValidName"]
+
+
 def test_add_missing_paths(flm_sess):
     utils.add_missing_paths(flm_sess)
 
@@ -116,4 +149,5 @@ def test_add_missing_paths(flm_sess):
 @pytest.mark.slow
 def test_check_attribute(flm_sess):
     attr = utils._check_attribute_case(flm_sess)
-    assert len(attr.attribute.unique()) == 10
+    for att in attr.attribute.unique():
+        assert att.lower() != att
