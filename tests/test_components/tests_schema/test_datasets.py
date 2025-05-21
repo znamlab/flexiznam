@@ -8,8 +8,7 @@ import flexiznam
 from flexiznam.config import PARAMETERS
 from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
 from flexiznam.schema import Dataset, microscopy_data
-from tests.test_components.test_main import MOUSE_ID
-from tests.tests_resources.data_for_testing import PROJECT_ID, TEST_PROJECT
+from tests.tests_resources.data_for_testing import MOUSE_ID, PROJECT_ID, TEST_PROJECT
 
 # Test the generic dataset class.
 
@@ -176,7 +175,7 @@ def test_from_flexilims(flm_sess):
     ds = Dataset.from_flexilims(
         project,
         flexilims_session=flm_sess,
-        name="mouse_physio_2p_S20211102_R165821_" "SpheresPermTube_wf_camera",
+        name="mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera",
     )
     assert ds.flexilims_session == flm_sess
     assert ds.full_name == "mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera"
@@ -234,7 +233,8 @@ def test_from_dataseries(flm_sess):
 
 def test_from_origin(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
-    origin_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube"
+    origin_name = "mouse_physio_2p"
+
     ds0 = Dataset.from_origin(
         origin_type="recording",
         origin_name=origin_name,
@@ -242,6 +242,7 @@ def test_from_origin(flm_sess):
         conflicts="abort",
         flexilims_session=flm_sess,
     )
+    assert ds0.extra_attributes is not None
     assert ds0.flexilims_session == flm_sess
     assert ds0.genealogy[-1].startswith("suite2p_rois")
     assert ds0.dataset_name == "suite2p_rois_0"

@@ -42,9 +42,12 @@ def test_create_yaml():
     )
     # To save the yaml the first time we add outfile:
     automat = create_yaml(
-        DATA_ROOT / MOUSE / SESSION, mouse=MOUSE, project=TEST_PROJECT
+        DATA_ROOT / MOUSE / SESSION,
+        origin_name=MOUSE,
+        project=TEST_PROJECT,
+        output_file=saved_skeleton,
+        overwrite=False,
     )
-    # , outfile=saved_skeleton, overwrite=True)
 
     with open(saved_skeleton, "r") as fopen:
         saved = yaml.safe_load(fopen)
