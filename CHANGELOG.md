@@ -207,11 +207,13 @@ config but not the local config) to the config file
 - `HarpData` does not match csv if the file name is only `harpmessage.bin`.
   See issue #93
 - Adapt `add_mouse` to new MCMS page layout
+- `flexiznam config --update` works even if the `secret_password` file does not exists
 - `config --update` adds fields that are new in the default config to the current config
 
 ### Minor
 - add `compare_dictionaries_recursively` in `utils`
 - switch to `black` formatter
+- add `pathlib` to requirement
 - `Dataset` can now be imported from `flexiznam`
 
 ## v0.3.2
