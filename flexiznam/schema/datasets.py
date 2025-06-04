@@ -337,6 +337,7 @@ class Dataset(object):
             "type",
             "name",
             "incrementalId",
+            "incrementalIdGroupLevel",
             "createdBy",
             "dateCreated",
             "dateUpdated",
@@ -439,7 +440,7 @@ class Dataset(object):
         Returns:
         """
         raise NotImplementedError(
-            "`associated_files` is not defined for generic " "datasets"
+            "`associated_files` is not defined for generic datasets"
         )
 
     def get_flexilims_entry(self):
@@ -698,7 +699,7 @@ class Dataset(object):
                 self.project_id = value.project_id
             elif self.project_id != value.project_id:
                 raise DatasetError(
-                    "Cannot use a flexilims_session from a different " "project"
+                    "Cannot use a flexilims_session from a different project"
                 )
 
     @property
@@ -707,8 +708,9 @@ class Dataset(object):
 
         This is a dictionary that can contain any extra information about the dataset.
         It cannot contain flexilims reserved keywords such as 'createdBy', 'objects',
-        'dateCreated', 'dateUpdated', 'customEntities', 'incrementalId', 'id',
-        'origin_id', 'path', 'is_raw', 'dataset_type', 'genealogy', 'project'
+        'dateCreated', 'dateUpdated', 'customEntities', 'incrementalId',
+        'incrementalIdGroupLevel', 'id', 'origin_id', 'path', 'is_raw', 'dataset_type',
+        'genealogy', 'project'
         """
         if self._extra_attributes is None:
             self._extra_attributes = dict()
@@ -727,8 +729,7 @@ class Dataset(object):
         ]
         if len(double_args):
             raise DatasetError(
-                "Mandatory attribute(s) present in "
-                "extra_attributes: %s" % (double_args)
+                "Mandatory attribute(s) present in extra_attributes: %s" % (double_args)
             )
         self._extra_attributes = value
 
