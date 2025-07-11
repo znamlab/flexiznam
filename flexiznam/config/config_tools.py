@@ -242,7 +242,9 @@ def _recursive_update(source, new_values, skip_checks=False):
 try:
     PARAMETERS = load_param()
     # expanduser for file paths:
-    PARAMETERS["download_folder"] = Path(PARAMETERS["download_folder"]).expanduser()
+    PARAMETERS["download_folder"] = Path(
+        PARAMETERS.get("download_folder", "~/Downloads")
+    ).expanduser()
 except ConfigurationError:
     print("Could not load the parameters. Check your configuration file")
     PARAMETERS = {}
