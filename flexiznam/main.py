@@ -69,9 +69,9 @@ def get_data_root(which, project=None, flexilims_session=None):
         raise ValueError("which must be either 'raw' or 'processed'")
 
     if project is None:
-        assert (
-            flexilims_session is not None
-        ), "`flexilims_session` must be provided if `project` is None"
+        assert flexilims_session is not None, (
+            "`flexilims_session` must be provided if `project` is None"
+        )
 
         project = flexilims_session.project_id
 
@@ -365,7 +365,7 @@ def add_experimental_session(
         attributes = {}
     if "genealogy" in attributes:
         warnings.warn(
-            "Cannot set genealogy using attributes. Will be generated from " "parent",
+            "Cannot set genealogy using attributes. Will be generated from parent",
             stacklevel=3,
         )
 
@@ -835,11 +835,10 @@ def update_entity(
         raise AttributeError("`mode` must be `overwrite` or `update`")
     if id is None:
         id = entity["id"]
-    for attr in full_attributes:
+    for attr in list(full_attributes.keys()):
         if attr in entity:
-            raise FlexilimsError(
-                "Attribute `%s` is a flexilims reserved keyword" % attr
-            )
+            warnings.warn("Attribute `%s` is a flexilims reserved keyword" % attr)
+            del full_attributes[attr]
     rep = flexilims_session.update_one(
         id=id,
         datatype=datatype,
@@ -1341,8 +1340,8 @@ def format_results(results, return_list=False):
 
     This will crash if any attribute is also present in the flexilims reply,
     i.e. if an attribute is named:
-    'id', 'type', 'name', 'incrementalId', 'createdBy', 'dateCreated', 'dateUpdated',
-    'origin_id', 'objects', 'customEntities', or 'project'
+    'id', 'type', 'name', 'incrementalId', 'incrementalIdGroupLevel', 'createdBy',
+    'dateCreated', 'dateUpdated', 'origin_id', 'objects', 'customEntities', or 'project'
 
     Args:
         results (:obj:`list` of :obj:`dict`): Flexilims reply

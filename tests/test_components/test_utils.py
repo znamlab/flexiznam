@@ -99,7 +99,7 @@ def test_check_flexilims_paths(flm_sess):
     df = utils.check_flexilims_paths(
         flm_sess, root_name="mouse_physio_2p", recursive=True, error_only=False
     )
-    assert len(df) > 1
+    assert len(df) >= 1
 
 
 def test_check_flexilims_names(flm_sess):

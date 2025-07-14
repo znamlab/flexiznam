@@ -81,7 +81,10 @@ def load_param(param_folder=None, config_file="config.yml", verbose=False):
 def get_password(app, username, password_file=None, allow_input=True):
     """Read the password yaml"""
     if password_file is None:
-        password_file = _find_file("secret_password.yml")
+        try:
+            password_file = _find_file("secret_password.yml")
+        except ConfigurationError:
+            return getpass(prompt=f"Enter {app} password: ")
     with open(password_file, "r") as yml_file:
         pwd = yaml.safe_load(yml_file) or {}
     try:
@@ -239,7 +242,9 @@ def _recursive_update(source, new_values, skip_checks=False):
 try:
     PARAMETERS = load_param()
     # expanduser for file paths:
-    PARAMETERS["download_folder"] = Path(PARAMETERS["download_folder"]).expanduser()
+    PARAMETERS["download_folder"] = Path(
+        PARAMETERS.get("download_folder", "~/Downloads")
+    ).expanduser()
 except ConfigurationError:
     print("Could not load the parameters. Check your configuration file")
     PARAMETERS = {}
