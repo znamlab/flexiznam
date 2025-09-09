@@ -395,8 +395,7 @@ def test_update_entity(flm_sess):
     with pytest.raises(FlexilimsError) as err:
         flz.update_entity("dataset", name="gibberish", flexilims_session=flm_sess)
     assert (
-        err.value.args[0] == "Cannot find an entity of type `dataset` named "
-        "`gibberish`"
+        err.value.args[0] == "Cannot find an entity of type `dataset` named `gibberish`"
     )
     dataset_name = f"{SESSION}_overview_ds_1"
     original_entity = flz.get_entity(

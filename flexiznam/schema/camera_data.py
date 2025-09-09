@@ -110,7 +110,7 @@ class CameraData(Dataset):
                 extra_attributes["timestamp_file"] = timestamp_file
             elif enforce_validity:
                 raise IOError(
-                    "Error finding timestamp files. I should have it but I " "don" "t"
+                    "Error finding timestamp files. I should have it but I dont"
                 )
             import re
 
@@ -129,7 +129,7 @@ class CameraData(Dataset):
                 path=folder,
                 genealogy=folder_genealogy + (camera_name,),
                 extra_attributes=extra_attributes,
-                created=created.strftime("%Y-%m-%d " "%H:%M:%S"),
+                created=created.strftime("%Y-%m-%d %H:%M:%S"),
                 flexilims_session=flexilims_session,
                 project=project,
                 is_raw=is_raw,
@@ -178,7 +178,7 @@ class CameraData(Dataset):
         """
         if "video_file" not in extra_attributes:
             raise IOError(
-                "Camera dataset require to have `video_file` in extra " "attributes"
+                "Camera dataset require to have `video_file` in extra attributes"
             )
 
         super().__init__(

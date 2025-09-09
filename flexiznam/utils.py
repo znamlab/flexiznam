@@ -176,7 +176,9 @@ def clean_recursively(
                 element = float(element)
         elif isinstance(element, ints):
             element = int(element)
-        elif isinstance(element, pd.Series or pd.DataFrame):
+        elif isinstance(element, np.bool_):
+            element = bool(element)
+        elif isinstance(element, (pd.Series, pd.DataFrame)):
             raise IOError("Cannot make a pandas object json compatible")
         else:
             warnings.warn(
