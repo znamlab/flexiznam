@@ -104,7 +104,7 @@ class OnixData(Dataset):
             path=folder,
             genealogy=folder_genealogy + (onix_name,),
             extra_attributes=extra_attributes,
-            created=ts.strftime("%Y-%m-%d " "%H:%M:%S"),
+            created=ts.strftime("%Y-%m-%d %H:%M:%S"),
             flexilims_session=flexilims_session,
             project=project,
             is_raw=is_raw,

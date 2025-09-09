@@ -192,23 +192,23 @@ def check_yaml_validity(yaml_data, root_folder=None, origin_name=None, project=N
         with open(yaml_data, "r") as f:
             yaml_data = yaml.safe_load(f)
     if root_folder is not None:
-        assert yaml_data["root_folder"] == str(
-            root_folder
-        ), f"root_folder is {yaml_data['root_folder']}. Expected {root_folder}"
+        assert yaml_data["root_folder"] == str(root_folder), (
+            f"root_folder is {yaml_data['root_folder']}. Expected {root_folder}"
+        )
     else:
         root_folder = yaml_data["root_folder"]
 
     if project is not None:
-        assert (
-            yaml_data["project"] == project
-        ), f"project is {yaml_data['project']}. Expected {project}"
+        assert yaml_data["project"] == project, (
+            f"project is {yaml_data['project']}. Expected {project}"
+        )
     else:
         project = yaml_data["project"]
 
     if origin_name is not None:
-        assert (
-            yaml_data["origin_name"] == origin_name
-        ), f"origin_name is {yaml_data['origin_name']}. Expected {origin_name}"
+        assert yaml_data["origin_name"] == origin_name, (
+            f"origin_name is {yaml_data['origin_name']}. Expected {origin_name}"
+        )
     else:
         origin_name = yaml_data["origin_name"]
 
@@ -325,9 +325,9 @@ def _create_yaml_dict(
     m = re.fullmatch(r"R\d\d\d\d\d\d_?(.*)?", level_name)
     if m:
         if "type" in level_dict:
-            assert (
-                level_dict["type"] == "recording"
-            ), "Conflicting types, expected recording"
+            assert level_dict["type"] == "recording", (
+                "Conflicting types, expected recording"
+            )
         else:
             level_dict["type"] = "recording"
         if "protocol" not in level_dict:
@@ -345,18 +345,18 @@ def _create_yaml_dict(
                 level_dict["recording_type"] = "NOT SPECIFIED"
     elif re.fullmatch(r"S\d*", level_name):
         if "type" in level_dict:
-            assert (
-                level_dict["type"] == "session"
-            ), "Conflicting types, expected session"
+            assert level_dict["type"] == "session", (
+                "Conflicting types, expected session"
+            )
         else:
             level_dict["type"] = "session"
     else:
         if "type" not in level_dict:
             level_dict["type"] = "sample"
     if "genealogy" in level_dict:
-        assert level_dict["genealogy"] == genealogy + [
-            level_name
-        ], f"Conflicting genealogy for {level_name}"
+        assert level_dict["genealogy"] == genealogy + [level_name], (
+            f"Conflicting genealogy for {level_name}"
+        )
     else:
         level_dict["genealogy"] = genealogy + [level_name]
     if "path" not in level_dict:
