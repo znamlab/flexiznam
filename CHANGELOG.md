@@ -2,6 +2,12 @@
 
 ## v0.4.4
 
+### Bugfix
+
+- `np.bool` object were uploaded as `str`
+
+### Minor
+
 - minor improvement to config
 
 ## v0.4.3
