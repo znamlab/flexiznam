@@ -216,8 +216,6 @@ class Dataset(object):
         else:
             valid_processed = [series for _, series in processed.iterrows()]
 
-        already_processed = len(processed) > 0
-
         def _create_new_ds(
             origin,
             base_name,
@@ -251,7 +249,7 @@ class Dataset(object):
 
         # CONFLICTS RESOLUTION
         # There are no datasets, create one
-        if not already_processed:
+        if len(valid_processed) == 0:
             if verbose:
                 msg = "No datasets of type %s" % dataset_type
                 if base_name != dataset_type:
@@ -281,14 +279,6 @@ class Dataset(object):
                 dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
                 if extra_attributes is not None:
                     dataset.extra_attributes = extra_attributes
-                return dataset
-            if len(processed) == 1:
-                if verbose:
-                    print("Overwriting dataset %s" % processed.iloc[0].name)
-                dataset = Dataset.from_dataseries(dataseries=processed.iloc[0])
-                if extra_attributes is not None:
-                    dataset.extra_attributes = extra_attributes
-                dataset.extra_attributes = extra_attributes
                 return dataset
             raise flz.errors.NameNotUniqueError(
                 f"Multiple datasets of type {dataset_type} already exist(s):"
