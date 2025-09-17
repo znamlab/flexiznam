@@ -187,34 +187,19 @@ class Dataset(object):
         )
         if origin is None:
             raise FlexilimsError("Origin not found")
-        processed = flz.get_entities(
+        processed = flz.get_children(
+            parent_id=origin["id"],
+            parent_name=None,
+            children_datatype="dataset",
             project_id=project,
-            datatype="dataset",
-            origin_id=origin["id"],
-            query_key="dataset_type",
-            query_value=dataset_type,
             flexilims_session=flexilims_session,
+            filter=extra_attributes,
         )
         if len(processed):
             processed = processed[
                 [g[-1].startswith(base_name + "_") for g in processed.genealogy]
             ]
-
-        # If extra_attributes is provided, only consider datasets that have the exact
-        # same extra_attributes
-        if extra_attributes is not None:
-            valid_processed = []
-            to_compare = utils.clean_recursively(
-                extra_attributes.copy(), keys=ignore_attributes
-            )
-            for _, proc in processed.iterrows():
-                online = Dataset._format_series_to_kwargs(proc)["extra_attributes"]
-                online = utils.clean_recursively(online, keys=ignore_attributes)
-                differences = utils.compare_dictionaries_recursively(to_compare, online)
-                if not differences:
-                    valid_processed.append(proc)
-        else:
-            valid_processed = [series for _, series in processed.iterrows()]
+        processed = [series for _, series in processed.iterrows()]
 
         def _create_new_ds(
             origin,
@@ -249,7 +234,7 @@ class Dataset(object):
 
         # CONFLICTS RESOLUTION
         # There are no datasets, create one
-        if len(valid_processed) == 0:
+        if len(processed) == 0:
             if verbose:
                 msg = "No datasets of type %s" % dataset_type
                 if base_name != dataset_type:
@@ -273,10 +258,10 @@ class Dataset(object):
         if conflicts == "overwrite":
             # If overwrite, ensure there is only one dataset of this type as we
             # won't be able to guess which one should be replaced
-            if len(valid_processed) == 1:
+            if len(processed) == 1:
                 if verbose:
-                    print("Overwriting dataset %s" % valid_processed[0].name)
-                dataset = Dataset.from_dataseries(dataseries=valid_processed[0])
+                    print("Overwriting dataset %s" % processed[0].name)
+                dataset = Dataset.from_dataseries(dataseries=processed[0])
                 if extra_attributes is not None:
                     dataset.extra_attributes = extra_attributes
                 return dataset
@@ -286,12 +271,12 @@ class Dataset(object):
             )
         if conflicts == "skip":
             # If skip and we have an exact match, return it
-            if len(valid_processed) == 1:
+            if len(processed) == 1:
                 if verbose:
-                    print("Skip. Returning dataset %s" % valid_processed[0].name)
-                return Dataset.from_dataseries(dataseries=valid_processed[0])
+                    print("Skip. Returning dataset %s" % processed[0].name)
+                return Dataset.from_dataseries(dataseries=processed[0])
             # If there is no match, create a new dataset
-            if len(valid_processed) == 0:
+            if len(processed) == 0:
                 if verbose:
                     print("No matching dataset found. Creating new dataset")
                 return _create_new_ds(
