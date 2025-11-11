@@ -36,6 +36,9 @@ class BonsaiData(Dataset):
             for f in os.listdir(folder)
             if any(f.endswith(ext) for ext in BonsaiData.VALID_EXTENSIONS)
         ]
+        # Remove directories from the list
+        fnames = [f for f in fnames if (folder / f).is_file()]
+
         if not fnames:
             return {}
 
