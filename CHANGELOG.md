@@ -2,6 +2,10 @@
 
 ## v0.4.5
 
+### Main changes
+
+- harp_data can also be a new harp-python style folder.
+
 ### Bugfix
 
 - Handle camera with _ in name correctly
