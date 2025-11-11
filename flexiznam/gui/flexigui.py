@@ -205,12 +205,23 @@ class FlexiGui(tk.Tk):
         )
         self.report(f"Parsing folder {folder}...")
         self.root_folder.set(folder)
-        data = flz.camp.sync_data.create_yaml_dict(
-            folder_to_parse=folder,
-            project=self.project.get(),
-            origin_name=self.origin_name.get(),
-            format_yaml=True,
-        )
+        try:
+            data = flz.camp.sync_data.create_yaml_dict(
+                folder_to_parse=folder,
+                project=self.project.get(),
+                origin_name=self.origin_name.get(),
+                format_yaml=True,
+            )
+        except ValueError as e:
+            # check if the error is because on path is not in the subpath of the other
+            if "is not in the subpath of" in str(e):
+                raise ValueError(
+                    f"Error: The folder {Path(folder).stem} is not a direct subfolder"
+                    + f" of origin: {self.origin_name.get()}."
+                )
+            else:
+                raise e
+
         self.report("Parsing done. Validating data...")
         data, errors = flz.camp.sync_data.check_yaml_validity(data)
         self.data = data

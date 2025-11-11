@@ -1,5 +1,11 @@
 # Change log
 
+## v0.4.5
+
+### Minor
+
+- GUI improvement. Clearer error message
+
 ## v0.4.4
 
 ### Bugfix
