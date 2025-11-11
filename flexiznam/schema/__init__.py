@@ -28,6 +28,7 @@ from .harp_data import HarpData
 from .scanimage_data import ScanimageData
 from .microscopy_data import MicroscopyData
 from .onix_data import OnixData
+from .neuropixel_data import NeuropixelData
 from .sequencing_data import SequencingData
 from .visstim_data import VisStimData
 
@@ -36,5 +37,6 @@ Dataset.SUBCLASSES["harp"] = HarpData
 Dataset.SUBCLASSES["scanimage"] = ScanimageData
 Dataset.SUBCLASSES["microscopy"] = MicroscopyData
 Dataset.SUBCLASSES["onix"] = OnixData
+Dataset.SUBCLASSES["neuropixel"] = NeuropixelData
 Dataset.SUBCLASSES["sequencing"] = SequencingData
 Dataset.SUBCLASSES["visstim"] = VisStimData

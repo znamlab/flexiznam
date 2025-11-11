@@ -5,6 +5,7 @@
 ### Main changes
 
 - harp_data can also be a new harp-python style folder.
+- Add NeuropixelData dataset for onix npx data
 
 ### Bugfix
 
