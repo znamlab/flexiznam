@@ -6,6 +6,7 @@
 
 - harp_data can also be a new harp-python style folder.
 - Add NeuropixelData dataset for onix npx data
+- Add `BonsaiData` dataset for `.bonsai` workflow files.
 
 ### Bugfix
 
