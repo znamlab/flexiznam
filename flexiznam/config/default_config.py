@@ -52,4 +52,6 @@ DEFAULT_CONFIG = dict(
         cottage_analysis="cottage_analysis",
         suite2p="suite2p",
     ),
+    # list of folders to ignore when scanning for datasets
+    ignore_folders=["Configuration", "Textures", "Objects"],
 )

@@ -48,6 +48,7 @@ def create_yaml_dict(
     project,
     origin_name,
     format_yaml=True,
+    ignore_folders=None,
 ):
     """Create a yaml dict from a folder
 
@@ -61,6 +62,8 @@ def create_yaml_dict(
         format_yaml (bool, optional): Format the output to be yaml compatible if True,
             otherwise keep dataset as Dataset object and path as pathlib.Path. Defaults
             to True.
+        ignore_folders (list, optional): List of folder names to ignore. If not
+            provided, will be read from the config file.
 
     Returns:
         dict: Dictionary with the structure of the folder and automatically detected
@@ -76,12 +79,18 @@ def create_yaml_dict(
     folder_to_parse = Path(folder_to_parse)
     assert folder_to_parse.is_dir(), f"Folder {folder_to_parse} does not exist"
 
+    if ignore_folders is None:
+        ignore_folders = flz.PARAMETERS.get("ignore_folders", [])
+    # Always ignore hidden folders
+    ignore_folders = set(ignore_folders)
+
     data = _create_yaml_dict(
         level_folder=folder_to_parse,
         project=project,
         genealogy=genealogy,
         format_yaml=format_yaml,
         parent_dict=dict(),
+        ignore_folders=ignore_folders,
     )
     if format_yaml:
         root_folder = str(folder_to_parse.parent)
@@ -293,6 +302,7 @@ def _create_yaml_dict(
     format_yaml,
     parent_dict,
     only_datasets=False,
+    ignore_folders=None,
 ):
     """Private function to create a yaml dict from a folder
 
@@ -309,6 +319,8 @@ def _create_yaml_dict(
             and pathlib.Path objects
         parent_dict (dict): dict of the parent folder. Used for recursion
         only_datasets (bool): only parse datasets, not folders
+        ignore_folders (set): set of folder names to ignore. Hidden folders are
+            always ignored.
     """
 
     level_folder = Path(level_folder)
@@ -394,14 +406,22 @@ def _create_yaml_dict(
     else:
         subfolders = level_folder.glob("*")
 
+    if ignore_folders is None:
+        ignore_folders = set()
+
     for child in subfolders:
-        if child.is_dir():
+        if (
+            child.is_dir()
+            and child.name not in ignore_folders
+            and not child.name.startswith(".")
+        ):
             _create_yaml_dict(
                 child,
                 project=project,
                 genealogy=genealogy + [level_name],
                 format_yaml=format_yaml,
                 parent_dict=children,
+                ignore_folders=ignore_folders,
             )
     level_dict["children"] = children
     parent_dict[level_name] = level_dict

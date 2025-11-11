@@ -7,6 +7,9 @@
 - harp_data can also be a new harp-python style folder.
 - Add NeuropixelData dataset for onix npx data
 - Add `BonsaiData` dataset for `.bonsai` workflow files.
+- Add `ignore_folders` option to `create_yaml_dict` to ignore specified folders
+  when parsing a directory. Hidden folders are always ignored.
+
 
 ### Bugfix
 
