@@ -2,6 +2,10 @@
 
 ## v0.4.5
 
+### Bugfix
+
+- Handle camera with _ in name correctly
+
 ### Minor
 
 - GUI improvement. Clearer error message
