@@ -334,7 +334,7 @@ def _create_yaml_dict(
         level_dict = dict()
     genealogy = list(genealogy)
 
-    m = re.fullmatch(r"R\d\d\d\d\d\d_?(.*)?", level_name)
+    m = re.fullmatch(r"R(\d\d\d\d\d\d)?_?(.*)?", level_name)
     if m:
         if "type" in level_dict:
             assert level_dict["type"] == "recording", (
@@ -344,7 +344,7 @@ def _create_yaml_dict(
             level_dict["type"] = "recording"
         if "protocol" not in level_dict:
             level_dict["protocol"] = (
-                m[1] if m[1] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
+                m[2] if m[2] is not None else "XXERRORXX PROTOCOL NOT SPECIFIED"
             )
         if "recording_type" not in level_dict:
             if "camera" in level_dict["protocol"]:
