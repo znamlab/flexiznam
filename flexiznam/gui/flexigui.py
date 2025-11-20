@@ -106,6 +106,31 @@ class FlexiGui(tk.Tk):
         )
         self.update_item_btn.grid(row=2, column=1, sticky="nsw")
 
+        self.recording_info_label = tk.Label(
+            self.frames["R"],
+            text=(
+                "Recording_type can be one of :\n"
+                "- two_photon\n"
+                "- widefield\n"
+                "- intrinsic\n"
+                "- ephys\n"
+                "- behaviour\n"
+                "- camera\n"
+                "- unspecified\n\n"
+                "Protocol is automatically read from the folder name. "
+                "It should be the name of the protocol used to acquire the data. "
+                "For multiprotocol recordings, the type of recording is used instead, "
+                "for instance `onix` for onix recordings."
+            ),
+            justify="left",
+            wraplength=300,  # Wrap text to fit in the right panel
+            anchor="w",
+        )
+        self.recording_info_label.grid(
+            row=3, column=0, columnspan=2, sticky="nw", padx=5, pady=5
+        )
+        self.recording_info_label.grid_remove()
+
     def _create_buttons(self):
         topf = self.frames["T"]
         self.parse_btn = tk.Button(topf, text="Parse", command=self.parse_folder)
@@ -243,6 +268,12 @@ class FlexiGui(tk.Tk):
         name, data = self._entity_by_itemid[item]
         self.report(f"Selected item: {name}")
         self.selected_item.set(name)
+
+        if data.get("type") == "recording":
+            self.recording_info_label.grid()
+        else:
+            self.recording_info_label.grid_remove()
+
         display = {k: v for k, v in data.items() if k not in self.FLEXILIMS_ONLY_FIELDS}
         self.textview.delete(1.0, tk.END)
         self.textview.insert(tk.END, yaml.dump(display))
