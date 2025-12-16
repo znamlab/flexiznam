@@ -252,7 +252,7 @@ class Dataset(object):
         if (conflicts is None) or (conflicts == "abort"):
             raise flz.errors.DatasetError(
                 f"Dataset(s) of type {dataset_type} already exist(s):"
-                + f" {processed.loc[:, 'name']}"
+                + f" {[s['name'] for s in processed]}"
             )
         # Three cases left: skip, append, overwrite
         if conflicts == "overwrite":
