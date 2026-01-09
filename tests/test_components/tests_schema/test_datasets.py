@@ -303,7 +303,7 @@ def test_from_origin(flm_sess):
 def test_update_flexilims(flm_sess):
     """This test requires the database to be up-to-date for the physio mouse"""
     project = "demo_project"
-    ds_name = "mouse_physio_2p_S20211102_R165821_SpheresPermTube_wf_camera"
+    ds_name = "PZAA15.1a_S20201225_example_recording_dataset_0"
     ds = Dataset.from_flexilims(project, name=ds_name, flexilims_session=flm_sess)
 
     original_path = ds.path
@@ -357,6 +357,11 @@ def test_update_flexilims(flm_sess):
         nf32=np.float32(1),
         ni64=np.int64(1),
         ni32=np.int32(1),
+        normaltrue=True,
+        normalfalse=False,
+        nibool=np.bool_(True),
+        nifalse=np.bool_(False),
+        nested_bool=dict(nitrue=np.bool_(True), nifalse=np.bool_(False)),
         pathobj=pathlib.Path("some/path"),
         list=[1, 2, 3],
         tuple=(1, 2, 3),
@@ -376,6 +381,12 @@ def test_update_flexilims(flm_sess):
     assert reloaded_ds.extra_attributes["tuple"] == list((1, 2, 3))
     assert reloaded_ds.extra_attributes["f"] == 1.0
     assert reloaded_ds.extra_attributes["i"] == 34
+    assert reloaded_ds.extra_attributes["normaltrue"] is np.bool_(True)
+    assert reloaded_ds.extra_attributes["normalfalse"] is np.bool_(False)
+    assert reloaded_ds.extra_attributes["nested_bool"]["nitrue"] is True
+    assert reloaded_ds.extra_attributes["nested_bool"]["nifalse"] is False
+    assert reloaded_ds.extra_attributes["nibool"] is np.bool_(True)
+    assert reloaded_ds.extra_attributes["nifalse"] is np.bool_(False)
     flm_sess.delete(ds.id)
 
 

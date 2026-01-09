@@ -8,12 +8,18 @@ def cli():
 
 @cli.command()
 @click.argument("root_folder", type=click.Path(exists=True), default=".")
-def gui(root_folder):
+@click.option("--project", "-p", default=None, help="Project name on flexilims.")
+@click.option("--origin", "-o", default=None, help="Origin name on flexilims.")
+def gui(root_folder, project, origin):
     """Start the GUI"""
     from flexiznam.gui import flexigui
 
     app = flexigui.FlexiGui()
     app.root_folder.set(root_folder)
+    if project:
+        app.project.set(project)
+    if origin:
+        app.origin_name.set(origin)
     app.mainloop()
 
 

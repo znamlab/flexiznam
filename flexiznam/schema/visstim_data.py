@@ -40,12 +40,21 @@ class VisStimData(Dataset):
         csv_files = list(pathlib.Path(folder).glob("*.csv"))
 
         fnames = [f.name for f in csv_files]
-        if "framelog.csv" not in [f.lower() for f in fnames]:
-            raise IOError("Cannot find FrameLog.csv file")
+        fnames_lower = [f.lower() for f in fnames]
+        valid_names = ["framelog.csv", "params.csv"]
+        if not any([f in fnames_lower for f in valid_names]):
+            raise IOError("Cannot find FrameLog.csv or Params.csv file")
 
-        log_file = [f for f in csv_files if f.name.lower() == "framelog.csv"][0]
+        # Find the first available log file (prefer framelog.csv if both exist)
+        log_file = None
+        for valid_name in valid_names:
+            matching_files = [f for f in csv_files if f.name.lower() == valid_name]
+            if matching_files:
+                log_file = matching_files[0]
+                break
+
         if verbose:
-            print(f"Found FrameLog.csv file: {log_file}")
+            print(f"Found visstim log file: {log_file}")
 
         if folder_genealogy is None:
             folder_genealogy = (pathlib.Path(folder).stem,)

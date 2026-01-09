@@ -1,6 +1,7 @@
 import datetime
 import os
 import pathlib
+import re
 
 from flexiznam.schema.datasets import Dataset
 
@@ -50,18 +51,16 @@ class CameraData(Dataset):
             for f in os.listdir(folder)
             if f.endswith(tuple(CameraData.VALID_EXTENSIONS))
         ]
-        metadata_files = [
-            f
-            for f in fnames
-            if f.endswith("_metadata.txt") or f.endswith("_metadata.yml")
-        ]
+        metadata_files = [f for f in fnames if "_metadata." in f]
         if (not metadata_files) and enforce_validity:
             raise IOError("Cannot find metadata")
         timestamp_files = [f for f in fnames if f.endswith("_timestamps.csv")]
         if (not timestamp_files) and enforce_validity:
             raise IOError("Cannot find timestamp")
-        metadata_names = {"_".join(fname.split("_")[:-1]) for fname in metadata_files}
-        timestamp_names = {"_".join(fname.split("_")[:-1]) for fname in timestamp_files}
+        metadata_names = {
+            re.sub(r"_metadata\.(txt|yml)$", "", f) for f in metadata_files
+        }
+        timestamp_names = {f.replace("_timestamps.csv", "") for f in timestamp_files}
         valid_names = metadata_names.intersection(timestamp_names)
         if (not valid_names) and enforce_validity:
             raise IOError("Metadata do not correspond to timestamps")
@@ -112,8 +111,6 @@ class CameraData(Dataset):
                 raise IOError(
                     "Error finding timestamp files. I should have it but I dont"
                 )
-            import re
-
             metadata_file = [
                 f
                 for f in metadata_files

@@ -1116,7 +1116,12 @@ def get_children(
         results = [r for r in results if r["type"] == children_datatype]
     if filter is not None:
         for key, value in filter.items():
-            results = [r for r in results if r.get(key, None) == value]
+            results = [r for r in results if key in r]
+            results = [
+                r
+                for r in results
+                if r[key] == value or (value is None and r[key] is None)
+            ]
 
     results = pd.DataFrame(results)
     if len(results):

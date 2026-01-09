@@ -106,6 +106,31 @@ class FlexiGui(tk.Tk):
         )
         self.update_item_btn.grid(row=2, column=1, sticky="nsw")
 
+        self.recording_info_label = tk.Label(
+            self.frames["R"],
+            text=(
+                "Recording_type can be one of :\n"
+                "- two_photon\n"
+                "- widefield\n"
+                "- intrinsic\n"
+                "- ephys\n"
+                "- behaviour\n"
+                "- camera\n"
+                "- unspecified\n\n"
+                "Protocol is automatically read from the folder name. "
+                "It should be the name of the protocol used to acquire the data. "
+                "For multiprotocol recordings, the type of recording is used instead, "
+                "for instance `onix` for onix recordings."
+            ),
+            justify="left",
+            wraplength=300,  # Wrap text to fit in the right panel
+            anchor="w",
+        )
+        self.recording_info_label.grid(
+            row=3, column=0, columnspan=2, sticky="nw", padx=5, pady=5
+        )
+        self.recording_info_label.grid_remove()
+
     def _create_buttons(self):
         topf = self.frames["T"]
         self.parse_btn = tk.Button(topf, text="Parse", command=self.parse_folder)
@@ -205,12 +230,23 @@ class FlexiGui(tk.Tk):
         )
         self.report(f"Parsing folder {folder}...")
         self.root_folder.set(folder)
-        data = flz.camp.sync_data.create_yaml_dict(
-            folder_to_parse=folder,
-            project=self.project.get(),
-            origin_name=self.origin_name.get(),
-            format_yaml=True,
-        )
+        try:
+            data = flz.camp.sync_data.create_yaml_dict(
+                folder_to_parse=folder,
+                project=self.project.get(),
+                origin_name=self.origin_name.get(),
+                format_yaml=True,
+            )
+        except ValueError as e:
+            # check if the error is because on path is not in the subpath of the other
+            if "is not in the subpath of" in str(e):
+                raise ValueError(
+                    f"Error: The folder {Path(folder).stem} is not a direct subfolder"
+                    + f" of origin: {self.origin_name.get()}."
+                )
+            else:
+                raise e
+
         self.report("Parsing done. Validating data...")
         data, errors = flz.camp.sync_data.check_yaml_validity(data)
         self.data = data
@@ -232,6 +268,12 @@ class FlexiGui(tk.Tk):
         name, data = self._entity_by_itemid[item]
         self.report(f"Selected item: {name}")
         self.selected_item.set(name)
+
+        if data.get("type") == "recording":
+            self.recording_info_label.grid()
+        else:
+            self.recording_info_label.grid_remove()
+
         display = {k: v for k, v in data.items() if k not in self.FLEXILIMS_ONLY_FIELDS}
         self.textview.delete(1.0, tk.END)
         self.textview.insert(tk.END, yaml.dump(display))
@@ -426,12 +468,8 @@ if __name__ == "__main__":
 
     app = FlexiGui()
     app.root_folder.set(
-        "/Volumes/proj-znamenp-3dvision/raw/colasa_3d-vision_revisions/PZAG16.3c/S20250220"
+        "/Volumes/proj-znamenp-3dvision/raw/alexanm1_3dvision/BRAC11225.4f/S20251110"
     )
-    app.origin_name.set("PZAG16.3c")
-    app.project.set("colasa_3d-vision_revisions")
+    app.origin_name.set("BRAC11225.4f")
+    app.project.set("alexanm1_3dvision")
     app.mainloop()
-    df = diffofdict(app.data["children"], app.get_checked_data()["children"])
-    a = app.data["children"]["S20230915"]["children"]
-    b = app.get_checked_data()["children"]["S20230915"]["children"]
-    a == b
