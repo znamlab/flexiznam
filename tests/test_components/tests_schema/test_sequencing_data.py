@@ -12,7 +12,9 @@ from tests.tests_resources.data_for_testing import DATA_ROOT
 
 def test_from_folder():
     raw_folder = DATA_ROOT / "mouse_mapseq_lcm" / "Raw_sequencing"
-    ds = SequencingData.from_folder(raw_folder, verbose=False, project="demo_project")
+    ds = SequencingData.from_folder(
+        raw_folder, verbose=False, project="demo_project", is_raw=True
+    )
     assert len(ds) == 2
     d = ds["TUR675_S896_l769_R2_001"]
     assert d.full_name == "Raw_sequencing_TUR675_S896_l769_R2_001"

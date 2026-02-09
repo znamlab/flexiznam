@@ -230,12 +230,20 @@ class FlexiGui(tk.Tk):
         )
         self.report(f"Parsing folder {folder}...")
         self.root_folder.set(folder)
+        # try to guess if it's raw or processed
+        is_raw = None
+        if "raw" in folder.lower():
+            is_raw = True
+        elif "processed" in folder.lower():
+            is_raw = False
+
         try:
             data = flz.camp.sync_data.create_yaml_dict(
                 folder_to_parse=folder,
                 project=self.project.get(),
                 origin_name=self.origin_name.get(),
                 format_yaml=True,
+                is_raw=is_raw,
             )
         except ValueError as e:
             # check if the error is because on path is not in the subpath of the other
@@ -468,8 +476,8 @@ if __name__ == "__main__":
 
     app = FlexiGui()
     app.root_folder.set(
-        "/Volumes/proj-znamenp-3dvision/raw/alexanm1_3dvision/BRAC11225.4f/S20251110"
+        "/Volumes/proj-znamenp-3dvision/raw/colasa_3d-vision_revisions/PZAH17.1e/S20250304"
     )
-    app.origin_name.set("BRAC11225.4f")
-    app.project.set("alexanm1_3dvision")
+    app.origin_name.set("PZAH17.1e")
+    app.project.set("colasa_3d-vision_revisions")
     app.mainloop()

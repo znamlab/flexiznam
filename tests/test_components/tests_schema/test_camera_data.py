@@ -36,6 +36,7 @@ def test_create_from_folder(flm_sess):
         verbose=False,
         project=TEST_PROJECT,
         flexilims_session=flm_sess,
+        is_raw=True,
     )
     assert len(data) == 5
     data = CameraData.from_folder(
@@ -44,6 +45,7 @@ def test_create_from_folder(flm_sess):
         verbose=False,
         project=TEST_PROJECT,
         flexilims_session=flm_sess,
+        is_raw=True,
     )
     assert len(data) == 1
     ds = data["face_camera"]

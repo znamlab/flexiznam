@@ -1,5 +1,11 @@
 # Change log
 
+## v0.4.6
+
+### Minor
+
+- Simplify the automatic setting of `is_raw` in `from_folder`
+
 ## v0.4.5
 
 ### Main changes

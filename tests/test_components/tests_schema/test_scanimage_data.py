@@ -4,7 +4,9 @@ from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
 
 def test_scanimage(tmp_path):
     data_dir = DATA_ROOT / "mouse_physio_2p" / "S20211102" / "Ref"
-    ds = ScanimageData.from_folder(data_dir, verbose=False, project=TEST_PROJECT)
+    ds = ScanimageData.from_folder(
+        data_dir, verbose=False, project=TEST_PROJECT, is_raw=True
+    )
     assert len(ds) == 1
     d = next(iter(ds.values()))
     assert d.full_name == "Ref_Ref_00001"

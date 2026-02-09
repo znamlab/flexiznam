@@ -49,6 +49,7 @@ def create_yaml_dict(
     origin_name,
     format_yaml=True,
     ignore_folders=None,
+    is_raw=None,
 ):
     """Create a yaml dict from a folder
 
@@ -91,6 +92,7 @@ def create_yaml_dict(
         format_yaml=format_yaml,
         parent_dict=dict(),
         ignore_folders=ignore_folders,
+        is_raw=is_raw,
     )
     if format_yaml:
         root_folder = str(folder_to_parse.parent)
@@ -303,6 +305,7 @@ def _create_yaml_dict(
     parent_dict,
     only_datasets=False,
     ignore_folders=None,
+    is_raw=None,
 ):
     """Private function to create a yaml dict from a folder
 
@@ -321,6 +324,8 @@ def _create_yaml_dict(
         only_datasets (bool): only parse datasets, not folders
         ignore_folders (set): set of folder names to ignore. Hidden folders are
             always ignored.
+        is_raw (bool): whether the data is raw or processed. If not provided,
+            will be guessed from path.
     """
 
     level_folder = Path(level_folder)
@@ -375,32 +380,44 @@ def _create_yaml_dict(
         level_dict["path"] = Path(project, *level_dict["genealogy"])
     if format_yaml:
         level_dict["path"] = str(PurePosixPath(level_dict["path"]))
-    children = dict() if "children" not in level_dict else level_dict["children"]
-    datasets = Dataset.from_folder(level_folder, project=project)
+    level_dict["children"] = (
+        dict() if "children" not in level_dict else level_dict["children"]
+    )
+    datasets = Dataset.from_folder(
+        level_folder, project=project, is_raw=is_raw, verbose=False
+    )
     if datasets:
         for ds_name, ds in datasets.items():
-            if ds_name in children:
+            if ds_name in level_dict["children"]:
                 warnings.warn(f"Dataset {ds_name} already exists in {level_name}. Skip")
                 continue
             ds.genealogy = genealogy + list(ds.genealogy)
             if format_yaml:
                 # find path root
-                proot = str(level_folder)[: -len(level_dict["path"])]
-                ds.path = ds.path.relative_to(proot)
-                children[ds_name] = ds.format(mode="yaml")
+                proot = Path(str(level_folder)[: -len(level_dict["path"])])
+                if (
+                    proot
+                    and (proot / level_dict["path"]).resolve() == level_folder.resolve()
+                ):
+                    ds.path = ds.path.relative_to(proot)
+                else:
+                    raise RuntimeError(
+                        f"Path root {proot} not found for {level_folder}"
+                    )
+                level_dict["children"][ds_name] = ds.format(mode="yaml")
                 # remove fields that are not needed
                 for field in ["origin_id", "project_id", "name"]:
-                    children[ds_name].pop(field, None)
-                children[ds_name]["path"] = str(
-                    PurePosixPath(children[ds_name]["path"])
+                    level_dict["children"][ds_name].pop(field, None)
+                level_dict["children"][ds_name]["path"] = str(
+                    PurePosixPath(level_dict["children"][ds_name]["path"])
                 )
             else:
-                children[ds_name] = ds
+                level_dict["children"][ds_name] = ds
 
     if only_datasets:
         subfolders = [
             level_folder / n
-            for n, c in children.items()
+            for n, c in level_dict["children"].items()
             if (c is None) or (c.get("type", "unknown") != "dataset")
         ]
     else:
@@ -420,10 +437,10 @@ def _create_yaml_dict(
                 project=project,
                 genealogy=genealogy + [level_name],
                 format_yaml=format_yaml,
-                parent_dict=children,
+                parent_dict=level_dict["children"],
                 ignore_folders=ignore_folders,
+                is_raw=is_raw,
             )
-    level_dict["children"] = children
     parent_dict[level_name] = level_dict
     return parent_dict
 
