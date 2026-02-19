@@ -2,6 +2,10 @@
 
 ## v0.4.6
 
+### Main changes
+
+- Add nice `__repr__` for datasets
+
 ### Minor
 
 - Simplify the automatic setting of `is_raw` in `from_folder`

@@ -404,6 +404,10 @@ class Dataset(object):
         self.id = id
         self.is_raw = is_raw
 
+    def __repr__(self):
+        is_raw_str = "raw" if self.is_raw else "processed"
+        return f"<{self.dataset_type} dataset: {self.full_name} ({is_raw_str})>"
+
     def is_valid(self, return_reason=False):
         """Check if the file path is valid for this dataset
 

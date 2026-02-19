@@ -69,6 +69,21 @@ def test_dataset(flm_sess):
             project_id=ds.project_id,
         )
         assert err.value.args[0] == "project_id does not correspond to project"
+    return
+
+
+def test_dataset_repr():
+    """Check that the dataset print output is correct"""
+    ds = Dataset(
+        path="fake/path",
+        is_raw=True,
+        dataset_type="camera",
+        project="test",
+        genealogy=("a", "parent", "test"),
+    )
+    assert repr(ds) == "<Dataset: a_parent_test (camera, raw)>"
+    ds.is_raw = False
+    assert repr(ds) == "<Dataset: a_parent_test (camera, processed)>"
 
 
 def test_constructor():
@@ -483,3 +498,7 @@ def test_dataset_type_enforcer():
         flexilims_session=None,
     )
     PARAMETERS["enforce_dataset_types"] = orignal_value
+
+
+if __name__ == "__main__":
+    test_dataset_repr()
