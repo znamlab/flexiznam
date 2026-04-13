@@ -12,7 +12,9 @@ from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
 
 def test_from_folder():
     raw_folder = DATA_ROOT / "mouse_physio_2p"
-    ds = MicroscopyData.from_folder(raw_folder, verbose=False, project=TEST_PROJECT)
+    ds = MicroscopyData.from_folder(
+        raw_folder, verbose=False, project=TEST_PROJECT, is_raw=True
+    )
     assert len(ds) == 1
     d = ds["wf_overview.PNG"]
     assert d.full_name == "mouse_physio_2p_wf_overview.PNG"

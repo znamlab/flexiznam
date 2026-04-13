@@ -1,4 +1,5 @@
 import pathlib
+import warnings
 from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Dict
@@ -23,7 +24,9 @@ class Dataset(object):
     SUBCLASSES: Dict[str, object] = dict()
 
     @classmethod
-    def from_folder(cls, folder, verbose=False, flexilims_session=None, project=None):
+    def from_folder(
+        cls, folder, verbose=False, flexilims_session=None, project=None, is_raw=None
+    ):
         """Try to load all datasets found in the folder.
 
         Will try all defined subclasses of datasets and keep everything that does not
@@ -44,8 +47,14 @@ class Dataset(object):
                     verbose=verbose,
                     flexilims_session=flexilims_session,
                     project=project,
+                    is_raw=is_raw,
                 )
+            except DatasetError as e:
+                # This is an actual error in the dataset detection logic
+                warnings.warn(f"Error parsing {ds_type} in {folder}: {e}")
+                continue
             except OSError:
+                # This is likely not a dataset of this type
                 continue
             if any(k in data for k in res):
                 raise DatasetError("Found two datasets with the same name")
@@ -394,6 +403,10 @@ class Dataset(object):
         self.origin_id = origin_id
         self.id = id
         self.is_raw = is_raw
+
+    def __repr__(self):
+        is_raw_str = "raw" if self.is_raw else "processed"
+        return f"<{self.dataset_type} dataset: {self.full_name} ({is_raw_str})>"
 
     def is_valid(self, return_reason=False):
         """Check if the file path is valid for this dataset
@@ -786,14 +799,24 @@ class Dataset(object):
             elif Path(paths["processed"]) in self.path.parents:
                 value = "no"
             else:
-                raise IOError("Cannot create a dataset without setting `is_raw`")
+                # try to guess from the path itself:
+                parts = [p.lower() for p in self.path.parts]
+                if "raw" in parts:
+                    value = "yes"
+                elif "processed" in parts:
+                    value = "no"
+                else:
+                    raise DatasetError(
+                        f"Cannot guess `is_raw` for path {self.path}. "
+                        "Please specify it explicitly or update the config file."
+                    )
         if isinstance(value, str):
             if value.lower() == "yes":
                 value = True
             elif value.lower() == "no":
                 value = False
             else:
-                raise IOError("is_raw must be `yes` or `no`")
+                raise DatasetError("is_raw must be `yes` or `no`")
         else:
             value = bool(value)
         self._is_raw = value

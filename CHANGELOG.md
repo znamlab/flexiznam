@@ -1,8 +1,18 @@
 # Change log
 
+## v0.4.6
+
+### Main changes
+
+- Add nice `__repr__` for datasets
+
+### Minor
+
+- Simplify the automatic setting of `is_raw` in `from_folder`
+
 ## v0.4.5
 
-### Main changes
+### Main changes
 
 - harp_data can also be a new harp-python style folder.
 - Add NeuropixelData dataset for onix npx data
@@ -11,32 +21,32 @@
   when parsing a directory. Hidden folders are always ignored.
 
 
-### Bugfix
+### Bugfix
 
 - Handle camera with _ in name correctly
 
-### Minor
+### Minor
 
 - GUI improvement. Clearer error message
 
 ## v0.4.4
 
-### Bugfix
+### Bugfix
 
 - `np.bool` object were uploaded as `str`
 
-### Minor
+### Minor
 
 - minor improvement to config
 
 ## v0.4.3
 
-### Main changes
+### Main changes
 
 - Add an option for inverse filtering in `get_datasets` and `get_datasets_recursively`.
   Use `exclude_datasets` to filter out dataset with a specified value of an attribute.
 
-### Bugfix
+### Bugfix
 
 - `extra_attributes` of datasets is now always a dictionary and cannot be set to `None`
 - `gui` can handle project paths defined in `"project_paths"` in the config file
@@ -44,13 +54,13 @@
   attributes is now the name of the file, replacing special characters by `_`.
 - clearer error message when one dataset cannot be parsed during upload.
 
-### Minor
+### Minor
 
 - Relax requirement for python because of suite2p
 
 ## v0.4.2
 
-### Main changes
+### Main changes
 
 - Add `get_processed_path` and `get_raw_path` to get the path of a dataset
 
