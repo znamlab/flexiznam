@@ -1,6 +1,16 @@
 # Change log
 
-## v0.4.6
+## v0.4.7
+
+### Main changes
+
+- GUI: Project IDs in dropdown and items in the treeview are now sorted alphabetically.
+
+### Minor
+
+- Update tests and testing resources.
+
+## v0.4.6
 
 ### Main changes
 

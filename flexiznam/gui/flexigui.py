@@ -148,7 +148,7 @@ class FlexiGui(tk.Tk):
             topf,
             self.project,
             "SELECT PROJECT",
-            *flz.PARAMETERS["project_ids"].keys(),
+            *sorted(flz.PARAMETERS["project_ids"].keys()),
         ).grid(row=0, column=4, columnspan=3, sticky="w")
         self.upload_btn = tk.Button(topf, text="Upload", command=self.upload)
         self.upload_btn.grid(row=0, column=7)
@@ -331,7 +331,7 @@ class FlexiGui(tk.Tk):
 
     def _insert_yaml_data(self, data, parent="", name_to_select=None):
         assert isinstance(data, dict), "data must be a dict"
-        for child, child_data in data.items():
+        for child, child_data in sorted(data.items()):
             assert "type" in child_data, f"datatype missing for {child}"
             dtype = child_data["type"]
             item = self.treeview.insert(
@@ -476,8 +476,8 @@ if __name__ == "__main__":
 
     app = FlexiGui()
     app.root_folder.set(
-        "/Volumes/proj-znamenp-3dvision/raw/colasa_3d-vision_revisions/PZAH17.1e/S20250304"
+        "/Volumes/proj-znamenp-3dvision/raw/alexanm1_3dvision/BRAC12160.1f/S20260509/"
     )
-    app.origin_name.set("PZAH17.1e")
-    app.project.set("colasa_3d-vision_revisions")
+    app.origin_name.set("BRAC12160.1f")
+    app.project.set("alexanm1_3dvision")
     app.mainloop()
