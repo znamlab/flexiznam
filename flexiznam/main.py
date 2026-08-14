@@ -1019,7 +1019,7 @@ def get_datatype(name=None, id=None, project_id=None, flexilims_session=None):
         resp = get_entity(
             datatype=datatype, name=name, id=id, flexilims_session=flexilims_session
         )
-        if resp:
+        if resp is not None:
             return datatype
     return None
 
