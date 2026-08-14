@@ -8,6 +8,8 @@ import pytest
 from flexiznam import utils
 from flexiznam.config import DEFAULT_CONFIG, config_tools
 
+pytestmark = pytest.mark.integration
+
 
 def test_create_config():
     with tempfile.TemporaryDirectory() as tmp:

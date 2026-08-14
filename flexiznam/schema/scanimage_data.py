@@ -14,14 +14,16 @@ class ScanimageData(Dataset):
     DATASET_TYPE = "scanimage"
     DEFAULT_STACK_TYPE = "calcium"
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
         folder_genealogy=None,
         is_raw=None,
         verbose=True,
         flexilims_session=None,
         project=None,
+        enforce_validity=True,
     ):
         """Create a scanimage dataset by loading info from folder
 
@@ -170,6 +172,7 @@ class ScanimageData(Dataset):
                                    'calcium', 'zstack', 'multichannel-reference',
                                    'motion-reference, 'overview'
         """
+        extra_attributes = extra_attributes or {}
         if "stack_type" not in extra_attributes:
             warnings.warn(
                 "No `stack_type` provided for SI dataset %s. "

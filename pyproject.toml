@@ -1,21 +1,37 @@
 [project]
 name = "flexiznam"
-authors = [{name = "Znamenskiy lab", email= "antonin.blot@crick.ac.uk"}]
+authors = [{name = "Znamenskiy lab", email = "antonin.blot@crick.ac.uk"}]
 description = "Handle Znamenskiy lab database"
 readme = "README.md"
-requires-python = ">=3.8.0"
+requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = [
-        "Click",
-        "pandas",
-        "portalocker",
-        "webbot",
-        "pyyaml",
-        "flexilims @ git+ssh://git@github.com/znamlab/flexilims.git#egg=flexilims",
-        "pymcms @ git+ssh://git@github.com/znamlab/pymcms.git#egg=pymcms",
-        "tifffile",
-        "ttkwidgets",]
+    "Click",
+    "flexilims>=1.4",
+    "numpy",
+    "pandas",
+    "portalocker",
+    "pymcms>=0.3",
+    "pyyaml",
+    "requests",
+    "tifffile",
+    "ttkwidgets",
+    "webbot",
+]
 license = {text = "MIT"}
+
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
 
 [project.scripts]
 flexiznam = "flexiznam.cli:cli"
@@ -27,20 +43,6 @@ flexiznam = "flexiznam.cli:cli"
 
 "Source Code" = "https://github.com/znamlab/flexiznam"
 "User Support" = "https://github.com/znamlab/flexiznam/issues"
-
-[project.optional-dependencies]
-dev = [
-  "pytest",
-  "pytest-cov",
-  "coverage",
-  "tox",
-  "black",
-  "mypy",
-  "pre-commit",
-  "ruff",
-  "setuptools_scm",
-  "imageio",
-]
 
 [build-system]
 requires = [
@@ -57,14 +59,25 @@ include-package-data = true
 include = ["flexiznam*"]
 exclude = ["tests", "docs*"]
 
+[tool.uv.sources]
+flexilims = { index = "gitlab-public" }
+pymcms = { index = "gitlab-public" }
+
+[[tool.uv.index]]
+name = "gitlab-public"
+url = "https://gitlab.com/api/v4/projects/85414935/packages/pypi/simple"
+explicit = true
+
 
 [tool.pytest.ini_options]
 addopts = "--cov=flexiznam"
+markers = [
+    "integration: requires external credentials, services, or lab data",
+    "slow: requires a graphical browser or substantial processing time",
+]
 
-[tool.black]
-target-version = ['py39', 'py310', 'py311']
-skip-string-normalization = false
-line-length = 88
+[tool.coverage.run]
+source = ["flexiznam"]
 
 [tool.setuptools_scm]
 
@@ -82,35 +95,25 @@ ignore = [
 
 [tool.ruff]
 line-length = 88
-exclude = ["__init__.py","build",".eggs"]
+exclude = ["__init__.py", "build", ".eggs"]
 lint.select = [
-  "E",   # pycodestyle errors
-  "F",   # Pyflakes
-  "I",   # isort
-  # You can see what all the rules do here: https://docs.astral.sh/ruff/rules/
-  # Some additional ruff rules that might be useful (uncomment to enable)
-  #"UP",  # pyupgrade
-  #"B",   # flake8 bugbear
-  #"SIM", # flake8 simplify
-  #"C90", # McCabe complexity
+    "E", # pycodestyle errors
+    "F", # Pyflakes
+    "I", # isort
 ]
-fix = true
 
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py{39,310,311}
-isolated_build = True
+[tool.ruff.format]
+docstring-code-format = true
 
-[gh-actions]
-python =
-    3.9: py39
-    3.10: py310
-    3.11: py311
+[tool.ty.src]
+exclude = ["tests/"]
 
-[testenv]
-extras =
-    dev
-commands =
-    pytest -v --color=yes --cov=flexiznam --cov-report=xml
-"""
+[dependency-groups]
+dev = [
+    "imageio",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "ty",
+]

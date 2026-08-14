@@ -1,4 +1,5 @@
 import click
+import yaml
 
 
 @click.group()
@@ -205,7 +206,7 @@ def create_yaml(source_dir, target_yaml, project, origin, overwrite, process):
     from flexiznam import camp
 
     camp.sync_data.create_yaml(
-        root_folder=source_dir,
+        folder_to_parse=source_dir,
         output_file=target_yaml,
         origin_name=origin,
         project=project,
@@ -260,22 +261,12 @@ def process_yaml(source_yaml, target_yaml=None, overwrite=False, raw_data_folder
 
     click.echo("Reading %s" % source_yaml)
     try:
-        parsed = camp.sync_data.parse_yaml(
-            source_yaml, raw_data_folder=raw_data_folder, verbose=False
-        )
+        parsed = camp.sync_data.parse_yaml(source_yaml, root_folder=raw_data_folder)
     except FileNotFoundError as err:
         msg = "Cannot process yaml file. Could not access the data.\n%s" % err.args[0]
         raise click.ClickException(msg)
-    errors = camp.sync_data.find_xxerrorxx(yml_data=parsed)
-    if errors:
-        click.echo("\nFound some issues with the yaml:")
-        for k, v in errors.items():
-            click.echo("    - Dataset: `%s`" % k)
-            click.echo("              %s" % v.strip("XXERRRORR!! "))
-        click.echo("Fix manually these errors before uploading to flexilims")
-    camp.sync_data.write_session_data_as_yaml(
-        parsed, target_file=target_yaml, overwrite=overwrite
-    )
+    with target_yaml.open("w") as yaml_file:
+        yaml.safe_dump(parsed, yaml_file)
     click.echo("Processed yaml saved to `%s`" % target_yaml)
 
 

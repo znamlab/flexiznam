@@ -1,6 +1,10 @@
+import pytest
+
 from flexiznam.schema.camera_data import CameraData
 from flexiznam.schema.datasets import Dataset
 from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
+
+pytestmark = pytest.mark.integration
 
 
 def test_create_directly(flm_sess):

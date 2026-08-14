@@ -149,8 +149,6 @@ def clean_recursively(
 
     if json_compatible:
         # we don't have a dictionary
-        ds_classes = set(Dataset.SUBCLASSES.values())
-        ds_classes.add(Dataset)
         floats = (float, np.float32, np.float64)
         ints = (int, np.int32, np.int64)
         if (
@@ -159,7 +157,7 @@ def clean_recursively(
             or isinstance(element, int)
             or isinstance(element, bool)
             or isinstance(element, list)
-            or any([isinstance(element, cls) for cls in ds_classes])
+            or isinstance(element, Dataset)
         ):
             pass
         elif isinstance(element, tuple):
@@ -191,10 +189,8 @@ def clean_recursively(
             element[i] = clean_recursively(v, keys, json_compatible, format_dataset)
 
     if format_dataset:
-        ds_classes = set(Dataset.SUBCLASSES.values())
-        ds_classes.add(Dataset)
-        if any([isinstance(element, cls) for cls in ds_classes]):
-            ds_dict = element.format(mode="yaml")
+        if isinstance(element, Dataset):
+            ds_dict = dict(element.format(mode="yaml"))
             # we have now a dictionary with a flat structure. Reshape it to match
             # what acquisition yaml are supposed to look like
             for field in ["name", "project", "type"]:

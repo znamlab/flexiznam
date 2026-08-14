@@ -21,6 +21,7 @@ class HarpData(Dataset):
         verbose=True,
         flexilims_session=None,
         project=None,
+        enforce_validity=True,
     ):
         """Create a harp dataset by loading info from folder
 
@@ -193,6 +194,7 @@ class HarpData(Dataset):
             binary_files (list): For new format, list of binary file names.
             device_info (dict): For new format, content of device.yml.
         """
+        extra_attributes = extra_attributes or {}
         is_new_format = "binary_files" in extra_attributes
         is_old_format = "binary_file" in extra_attributes
         if not is_new_format and not is_old_format:

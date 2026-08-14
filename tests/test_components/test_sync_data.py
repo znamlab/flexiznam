@@ -1,4 +1,8 @@
+import pytest
+
 from tests.tests_resources.data_for_testing import PROCESSED_ROOT, TEST_PROJECT
+
+pytestmark = pytest.mark.integration
 
 
 def test_create_yaml():

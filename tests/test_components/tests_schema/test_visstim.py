@@ -1,5 +1,9 @@
+import pytest
+
 from flexiznam.schema.visstim_data import VisStimData
 from tests.tests_resources.data_for_testing import DATA_ROOT
+
+pytestmark = pytest.mark.integration
 
 
 def test_vistim():

@@ -11,16 +11,17 @@ class CameraData(Dataset):
     VIDEO_EXTENSIONS = {".mp4", ".bin", ".avi"}
     VALID_EXTENSIONS = {".txt", ".csv", ".yml"}.union(VIDEO_EXTENSIONS)
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
-        camera_name=None,
         folder_genealogy=None,
         is_raw=None,
         verbose=True,
         flexilims_session=None,
         project=None,
         enforce_validity=True,
+        camera_name=None,
     ):
         """Create a Camera dataset by loading info from folder
 
@@ -173,6 +174,7 @@ class CameraData(Dataset):
             metadata_file (optional): file name of the metadata file, usually
                 camera_name_metadata.txt
         """
+        extra_attributes = extra_attributes or {}
         if "video_file" not in extra_attributes:
             raise IOError(
                 "Camera dataset require to have `video_file` in extra attributes"

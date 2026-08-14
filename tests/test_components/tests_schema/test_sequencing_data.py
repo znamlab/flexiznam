@@ -1,5 +1,9 @@
+import pytest
+
 from flexiznam.schema.sequencing_data import SequencingData
 from tests.tests_resources.data_for_testing import DATA_ROOT
+
+pytestmark = pytest.mark.integration
 
 # Test creation of all dataset types.
 #

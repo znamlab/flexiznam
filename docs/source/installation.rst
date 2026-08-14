@@ -1,24 +1,19 @@
 Installation
 ============
-To create a standalone installation, in you favorite `conda` or `venv`, clone
-the repository and `pip` install::
+To create a development installation, clone the repository and create the
+environment from the lockfile::
 
   git clone git@github.com:znamlab/flexiznam.git
   cd flexiznam
-  pip install -r requirements.txt
-  pip install -e .
+  uv sync --group dev
 
 
-When installing `flexiznam` requirements, `flexilims` will be installed from our Crick
-github page. Make sure you have access to this repository by setting ssh keys as advised
-on the github
-[help page](https://docs.github.com/en/enterprise-server@3.0/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
-
-Don't forget to use the `-e` flag when installing flexiznam if you want to be
-able to edit the code.
+When installing `flexiznam`, `flexilims` and `pymcms` are downloaded from the lab's
+public GitLab PyPI registry.
 
 To check that the install is successful you can type ``flexiznam --help`` in a
-terminal. You can also start python and ``import flexiznam``.
+terminal with ``uv run flexiznam --help``. You can also run
+``uv run python -c 'import flexiznam'``.
 
 If you want to install flexiznam to use it in another repository, then run the
 following with the corresponding virtual environment active::

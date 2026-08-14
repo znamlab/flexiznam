@@ -4,6 +4,10 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 
 class TestFlexiGuiLogic(unittest.TestCase):
     def setUp(self):

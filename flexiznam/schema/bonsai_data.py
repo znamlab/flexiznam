@@ -14,8 +14,9 @@ class BonsaiData(Dataset):
     DATASET_TYPE = "bonsai"
     VALID_EXTENSIONS = {".bonsai"}
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
         folder_genealogy=None,
         is_raw=None,

@@ -1,5 +1,9 @@
+import pytest
+
 from flexiznam.schema.scanimage_data import ScanimageData
 from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
+
+pytestmark = pytest.mark.integration
 
 
 def test_scanimage(tmp_path):

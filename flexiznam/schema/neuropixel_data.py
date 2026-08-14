@@ -12,8 +12,9 @@ class NeuropixelData(Dataset):
     DATASET_TYPE = "neuropixel"
     VALID_EXTENSIONS = {".raw", ".csv"}
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
         folder_genealogy=None,
         is_raw=None,
@@ -83,8 +84,8 @@ class NeuropixelData(Dataset):
 
             dataset_name = f"neuropixel_{index}"
             extra_attributes = {
-                row.device_name.replace("-", "_"): row.file
-                for row in group.itertuples()
+                row["device_name"].replace("-", "_"): row["file"]
+                for _, row in group.iterrows()
             }
 
             # Use the modification time of the first file for the creation date
