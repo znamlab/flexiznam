@@ -158,15 +158,31 @@ When updating chromium, `get_mouse_df` and `add_mouse` can stop working. Updatin
 install folder. You can `import webbot` and check `webbot.__file__` to find where is
 that folder. See https://github.com/nateshmbhat/webbot/issues/87
 
-# Development install
+# Contributing
 
-To install the package in development mode, clone the repository and install it with
-`pip`:
+Create the development environment from the lockfile:
 
 ```bash
 git clone git@github.com:znamlab/flexiznam.git
 cd flexiznam
-pip install -e ".[dev]"
+uv sync --group dev
 ```
 
-This will add the development dependencies to the installation.
+Run the regular test and quality checks with:
+
+```bash
+uv run pytest
+uv run ruff format --check
+uv run ruff check
+uv run ty check
+```
+
+Tests marked `slow` require a graphical interface and browser support, so they are
+skipped by default. Run them explicitly with:
+
+```bash
+uv run pytest --runslow
+```
+
+Tests that require lab data or external services are also skipped by default. Run
+them with `uv run pytest --run-integration`.
