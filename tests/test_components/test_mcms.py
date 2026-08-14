@@ -5,6 +5,8 @@ from flexiznam import mcms
 
 USERNAME = "ab8"
 
+pytestmark = pytest.mark.integration
+
 
 def test_get_mouse_df():
     md = mcms.get_mouse_info(mouse_name="PZAJ2.1c", username=USERNAME)

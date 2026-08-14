@@ -1,5 +1,9 @@
+import pytest
+
 from flexiznam.schema.harp_data import HarpData
 from tests.tests_resources.data_for_testing import DATA_ROOT, TEST_PROJECT
+
+pytestmark = pytest.mark.integration
 
 
 def test_harp(flm_sess):

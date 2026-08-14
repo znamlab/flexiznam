@@ -15,6 +15,8 @@ from flexiznam.errors import FlexilimsError, NameNotUniqueError
 from flexiznam.schema import Dataset, ScanimageData
 from tests.tests_resources.data_for_testing import MOUSE_TEMP, SESSION
 
+pytestmark = pytest.mark.integration
+
 # this needs to change every time I reset flexlilims
 
 

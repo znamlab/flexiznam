@@ -1,11 +1,14 @@
 import pathlib
 
+import pytest
 import yaml
 from click.testing import CliRunner
 
 from flexiznam import cli
 from flexiznam.config import config_tools
 from tests.tests_resources.data_for_testing import PROCESSED_ROOT, TEST_PROJECT
+
+pytestmark = pytest.mark.integration
 
 
 def test_config(tmp_path):

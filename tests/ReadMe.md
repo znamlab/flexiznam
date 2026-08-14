@@ -31,8 +31,8 @@ For interaction with flexilims, you need to be connected via the crick network
 flexilims does not have an API to delete entries. You will have clean it manually
 before running the tests
 
-To make things simpler, the tests requiring flexilims or mcms are marked as integration
-tests. They can be skipped by running `pytest -m "not integtest"`.
+Tests requiring flexilims, MCMS, or lab data are marked as integration tests and are
+skipped by default. Run them with `uv run pytest --run-integration`.
 
 To test the upload to flexilims properly, you need to clear flexilims yourself
 (as there is no API to delete stuff). There should be a flag `FLM_IS_WIPED` at

@@ -7,6 +7,7 @@ The example data is found in demo_project
 import copy
 
 import pandas as pd
+import pytest
 import yaml
 
 import flexiznam as fzn
@@ -21,6 +22,8 @@ from tests.tests_resources.data_for_testing import (
     PROCESSED_ROOT,
     TEST_PROJECT,
 )
+
+pytestmark = pytest.mark.integration
 
 MOUSE = "mouse_physio_2p"
 SESSION = "S20211102"

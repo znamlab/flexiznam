@@ -10,6 +10,8 @@ from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
 from flexiznam.schema import Dataset, microscopy_data
 from tests.tests_resources.data_for_testing import MOUSE_ID, PROJECT_ID, TEST_PROJECT
 
+pytestmark = pytest.mark.integration
+
 # Test the generic dataset class.
 
 
