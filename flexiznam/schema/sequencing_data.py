@@ -25,14 +25,16 @@ class SequencingData(Dataset):
             stacklevel=2,
         )
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
         folder_genealogy=None,
         is_raw=None,
         verbose=True,
         flexilims_session=None,
         project=None,
+        enforce_validity=True,
     ):
         """Create a sequencing dataset by loading info from folder
 

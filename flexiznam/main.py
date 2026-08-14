@@ -2,6 +2,7 @@ import datetime
 import re
 import warnings
 from pathlib import Path
+from typing import cast
 
 import flexilims as flm
 import pandas as pd
@@ -11,7 +12,7 @@ from flexilims.utils import SPECIAL_CHARACTERS
 
 import flexiznam
 from flexiznam import mcms
-from flexiznam.config import PARAMETERS, get_password
+from flexiznam.config import PARAMETERS, config_tools, get_password
 from flexiznam.errors import ConfigurationError, FlexilimsError, NameNotUniqueError
 
 warnings.simplefilter("always", DeprecationWarning)
@@ -158,7 +159,7 @@ def get_flexilims_session(
 
     if reuse_token:
         today = datetime.datetime.now().strftime("%Y-%m-%d")
-        tocken_file = flexiznam.config.config_tools._find_file(
+        tocken_file = config_tools._find_file(
             "flexilims_token.yml", create_if_missing=True
         )
         with portalocker.Lock(tocken_file, "r+", timeout=timeout) as file_handle:
@@ -462,6 +463,9 @@ def add_recording(
     parent_series = get_entity(flexilims_session=flexilims_session, id=session_id)
     recording_info = {"recording_type": recording_type, "protocol": protocol}
 
+    if recording_name is None:
+        recording_name = parent_series["name"] + "_" + protocol + "_0"
+
     if attributes is None:
         attributes = {}
     if "path" not in attributes:
@@ -482,9 +486,6 @@ def add_recording(
                 "`%s` and `%s`" % (key, attributes[key], locals()[key])
             )
     recording_info.update(attributes)
-
-    if recording_name is None:
-        recording_name = parent_series["name"] + "_" + protocol + "_0"
 
     if "genealogy" not in attributes:
         attributes["genealogy"] = list(parent_series["genealogy"]) + [recording_name]
@@ -1290,23 +1291,24 @@ def get_datasets(
             keep_dataset &= datasets[key] != value
         datasets = datasets[keep_dataset]
 
-    if not return_dataseries:
-        datasets = [
+    if return_dataseries:
+        result = datasets
+    else:
+        result = [
             flexiznam.Dataset.from_dataseries(
                 dataseries=ds, flexilims_session=flexilims_session
             )
             for _, ds in datasets.iterrows()
         ]
         if return_paths:
-            datasets = [ds.path_full for ds in datasets]
+            result = [ds.path_full for ds in result]
 
     if not allow_multiple:
-        assert len(datasets) <= 1, f"Found {len(datasets)} datasets. Expected 1."
-        if len(datasets) == 1:
-            datasets = datasets[0] if not return_dataseries else datasets.iloc[0]
-        else:
-            datasets = None
-    return datasets
+        assert len(result) <= 1, f"Found {len(result)} datasets. Expected 1."
+        if len(result) == 0:
+            return None
+        return cast(pd.DataFrame, result).iloc[0] if return_dataseries else result[0]
+    return result
 
 
 def generate_name(datatype, name, flexilims_session=None, project_id=None):

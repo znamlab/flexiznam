@@ -240,14 +240,13 @@ def _recursive_update(source, new_values, skip_checks=False):
 
 
 try:
-    PARAMETERS = load_param()
-    # expanduser for file paths:
-    PARAMETERS["download_folder"] = Path(
-        PARAMETERS.get("download_folder", "~/Downloads")
-    ).expanduser()
+    user_parameters = load_param()
 except ConfigurationError:
-    print("Could not load the parameters. Check your configuration file")
-    PARAMETERS = {}
+    user_parameters = {}
+
+PARAMETERS = _recursive_update(deepcopy(DEFAULT_CONFIG), user_parameters)
+# Expand user paths after merging them with the defaults.
+PARAMETERS["download_folder"] = Path(PARAMETERS["download_folder"]).expanduser()
 
 __all__ = [
     "load_param",

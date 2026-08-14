@@ -2,14 +2,14 @@ import pathlib
 import warnings
 from datetime import datetime
 from pathlib import Path, PurePosixPath
-from typing import Dict
+from typing import Any, ClassVar, Dict, Type, cast
 
 import pandas as pd
 
 import flexiznam as flz
 from flexiznam import utils
 from flexiznam.config import PARAMETERS
-from flexiznam.errors import DatasetError, FlexilimsError
+from flexiznam.errors import DatasetError, FlexilimsError, NameNotUniqueError
 
 
 class Dataset(object):
@@ -21,11 +21,18 @@ class Dataset(object):
     schema.__init__.py
     """
 
-    SUBCLASSES: Dict[str, object] = dict()
+    SUBCLASSES: ClassVar[Dict[str, Type["Dataset"]]] = {}
 
     @classmethod
     def from_folder(
-        cls, folder, verbose=False, flexilims_session=None, project=None, is_raw=None
+        cls,
+        folder,
+        folder_genealogy=None,
+        is_raw=None,
+        verbose=False,
+        flexilims_session=None,
+        project=None,
+        enforce_validity=True,
     ):
         """Try to load all datasets found in the folder.
 
@@ -84,7 +91,7 @@ class Dataset(object):
             flexilims_session (flexilims.Session, optional): authentication session to
                 access flexilims.
         """
-        dataseries = flz.get_entity(
+        dataseries: Any = flz.get_entity(
             project_id=project,
             datatype="dataset",
             name=name,
@@ -93,7 +100,7 @@ class Dataset(object):
         )
 
         if dataseries is None:
-            if project is None:
+            if project is None and flexilims_session is not None:
                 project = flexilims_session.project_id
             raise FlexilimsError(
                 "No dataset named {} in project {}".format(name, project)
@@ -116,7 +123,7 @@ class Dataset(object):
         """
         dataset_type = dataseries.dataset_type
 
-        kwargs = Dataset._format_series_to_kwargs(dataseries)
+        kwargs: Dict[str, Any] = Dataset._format_series_to_kwargs(dataseries)
         name = kwargs.pop("name")
         kwargs["flexilims_session"] = flexilims_session
         if dataset_type in Dataset.SUBCLASSES:
@@ -187,7 +194,7 @@ class Dataset(object):
             base_name = dataset_type
         assert (origin_id is not None) or (origin_name is not None)
         assert dataset_type is not None  # not sure why it is not a mandatory argument
-        origin = flz.get_entity(
+        origin: Any = flz.get_entity(
             datatype=origin_type,
             id=origin_id,
             name=origin_name,
@@ -196,14 +203,18 @@ class Dataset(object):
         )
         if origin is None:
             raise FlexilimsError("Origin not found")
-        processed = flz.get_children(
-            parent_id=origin["id"],
-            parent_name=None,
-            children_datatype="dataset",
-            project_id=project,
-            flexilims_session=flexilims_session,
-            filter=extra_attributes,
+        processed: Any = cast(
+            pd.DataFrame,
+            flz.get_children(
+                parent_id=origin["id"],
+                parent_name=None,
+                children_datatype="dataset",
+                project_id=project,
+                flexilims_session=flexilims_session,
+                filter=extra_attributes,
+            ),
         )
+        assert base_name is not None
         if len(processed):
             processed = processed[
                 [g[-1].startswith(base_name + "_") for g in processed.genealogy]
@@ -259,7 +270,7 @@ class Dataset(object):
             )
         # There are some datasets of this type already online and we abort
         if (conflicts is None) or (conflicts == "abort"):
-            raise flz.errors.DatasetError(
+            raise DatasetError(
                 f"Dataset(s) of type {dataset_type} already exist(s):"
                 + f" {[s['name'] for s in processed]}"
             )
@@ -274,9 +285,9 @@ class Dataset(object):
                 if extra_attributes is not None:
                     dataset.extra_attributes = extra_attributes
                 return dataset
-            raise flz.errors.NameNotUniqueError(
+            raise NameNotUniqueError(
                 f"Multiple datasets of type {dataset_type} already exist(s):"
-                + f" {processed.loc[:, 'name']}"
+                + f" {[series['name'] for series in processed]}"
             )
         if conflicts == "skip":
             # If skip and we have an exact match, return it
@@ -296,9 +307,9 @@ class Dataset(object):
                     dataset_type,
                     extra_attributes,
                 )
-            raise flz.errors.NameNotUniqueError(
+            raise NameNotUniqueError(
                 f"Multiple datasets of type {dataset_type} already exist(s):"
-                + f" {processed.loc[:, 'name']}"
+                + f" {[series['name'] for series in processed]}"
             )
         if conflicts == "append":
             # Create a new dataset

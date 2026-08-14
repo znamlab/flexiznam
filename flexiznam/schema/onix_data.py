@@ -13,16 +13,17 @@ class OnixData(Dataset):
     VALID_EXTENSIONS = {".raw", ".csv"}
     DEVICE_NAMES = {"bno055", "breakout", "rhd2164", "ts4231", "vistim"}
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
-        onix_name=None,
         folder_genealogy=None,
         is_raw=None,
         verbose=True,
         flexilims_session=None,
         project=None,
         enforce_validity=True,
+        onix_name=None,
     ):
         """Create a Onix dataset by loading info from folder
 
@@ -66,7 +67,10 @@ class OnixData(Dataset):
                 if not m:
                     continue
                 subname = m.groups()[0]
-                timestamp = datetime.datetime(*[int(x) for x in m.groups()[1:-1]])
+                year, month, day, hour, minute, second = (
+                    int(value) for value in m.groups()[1:-1]
+                )
+                timestamp = datetime.datetime(year, month, day, hour, minute, second)
                 data.append(
                     dict(
                         device_name=device_name,
@@ -85,10 +89,9 @@ class OnixData(Dataset):
             raise IOError(f"Multiple timestamps found in folder {folder}")
 
         ts = data.timestamp.min()
-        if (
-            enforce_validity
-            and ("rhd2164" not in data.device_name.values)
-            or ("breakout" not in data.device_name.values)
+        if enforce_validity and (
+            "rhd2164" not in data.device_name.values
+            or "breakout" not in data.device_name.values
         ):
             if verbose:
                 print(
@@ -99,7 +102,9 @@ class OnixData(Dataset):
         onix_name = "onix_data_%s" % ts.strftime("%Y-%m-%d_%H_%M_%S")
         extra_attributes = dict()
         for device, dev_df in data.groupby("device_name"):
-            extra_attributes[device] = {s.subname: s.file for s in dev_df.itertuples()}
+            extra_attributes[device] = {
+                row["subname"]: row["file"] for _, row in dev_df.iterrows()
+            }
         output[onix_name] = OnixData(
             path=folder,
             genealogy=folder_genealogy + (onix_name,),

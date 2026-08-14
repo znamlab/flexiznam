@@ -28,14 +28,16 @@ class MicroscopyData(Dataset):
             stacklevel=2,
         )
 
-    @staticmethod
+    @classmethod
     def from_folder(
+        cls,
         folder,
         folder_genealogy=None,
         is_raw=None,
         verbose=True,
         flexilims_session=None,
         project=None,
+        enforce_validity=True,
     ):
         """Create Microscopy datasets by loading info from folder
 

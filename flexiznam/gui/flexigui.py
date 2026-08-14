@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from pathlib import Path
+from tkinter import filedialog, messagebox
 
 import yaml
 from ttkwidgets import CheckboxTreeview
@@ -217,7 +218,7 @@ class FlexiGui(tk.Tk):
         for option in options:
             value = getattr(self, option).get()
             if value.startswith(init_values[option]):
-                tk.messagebox.showerror("Error", f"Error: enter {option} first!")
+                messagebox.showerror("Error", f"Error: enter {option} first!")
                 return False
         self.report("Options are set")
         return True
@@ -225,7 +226,7 @@ class FlexiGui(tk.Tk):
     def parse_folder(self):
         if not self._check_options_are_set():
             return
-        folder = tk.filedialog.askdirectory(
+        folder = filedialog.askdirectory(
             initialdir=self.root_folder.get(), title="Select directory to parse"
         )
         self.report(f"Parsing folder {folder}...")
@@ -266,7 +267,7 @@ class FlexiGui(tk.Tk):
     def chg_root_folder(self):
         self.report("Changing root folder")
         self.root_folder.set(
-            tk.filedialog.askdirectory(
+            filedialog.askdirectory(
                 initialdir=self.root_folder.get(), title="Select root directory"
             )
         )
@@ -294,7 +295,7 @@ class FlexiGui(tk.Tk):
         self.report("Select YAML file to load")
         filetypes = (("Yaml files", "*.yml *.yaml"), ("All files", "*.*"))
 
-        filename = tk.filedialog.askopenfilename(
+        filename = filedialog.askopenfilename(
             title="Select YAML file to load", filetypes=filetypes
         )
         if not filename:
@@ -365,7 +366,7 @@ class FlexiGui(tk.Tk):
     def write_yaml(self):
         """Write the current data to a YAML file"""
         self.report("Select YAML file to write")
-        target = tk.filedialog.asksaveasfilename(
+        target = filedialog.asksaveasfilename(
             initialdir=self.root_folder.get(),
             title="Select YAML file to write",
             filetypes=(("Yaml files", "*.yml *.yaml"), ("All files", "*.*")),
@@ -387,7 +388,7 @@ class FlexiGui(tk.Tk):
             return
 
         if not self.data:
-            tk.messagebox.showerror("Error", "No data loaded")
+            messagebox.showerror("Error", "No data loaded")
             return
 
         self.report("Validating data...")
@@ -395,7 +396,7 @@ class FlexiGui(tk.Tk):
         data, errors = flz.camp.sync_data.check_yaml_validity(self.get_checked_data())
 
         if self.contains_errors:
-            tk.messagebox.showerror(
+            messagebox.showerror(
                 "Error",
                 "There are still errors. Please fix them before uploading",
             )

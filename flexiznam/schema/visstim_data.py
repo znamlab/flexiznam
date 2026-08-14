@@ -18,6 +18,7 @@ class VisStimData(Dataset):
         verbose=True,
         flexilims_session=None,
         project=None,
+        enforce_validity=True,
     ):
         """Create a visual stimulation dataset by loading info from folder
 
@@ -52,6 +53,8 @@ class VisStimData(Dataset):
             if matching_files:
                 log_file = matching_files[0]
                 break
+
+        assert log_file is not None
 
         if verbose:
             print(f"Found visstim log file: {log_file}")
