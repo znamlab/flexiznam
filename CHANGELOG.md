@@ -1,6 +1,6 @@
 # Change log
 
-## Unreleased
+## v26.11.0
 
 ### Main changes
 
