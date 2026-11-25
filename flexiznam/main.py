@@ -309,9 +309,8 @@ def add_experimental_session(
     flexilims_session,
     parent_name=None,
     parent_id=None,
-    attributes={},
+    attributes=None,
     session_name=None,
-    other_relations=None,
     conflicts="abort",
 ):
     """Add a new session as a child entity of a mouse
@@ -331,8 +330,6 @@ def add_experimental_session(
         conflicts (str, optional): What to do if a session with that name already
             exists? Can be `skip`, `abort`, `update` or `overwrite` (see update_entity
             for detailed description)
-        other_relations (list, optional): ID(s) of custom entities related to the
-            session
 
 
     Returns:
@@ -402,7 +399,6 @@ def add_experimental_session(
                 origin_id=parent_id,
                 mode=conflicts,
                 attributes=session_info,
-                other_relations=None,
                 flexilims_session=flexilims_session,
             )
             return resp
@@ -412,7 +408,6 @@ def add_experimental_session(
         name=session_full_name,
         attributes=session_info,
         origin_id=parent_id,
-        other_relations=other_relations,
         strict_validation=False,
     )
     return resp
@@ -425,7 +420,6 @@ def add_recording(
     attributes=None,
     recording_name=None,
     conflicts="abort",
-    other_relations=None,
     flexilims_session=None,
     project_id=None,
 ):
@@ -442,7 +436,6 @@ def add_recording(
             `R152356`.
         conflicts (str): `skip`, `abort`, `update` or `overwrite` (see update_entity for
             detailed description)
-        other_relations: ID(s) of custom entities related to the session
         flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session
         project_id (str): name of the project or hexadecimal project id (needed if
             session is not provided)
@@ -508,7 +501,6 @@ def add_recording(
                 origin_id=session_id,
                 mode=conflicts,
                 attributes=recording_info,
-                other_relations=None,
                 flexilims_session=flexilims_session,
             )
             return resp
@@ -518,7 +510,6 @@ def add_recording(
         name=rec_full_name,
         attributes=recording_info,
         origin_id=session_id,
-        other_relations=other_relations,
         strict_validation=False,
     )
     return resp
@@ -528,8 +519,7 @@ def add_entity(
     datatype,
     name,
     origin_id=None,
-    attributes={},
-    other_relations=None,
+    attributes=None,
     flexilims_session=None,
     project_id=None,
 ):
@@ -540,8 +530,6 @@ def add_entity(
         name (str): name on flexilims
         origin_id (str or None): hexadecimal id of the origin
         attributes (dict or None): attributes to update
-        other_relations (str or :obj:`list` of :obj:`str`): hexadecimal ID(s)
-            of custom entities link to the entry to update
         project_id (str): text name of the project
         flexilims_session (:py:class:`flexilims.Flexilims`): Flexylims session object
 
@@ -549,6 +537,8 @@ def add_entity(
         flexilims reply
 
     """
+    if attributes is None:
+        attributes = {}
     assert (project_id is not None) or (flexilims_session is not None)
     if flexilims_session is None:
         flexilims_session = get_flexilims_session(project_id)
@@ -559,7 +549,6 @@ def add_entity(
             name=name,
             attributes=attributes,
             origin_id=origin_id,
-            other_relations=other_relations,
             strict_validation=False,
         )
     except OSError as err:
@@ -574,7 +563,6 @@ def add_sample(
     attributes=None,
     sample_name=None,
     conflicts="skip",
-    other_relations=None,
     flexilims_session=None,
     project_id=None,
 ):
@@ -589,7 +577,6 @@ def add_sample(
         sample_name (str or None): name of the sample.
         conflicts (str): `skip`, `abort`, `update` or `overwrite`: how to handle
                          conflicts.
-        other_relations: ID(s) of custom entities related to the sample.
         flexilims_session (:py:class:`flexilims.Flexilims`): flexilims session.
         project_id (str): name of the project or hexadecimal project id
             (required if session is not provided).
@@ -651,7 +638,6 @@ def add_sample(
                 origin_id=parent_df["id"],
                 mode=conflicts,
                 attributes=attributes,
-                other_relations=None,
                 flexilims_session=flexilims_session,
             )
             return resp
@@ -661,7 +647,6 @@ def add_sample(
         name=sample_full_name,
         attributes=attributes,
         origin_id=parent_df["id"],
-        other_relations=other_relations,
         strict_validation=False,
     )
     return resp
@@ -783,7 +768,6 @@ def update_entity(
     origin_id=None,
     mode="overwrite",
     attributes=None,
-    other_relations=None,
     flexilims_session=None,
     project_id=None,
 ):

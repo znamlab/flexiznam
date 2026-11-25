@@ -84,6 +84,7 @@ source = ["flexiznam"]
 [tool.check-manifest]
 ignore = [
   ".yaml",
+  "uv.lock",
   "tox.ini",
   "tests/",
   "tests/test_unit/",
