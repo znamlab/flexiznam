@@ -359,8 +359,7 @@ def add_experimental_session(
             )
 
     session_info = {"date": date}
-    if attributes is None:
-        attributes = {}
+    attributes = dict(attributes or {})
     if "genealogy" in attributes:
         warnings.warn(
             "Cannot set genealogy using attributes. Will be generated from parent",

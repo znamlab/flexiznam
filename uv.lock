@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -430,7 +430,7 @@ wheels = [
 
 [[package]]
 name = "flexilims"
-version = "26.8.0"
+version = "26.11.0"
 source = { registry = "https://gitlab.com/api/v4/projects/85414935/packages/pypi/simple" }
 dependencies = [
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -438,9 +438,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "requests" },
 ]
-sdist = { url = "https://gitlab.com/api/v4/projects/85414935/packages/pypi/files/73db4fd50a40d33efefb3552693b0881d9e6a7bae6055abeb6c9df07675b7973/flexilims-26.8.0.tar.gz", hash = "sha256:73db4fd50a40d33efefb3552693b0881d9e6a7bae6055abeb6c9df07675b7973" }
+sdist = { url = "https://gitlab.com/api/v4/projects/85414935/packages/pypi/files/cfd1b25841b9e1af2fad6c50918103d4c99daabb27b1742843a4807b750133ff/flexilims-26.11.0.tar.gz", hash = "sha256:cfd1b25841b9e1af2fad6c50918103d4c99daabb27b1742843a4807b750133ff" }
 wheels = [
-    { url = "https://gitlab.com/api/v4/projects/85414935/packages/pypi/files/03b749fb50bb04a6fa5f6d4082e801d8608ea7d8bace8978fbfb86845af8d67c/flexilims-26.8.0-py3-none-any.whl", hash = "sha256:03b749fb50bb04a6fa5f6d4082e801d8608ea7d8bace8978fbfb86845af8d67c" },
+    { url = "https://gitlab.com/api/v4/projects/85414935/packages/pypi/files/bb343425600ac40fee7172fcef39367accd8982f1a89532ea2914ae54483b3a9/flexilims-26.11.0-py3-none-any.whl", hash = "sha256:bb343425600ac40fee7172fcef39367accd8982f1a89532ea2914ae54483b3a9" },
 ]
 
 [[package]]

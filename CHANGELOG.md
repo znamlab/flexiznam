@@ -2,13 +2,13 @@
 
 ## v26.11.0
 
-### Main changes
+### Breaking changes
 
 - Removed `other_relations` (never supported by the server, removed from `flexilims` 26.11.0).
 
 ### Bugfix
 
-- Replace mutable `attributes={}` defaults with `attributes=None` in `add_experimental_session` and `add_entity`.
+- Replace mutable `attributes={}` defaults with `attributes=None` in `add_experimental_session` and `add_entity`, and copy `attributes` in `add_experimental_session` so caller dicts are not mutated.
 
 ## v0.4.7
 
