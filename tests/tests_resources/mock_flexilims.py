@@ -57,7 +57,6 @@ class MockFlexilims:
         name,
         attributes=None,
         origin_id=None,
-        other_relations=None,
         strict_validation=False,
         id=None,
     ):
